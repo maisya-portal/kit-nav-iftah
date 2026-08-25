@@ -2553,26 +2553,26 @@ var initialMockDB = [
 
   // --- INIT DATA (LOCAL STORAGE & STARTER BACKUP) ---
   function loadDefaultKajianData(showToast) {
-    fetch('./KitNaf-Backup-2026-08-02.json')
+    if (Array.isArray(initialMockDB) && initialMockDB.length > 0) {
+      dbMateri = JSON.parse(JSON.stringify(initialMockDB));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+      showDesktop();
+      if (showToast) {
+        Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Seluruh 7 kitab kajian berhasil dimuat kembali!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+      }
+      return;
+    }
+    fetch('./KitNaf-Backup-Latest.json')
       .then(function(res) { return res.json(); })
       .then(function(data) {
         if (Array.isArray(data) && data.length > 0) {
           dbMateri = data;
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-          updateActiveUI();
+          showDesktop();
           if (showToast) {
-            Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Materi kajian kitab berhasil dimuat!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+            Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Seluruh 7 kitab kajian berhasil dimuat!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
           }
-        } else {
-          dbMateri = initialMockDB.slice();
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-          updateActiveUI();
         }
-      })
-      .catch(function() {
-        dbMateri = initialMockDB.slice();
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-        updateActiveUI();
       });
   }
 
