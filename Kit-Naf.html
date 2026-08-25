@@ -1019,6 +1019,10 @@
       </div>
     </div>
     <div class="d-flex gap-2 align-items-center">
+      <!-- Tombol Sinkron Manual Cepat -->
+      <button class="btn btn-light rounded-pill px-3 shadow-sm border border-white d-flex align-items-center gap-1 text-primary fw-semibold btn-manual-sync" onclick="manualSyncNow(this)" title="Sinkronkan data dengan Google Spreadsheet detik ini juga">
+        <i class="fa-solid fa-arrows-rotate me-1"></i> <span class="d-none d-sm-inline">Sinkron</span>
+      </button>
       <!-- Tombol Pasang PWA (jika didukung) -->
       <button class="btn btn-outline-primary rounded-pill px-3 shadow-sm btn-pwa-install d-none" onclick="installPWA()" title="Pasang Kit-Naf sebagai Aplikasi">
         <i class="fa-solid fa-download me-1"></i> <span class="d-none d-sm-inline">Pasang Aplikasi</span>
@@ -1120,9 +1124,14 @@
             <button class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeEditorZoom(10)" title="Perbesar Isi Catatan (Ctrl +)"><i class="fa-solid fa-plus fa-xs"></i></button>
           </div>
           <!-- Indikator Auto Save -->
-          <div id="saveStatus" class="text-muted small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border">
+          <div id="saveStatus" class="text-muted small fw-semibold d-flex align-items-center gap-2 me-1 bg-white px-3 py-1 rounded-pill shadow-sm border">
             <i class="fa-solid fa-check-circle text-success"></i> Tersimpan
           </div>
+          <!-- Tombol Sinkron Manual Cepat -->
+          <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-1 btn-manual-sync me-1" onclick="manualSyncNow(this)" title="Klik untuk langsung menyinkronkan data dengan Google Spreadsheet detik ini juga">
+            <i class="fa-solid fa-arrows-rotate me-1" id="manualSyncIcon"></i>
+            <span class="d-none d-sm-inline fw-semibold">Sinkron</span>
+          </button>
           <!-- Tombol Toggle Toolbar -->
           <button class="btn btn-sm btn-light border border-white shadow-sm" onclick="toggleToolbar()" title="Sembunyikan/Tampilkan Pengaturan Teks">
             <i class="fa-solid fa-pen-ruler text-primary" id="toolbarToggleIcon"></i>
@@ -2967,14 +2976,130 @@ var initialMockDB = [
       });
   };
 
+  // --- MANUAL SYNC CEPAT (INSTAN 1-KLIK) ---
+  window.manualSyncNow = function(btnEl) {
+    var gasUrl = (localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL || '').trim();
+    if (!gasUrl) {
+      Swal.fire('Perhatian', 'URL Google Spreadsheet belum disetel. Buka menu Pengaturan untuk memasukkan URL Web App.', 'warning');
+      return;
+    }
+
+    // Set status tombol loading putar
+    var allSyncBtns = document.querySelectorAll('.btn-manual-sync');
+    allSyncBtns.forEach(function(b) {
+      b.disabled = true;
+      var icon = b.querySelector('i');
+      if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin me-1';
+    });
+
+    // Jika pengguna sedang membuka materi di editor, simpan perubahan terbarunya ke memori lokal
+    if (activeNodeId && quillEditor && quillEditor.root) {
+      var htmlContent = quillEditor.root.innerHTML;
+      var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
+      if (item && item.content !== htmlContent) {
+        item.content = htmlContent;
+        item.updatedAt = new Date().toISOString();
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+      }
+    }
+
+    updateSaveStatus('syncing_gas');
+
+    // 1. Simpan perubahan ke Google Spreadsheet terlebih dahulu
+    var payload = JSON.stringify({
+      action: 'save',
+      data: dbMateri,
+      timestamp: new Date().toISOString()
+    });
+
+    fetch(gasUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload
+    })
+    .catch(function(e) { /* ignore post error if offline */ })
+    .then(function() {
+      // 2. Langsung tarik data terbaru dari Google Spreadsheet dan perbarui layar seketika
+      return fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now());
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+      if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+        dbMateri = res.data;
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+        
+        // Langsung render data terbaru ke layar
+        if (currentView === 'desktop') {
+          renderDesktop();
+        } else {
+          renderTree();
+          if (activeNodeId) {
+            var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
+            if (curItem) {
+              if (quillEditor && quillEditor.root) {
+                var sel = quillEditor.getSelection();
+                quillEditor.root.innerHTML = curItem.content || '';
+                if (sel) { try { quillEditor.setSelection(sel); } catch(e){} }
+                syncContinuousListCounters(quillEditor.root);
+              }
+              var titleEl = document.getElementById('editorTitle');
+              if (titleEl) titleEl.innerText = curItem.title;
+              if (curItem.fontFamily && quillEditor && quillEditor.root) {
+                quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
+              }
+              if (curItem.bg) applyBackgroundFor(curItem.bg); else applyBackground();
+            }
+          }
+        }
+      }
+      
+      var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      updateSaveStatus('saved_gas', timeStr);
+      
+      allSyncBtns.forEach(function(b) {
+        b.disabled = false;
+        b.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i> <span class="d-none d-sm-inline fw-semibold text-success">Tersinkron!</span>';
+        setTimeout(function() {
+          b.innerHTML = '<i class="fa-solid fa-arrows-rotate me-1"></i> <span class="d-none d-sm-inline fw-semibold">Sinkron</span>';
+        }, 1500);
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Data Tersinkron!',
+        text: 'Data terbaru berhasil dimuat dan langsung ditampilkan di layar.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 1800
+      });
+    })
+    .catch(function(err) {
+      allSyncBtns.forEach(function(b) {
+        b.disabled = false;
+        b.innerHTML = '<i class="fa-solid fa-arrows-rotate me-1"></i> <span class="d-none d-sm-inline fw-semibold">Sinkron</span>';
+      });
+      updateSaveStatus('gas_offline');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Mode Offline',
+        text: 'Tidak dapat menghubungi server. Data lokal tetap tersimpan aman di perangkat ini.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 2500
+      });
+    });
+  };
+
   function startRealtimeCloudSync() {
     if (realtimePollInterval) clearInterval(realtimePollInterval);
-    // Polling real-time background setiap 3.5 detik saat layar aktif
+    // Polling real-time background setiap 2.5 detik saat layar aktif
     realtimePollInterval = setInterval(function() {
       if (document.visibilityState === 'visible' && navigator.onLine) {
         triggerBackgroundCloudSync(true);
       }
-    }, 3500);
+    }, 2500);
   }
 
   // --- AUTO SAVE LOGIC ---
