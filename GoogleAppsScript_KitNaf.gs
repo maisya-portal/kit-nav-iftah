@@ -18,6 +18,13 @@
 
 function doGet(e) {
   try {
+    var lastSync = PropertiesService.getScriptProperties().getProperty('LAST_SYNC_TIME') || '';
+    
+    // Mode Cepat: Cek apakah ada perubahan tanpa unduh seluruh data
+    if (e && e.parameter && e.parameter.action === 'check') {
+      return createJsonResponse({ status: 'success', lastSync: lastSync });
+    }
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
     var sheet = ss.getSheetByName('Data_Materi');
@@ -29,7 +36,7 @@ function doGet(e) {
         try {
           var parsed = JSON.parse(rawJsonStr);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return createJsonResponse({ status: 'success', data: parsed });
+            return createJsonResponse({ status: 'success', data: parsed, lastSync: lastSync });
           }
         } catch(err) {}
       }
@@ -37,12 +44,12 @@ function doGet(e) {
     
     // Prioritas 2: Baca dari tabel Data_Materi
     if (!sheet) {
-      return createJsonResponse({ status: 'success', data: [] });
+      return createJsonResponse({ status: 'success', data: [], lastSync: lastSync });
     }
     
     var values = sheet.getDataRange().getValues();
     if (values.length <= 1) {
-      return createJsonResponse({ status: 'success', data: [] });
+      return createJsonResponse({ status: 'success', data: [], lastSync: lastSync });
     }
     
     var list = [];
@@ -62,7 +69,7 @@ function doGet(e) {
       });
     }
     
-    return createJsonResponse({ status: 'success', data: list });
+    return createJsonResponse({ status: 'success', data: list, lastSync: lastSync });
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
   }
@@ -129,11 +136,17 @@ function doPost(e) {
       sheet.autoResizeColumns(1, 7);
     }
     
+    var syncTime = new Date().toISOString();
+    try {
+      PropertiesService.getScriptProperties().setProperty('LAST_SYNC_TIME', syncTime);
+    } catch(e) {}
+
     return createJsonResponse({
       status: 'success',
       message: 'Berhasil menyimpan ' + data.length + ' materi ke Spreadsheet!',
       totalItems: data.length,
-      timestamp: new Date().toISOString()
+      timestamp: syncTime,
+      lastSync: syncTime
     });
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });

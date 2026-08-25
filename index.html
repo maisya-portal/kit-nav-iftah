@@ -964,6 +964,31 @@
         font-size: 0.8rem !important;
       }
     }
+
+    /* Floating Real-time Cloud Sync Badge */
+    .realtime-sync-badge {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: rgba(17, 24, 39, 0.92);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .realtime-sync-badge.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -973,6 +998,11 @@
 
 <!-- Floating Zoom Toast Indicator -->
 <div id="zoomFloatingToast"><i class="fa-solid fa-magnifying-glass me-1"></i> Zoom: 100%</div>
+
+<!-- Floating Realtime Cloud Sync Toast -->
+<div id="realtimeSyncToast" class="realtime-sync-badge">
+  <i class="fa-solid fa-arrows-rotate fa-spin text-success me-2"></i> Tersinkron otomatis dari perangkat lain
+</div>
 
 <!-- ==========================================
      1. DESKTOP VIEW
@@ -2862,6 +2892,91 @@ var initialMockDB = [
     }
   };
 
+  var lastLocalEditTime = 0;
+  var isActivelyTyping = false;
+  var isCloudPulling = false;
+  var realtimePollInterval = null;
+  var lastKnownCloudSync = '';
+
+  function showRealtimeSyncToast() {
+    var toastEl = document.getElementById('realtimeSyncToast');
+    if (!toastEl) return;
+    toastEl.classList.add('show');
+    clearTimeout(window._rtToastTimeout);
+    window._rtToastTimeout = setTimeout(function() {
+      toastEl.classList.remove('show');
+    }, 2400);
+  }
+
+  // --- ENGINE SINKRONISASI REAL-TIME CLOUD (MULTI-PERANGKAT HP & LAPTOP) ---
+  window.triggerBackgroundCloudSync = function(isSilentPoll) {
+    var gasUrl = (localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL || '').trim();
+    if (!gasUrl || !navigator.onLine || isCloudPulling || isGasSyncing) return;
+
+    // Cegah konflik saat pengguna sedang aktif mengetik di perangkat ini
+    if (isActivelyTyping || (Date.now() - lastLocalEditTime < 2500)) return;
+
+    isCloudPulling = true;
+    fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        isCloudPulling = false;
+        if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+          var incomingData = res.data;
+          var currentStr = JSON.stringify(dbMateri);
+          var incomingStr = JSON.stringify(incomingData);
+
+          // Cek apakah ada perubahan data dari perangkat lain
+          if (currentStr !== incomingStr) {
+            if (isActivelyTyping || (Date.now() - lastLocalEditTime < 2000)) return;
+
+            dbMateri = incomingData;
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+            lastKnownCloudSync = res.lastSync || new Date().toISOString();
+
+            if (currentView === 'desktop') {
+              renderDesktop();
+            } else {
+              renderTree();
+              if (activeNodeId) {
+                var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
+                if (curItem) {
+                  if (quillEditor && quillEditor.root && quillEditor.root.innerHTML !== (curItem.content || '')) {
+                    var sel = quillEditor.getSelection();
+                    quillEditor.root.innerHTML = curItem.content || '';
+                    if (sel) { try { quillEditor.setSelection(sel); } catch(e){} }
+                    syncContinuousListCounters(quillEditor.root);
+                  }
+                  var titleEl = document.getElementById('editorTitle');
+                  if (titleEl) titleEl.innerText = curItem.title;
+                  if (curItem.fontFamily && quillEditor && quillEditor.root) {
+                    quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
+                  }
+                }
+              }
+            }
+
+            var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            updateSaveStatus('saved_gas', timeStr);
+            showRealtimeSyncToast();
+          }
+        }
+      })
+      .catch(function(err) {
+        isCloudPulling = false;
+      });
+  };
+
+  function startRealtimeCloudSync() {
+    if (realtimePollInterval) clearInterval(realtimePollInterval);
+    // Polling real-time background setiap 3.5 detik saat layar aktif
+    realtimePollInterval = setInterval(function() {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        triggerBackgroundCloudSync(true);
+      }
+    }, 3500);
+  }
+
   // --- AUTO SAVE LOGIC ---
   window.performAutoSave = function() {
     if (!activeNodeId) return;
@@ -2872,6 +2987,7 @@ var initialMockDB = [
 
     item.content = htmlContent;
     item.updatedAt = new Date().toISOString();
+    lastLocalEditTime = Date.now();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     
     var isAutoSync = (localStorage.getItem('kitnaf_gas_autosync') !== 'false');
@@ -2882,11 +2998,11 @@ var initialMockDB = [
       clearTimeout(gasSaveTimeout);
       gasSaveTimeout = setTimeout(function() {
         syncToSpreadsheet(true);
-      }, 1500);
+      }, 900);
     } else {
       updateSaveStatus('saved_local');
     }
-  }
+  };
 
   // --- INIT DATA (LOCAL STORAGE & STARTER BACKUP) ---
   function loadDefaultKajianData(showToast) {
@@ -2937,24 +3053,9 @@ var initialMockDB = [
       showDesktop();
     }
 
-    // Background Auto Cloud Sync dari Google Spreadsheet (HP & Laptop selalu sinkron otomatis)
-    var gasUrl = localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL;
-    if (gasUrl && navigator.onLine) {
-      fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
-        .then(function(res) { return res.json(); })
-        .then(function(res) {
-          if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-            dbMateri = res.data;
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-            if (!activeNodeId) {
-              showDesktop();
-            }
-          }
-        })
-        .catch(function(err) {
-          console.log('[Kit-Naf Cloud Sync] Menggunakan data offline lokal');
-        });
-    }
+    // Mulai sinkronisasi cloud real-time dan background polling
+    startRealtimeCloudSync();
+    triggerBackgroundCloudSync(false);
   }
 
   // --- BACKUP & RESTORE DATA ---
@@ -3025,6 +3126,11 @@ var initialMockDB = [
 
 function doGet(e) {
   try {
+    var lastSync = PropertiesService.getScriptProperties().getProperty('LAST_SYNC_TIME') || '';
+    if (e && e.parameter && e.parameter.action === 'check') {
+      return createJsonResponse({ status: 'success', lastSync: lastSync });
+    }
+
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
     var sheet = ss.getSheetByName('Data_Materi');
@@ -3035,15 +3141,15 @@ function doGet(e) {
         try {
           var parsed = JSON.parse(rawJsonStr);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return createJsonResponse({ status: 'success', data: parsed });
+            return createJsonResponse({ status: 'success', data: parsed, lastSync: lastSync });
           }
         } catch(err) {}
       }
     }
     
-    if (!sheet) return createJsonResponse({ status: 'success', data: [] });
+    if (!sheet) return createJsonResponse({ status: 'success', data: [], lastSync: lastSync });
     var values = sheet.getDataRange().getValues();
-    if (values.length <= 1) return createJsonResponse({ status: 'success', data: [] });
+    if (values.length <= 1) return createJsonResponse({ status: 'success', data: [], lastSync: lastSync });
     
     var list = [];
     for (var i = 1; i < values.length; i++) {
@@ -3060,7 +3166,7 @@ function doGet(e) {
         content: row[7] ? row[7].toString() : ''
       });
     }
-    return createJsonResponse({ status: 'success', data: list });
+    return createJsonResponse({ status: 'success', data: list, lastSync: lastSync });
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
   }
@@ -3111,11 +3217,17 @@ function doPost(e) {
       sheet.autoResizeColumns(1, 7);
     }
     
+    var syncTime = new Date().toISOString();
+    try {
+      PropertiesService.getScriptProperties().setProperty('LAST_SYNC_TIME', syncTime);
+    } catch(e) {}
+
     return createJsonResponse({
       status: 'success',
       message: 'Berhasil menyimpan ' + data.length + ' materi ke Spreadsheet!',
       totalItems: data.length,
-      timestamp: new Date().toISOString()
+      timestamp: syncTime,
+      lastSync: syncTime
     });
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
@@ -4045,12 +4157,28 @@ function createJsonResponse(obj) {
     quillEditor.on('text-change', function(delta, oldDelta, source) {
       syncContinuousListCounters(quillEditor.root);
       if (source === 'user') {
+        isActivelyTyping = true;
+        lastLocalEditTime = Date.now();
         updateSaveStatus('typing');
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(function() {
+          isActivelyTyping = false;
           window.performAutoSave();
-        }, 1000);
+        }, 750);
       }
+    });
+
+    // Pemicu Sinkronisasi Instan Saat Beralih Tab / Buka Kunci Layar HP / Online
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        window.triggerBackgroundCloudSync(false);
+      }
+    });
+    window.addEventListener('focus', function() {
+      window.triggerBackgroundCloudSync(false);
+    });
+    window.addEventListener('online', function() {
+      window.triggerBackgroundCloudSync(false);
     });
 
     var nodeForm = document.getElementById('nodeForm');
