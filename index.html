@@ -2812,6 +2812,15 @@ var initialMockDB = [
 
       dbMateri = dbMateri.filter(function(item) { return !idsToDelete.includes(item.id); });
 
+      // Catat ID yang dihapus agar server Google Spreadsheet tidak memunculkannya lagi
+      try {
+        var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
+        idsToDelete.forEach(function(did) {
+          if (delIds.indexOf(did) === -1) delIds.push(did);
+        });
+        localStorage.setItem('kitnaf_deleted_ids', JSON.stringify(delIds));
+      } catch(e) {}
+
       if (activeNodeId === id || dbMateri.findIndex(function(x){ return x.id == activeNodeId && idsToDelete.includes(x.id)}) !== -1) {
         activeNodeId = null;
         document.getElementById('editorState').classList.add('d-none');
@@ -2821,6 +2830,9 @@ var initialMockDB = [
       
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
       updateActiveUI();
+
+      // Trigger auto sync untuk kirim penghapusan ke spreadsheet
+      performAutoSave();
 
       if (window.activeRootId === id) {
         showDesktop();
@@ -2917,13 +2929,83 @@ var initialMockDB = [
     }, 2400);
   }
 
+  // --- ALGORITMA MERGE ANTI-HILANG & ANTI-TIMPA (CONFLICT-FREE LWW PER MATERI) ---
+  function mergeIncomingCloudData(incomingData) {
+    if (!Array.isArray(incomingData) || incomingData.length === 0) return false;
+
+    var localMap = {};
+    for (var i = 0; i < dbMateri.length; i++) {
+      var itm = dbMateri[i];
+      if (itm && itm.id) localMap[itm.id] = itm;
+    }
+
+    var hasChanges = false;
+    var isEditorFocused = quillEditor && quillEditor.hasFocus && quillEditor.hasFocus();
+    var hasRecentTyping = isActivelyTyping || (Date.now() - lastLocalEditTime < 6000);
+
+    for (var j = 0; j < incomingData.length; j++) {
+      var inc = incomingData[j];
+      if (!inc || !inc.id) continue;
+
+      if (!localMap[inc.id]) {
+        // Catatan baru dari server / perangkat lain
+        localMap[inc.id] = inc;
+        hasChanges = true;
+      } else {
+        var loc = localMap[inc.id];
+
+        // PERLINDUNGAN UTAMA: Jika materi ini sedang dibuka & aktif diketik di perangkat ini, JANGAN PERNAH DITIMPA!
+        if (activeNodeId && inc.id === activeNodeId) {
+          if (isEditorFocused || hasRecentTyping) {
+            continue; // Lindungi 100% ketikan aktif pengguna!
+          }
+        }
+
+        var incTime = inc.updatedAt ? new Date(inc.updatedAt).getTime() : 0;
+        var locTime = loc.updatedAt ? new Date(loc.updatedAt).getTime() : 0;
+
+        // Hanya perbarui catatan jika versi cloud memiliki waktu update lebih baru
+        if (incTime > locTime) {
+          localMap[inc.id] = inc;
+          hasChanges = true;
+        }
+      }
+    }
+
+    if (hasChanges) {
+      var merged = [];
+      var seen = {};
+      for (var k = 0; k < dbMateri.length; k++) {
+        var id = dbMateri[k].id;
+        if (localMap[id]) {
+          merged.push(localMap[id]);
+          seen[id] = true;
+        }
+      }
+      for (var m = 0; m < incomingData.length; m++) {
+        var incId = incomingData[m].id;
+        if (localMap[incId] && !seen[incId]) {
+          merged.push(localMap[incId]);
+          seen[incId] = true;
+        }
+      }
+
+      dbMateri = merged;
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+      return true;
+    }
+    return false;
+  }
+
   // --- ENGINE SINKRONISASI REAL-TIME CLOUD (MULTI-PERANGKAT HP & LAPTOP) ---
   window.triggerBackgroundCloudSync = function(isSilentPoll) {
     var gasUrl = (localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL || '').trim();
     if (!gasUrl || !navigator.onLine || isCloudPulling || isGasSyncing) return;
 
-    // Cegah konflik saat pengguna sedang aktif mengetik di perangkat ini
-    if (isActivelyTyping || (Date.now() - lastLocalEditTime < 2500)) return;
+    var isEditorFocused = quillEditor && quillEditor.hasFocus && quillEditor.hasFocus();
+    var hasRecentTyping = isActivelyTyping || (Date.now() - lastLocalEditTime < 4000);
+    // Jika pengguna sedang mengetik aktif, tunda polling background agar tidak mengganggu
+    if (isEditorFocused || hasRecentTyping) return;
 
     isCloudPulling = true;
     fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
@@ -2931,16 +3013,8 @@ var initialMockDB = [
       .then(function(res) {
         isCloudPulling = false;
         if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-          var incomingData = res.data;
-          var currentStr = JSON.stringify(dbMateri);
-          var incomingStr = JSON.stringify(incomingData);
-
-          // Cek apakah ada perubahan data dari perangkat lain
-          if (currentStr !== incomingStr) {
-            if (isActivelyTyping || (Date.now() - lastLocalEditTime < 2000)) return;
-
-            dbMateri = incomingData;
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+          var updated = mergeIncomingCloudData(res.data);
+          if (updated) {
             lastKnownCloudSync = res.lastSync || new Date().toISOString();
 
             if (currentView === 'desktop') {
@@ -2950,17 +3024,19 @@ var initialMockDB = [
               if (activeNodeId) {
                 var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
                 if (curItem) {
-                  if (quillEditor && quillEditor.root && quillEditor.root.innerHTML !== (curItem.content || '')) {
-                    var sel = quillEditor.getSelection();
-                    quillEditor.root.innerHTML = curItem.content || '';
-                    if (sel) { try { quillEditor.setSelection(sel); } catch(e){} }
-                    syncContinuousListCounters(quillEditor.root);
+                  // Pastikan sekali lagi sebelum update isi teks editor bahwa pengguna tidak sedang mengetik
+                  if (!isActivelyTyping && (Date.now() - lastLocalEditTime > 4000) && !(quillEditor && quillEditor.hasFocus && quillEditor.hasFocus())) {
+                    if (quillEditor && quillEditor.root && quillEditor.root.innerHTML !== (curItem.content || '')) {
+                      quillEditor.root.innerHTML = curItem.content || '';
+                      syncContinuousListCounters(quillEditor.root);
+                    }
                   }
                   var titleEl = document.getElementById('editorTitle');
                   if (titleEl) titleEl.innerText = curItem.title;
                   if (curItem.fontFamily && quillEditor && quillEditor.root) {
                     quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
                   }
+                  if (curItem.bg) applyBackgroundFor(curItem.bg); else applyBackground();
                 }
               }
             }
@@ -2984,7 +3060,6 @@ var initialMockDB = [
       return;
     }
 
-    // Set status tombol loading putar
     var allSyncBtns = document.querySelectorAll('.btn-manual-sync');
     allSyncBtns.forEach(function(b) {
       b.disabled = true;
@@ -2992,23 +3067,25 @@ var initialMockDB = [
       if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin me-1';
     });
 
-    // Jika pengguna sedang membuka materi di editor, simpan perubahan terbarunya ke memori lokal
+    // 1. Simpan ketikan aktif di perangkat ini dengan timestamp terbaru agar terlindungi saat diunggah
     if (activeNodeId && quillEditor && quillEditor.root) {
       var htmlContent = quillEditor.root.innerHTML;
       var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
-      if (item && item.content !== htmlContent) {
+      if (item) {
         item.content = htmlContent;
         item.updatedAt = new Date().toISOString();
+        lastLocalEditTime = Date.now();
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
       }
     }
 
     updateSaveStatus('syncing_gas');
 
-    // 1. Simpan perubahan ke Google Spreadsheet terlebih dahulu
+    var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
     var payload = JSON.stringify({
       action: 'save',
       data: dbMateri,
+      deletedIds: delIds,
       timestamp: new Date().toISOString()
     });
 
@@ -3017,42 +3094,37 @@ var initialMockDB = [
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: payload
     })
-    .catch(function(e) { /* ignore post error if offline */ })
-    .then(function() {
-      // 2. Langsung tarik data terbaru dari Google Spreadsheet dan perbarui layar seketika
-      return fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now());
-    })
     .then(function(res) { return res.json(); })
     .then(function(res) {
+      localStorage.removeItem('kitnaf_deleted_ids');
       if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-        dbMateri = res.data;
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-        
-        // Langsung render data terbaru ke layar
-        if (currentView === 'desktop') {
-          renderDesktop();
-        } else {
-          renderTree();
-          if (activeNodeId) {
-            var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
-            if (curItem) {
-              if (quillEditor && quillEditor.root) {
-                var sel = quillEditor.getSelection();
-                quillEditor.root.innerHTML = curItem.content || '';
-                if (sel) { try { quillEditor.setSelection(sel); } catch(e){} }
-                syncContinuousListCounters(quillEditor.root);
-              }
-              var titleEl = document.getElementById('editorTitle');
-              if (titleEl) titleEl.innerText = curItem.title;
-              if (curItem.fontFamily && quillEditor && quillEditor.root) {
-                quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
-              }
-              if (curItem.bg) applyBackgroundFor(curItem.bg); else applyBackground();
+        mergeIncomingCloudData(res.data);
+      }
+      
+      // Render ulang tampilan dengan data gabungan yang mutakhir
+      if (currentView === 'desktop') {
+        renderDesktop();
+      } else {
+        renderTree();
+        if (activeNodeId) {
+          var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
+          if (curItem) {
+            if (quillEditor && quillEditor.root) {
+              var sel = quillEditor.getSelection();
+              quillEditor.root.innerHTML = curItem.content || '';
+              if (sel) { try { quillEditor.setSelection(sel); } catch(e){} }
+              syncContinuousListCounters(quillEditor.root);
             }
+            var titleEl = document.getElementById('editorTitle');
+            if (titleEl) titleEl.innerText = curItem.title;
+            if (curItem.fontFamily && quillEditor && quillEditor.root) {
+              quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
+            }
+            if (curItem.bg) applyBackgroundFor(curItem.bg); else applyBackground();
           }
         }
       }
-      
+
       var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       updateSaveStatus('saved_gas', timeStr);
       
@@ -3066,8 +3138,8 @@ var initialMockDB = [
 
       Swal.fire({
         icon: 'success',
-        title: 'Data Tersinkron!',
-        text: 'Data terbaru berhasil dimuat dan langsung ditampilkan di layar.',
+        title: 'Data Tersinkronkan!',
+        text: 'Data materi berhasil digabungkan dan diperbarui tanpa ada yang tertimpa atau hilang.',
         toast: true,
         position: 'bottom-end',
         showConfirmButton: false,
@@ -3094,12 +3166,12 @@ var initialMockDB = [
 
   function startRealtimeCloudSync() {
     if (realtimePollInterval) clearInterval(realtimePollInterval);
-    // Polling real-time background setiap 2.5 detik saat layar aktif
+    // Polling real-time background setiap 3.5 detik saat layar aktif
     realtimePollInterval = setInterval(function() {
       if (document.visibilityState === 'visible' && navigator.onLine) {
         triggerBackgroundCloudSync(true);
       }
-    }, 2500);
+    }, 3500);
   }
 
   // --- AUTO SAVE LOGIC ---
@@ -3257,40 +3329,7 @@ function doGet(e) {
     }
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
-    var sheet = ss.getSheetByName('Data_Materi');
-    
-    if (rawSheet) {
-      var rawJsonStr = readChunkedJson(rawSheet);
-      if (rawJsonStr && rawJsonStr.trim() !== '') {
-        try {
-          var parsed = JSON.parse(rawJsonStr);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return createJsonResponse({ status: 'success', data: parsed, lastSync: lastSync });
-          }
-        } catch(err) {}
-      }
-    }
-    
-    if (!sheet) return createJsonResponse({ status: 'success', data: [], lastSync: lastSync });
-    var values = sheet.getDataRange().getValues();
-    if (values.length <= 1) return createJsonResponse({ status: 'success', data: [], lastSync: lastSync });
-    
-    var list = [];
-    for (var i = 1; i < values.length; i++) {
-      var row = values[i];
-      if (!row[0] && !row[3]) continue;
-      list.push({
-        id: row[0] ? row[0].toString() : Utilities.getUuid(),
-        parentId: row[1] ? row[1].toString() : '',
-        level: typeof row[2] === 'number' ? row[2] : (parseInt(row[2]) || 0),
-        title: row[3] ? row[3].toString() : 'Tanpa Judul',
-        icon: row[4] ? row[4].toString() : 'fa-book-open',
-        bg: row[5] ? row[5].toString() : '',
-        updatedAt: row[6] ? row[6].toString() : new Date().toISOString(),
-        content: row[7] ? row[7].toString() : ''
-      });
-    }
+    var list = getExistingData(ss);
     return createJsonResponse({ status: 'success', data: list, lastSync: lastSync });
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
@@ -3303,16 +3342,63 @@ function doPost(e) {
     if (!contents) return createJsonResponse({ status: 'error', message: 'Tidak ada data.' });
     
     var payload = JSON.parse(contents);
-    var data = payload.data || payload;
-    if (!Array.isArray(data)) return createJsonResponse({ status: 'error', message: 'Data bukan Array.' });
+    var incomingData = payload.data || payload;
+    if (!Array.isArray(incomingData)) return createJsonResponse({ status: 'error', message: 'Data bukan Array.' });
     
     var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var existingList = getExistingData(ss);
     
-    // 1. Simpan Raw JSON Chunked
+    var map = {};
+    for (var i = 0; i < existingList.length; i++) {
+      var itm = existingList[i];
+      if (itm && itm.id) map[itm.id] = itm;
+    }
+    
+    var deletedIds = payload.deletedIds || [];
+    var deletedSet = {};
+    for (var d = 0; d < deletedIds.length; d++) {
+      deletedSet[deletedIds[d]] = true;
+    }
+
+    for (var j = 0; j < incomingData.length; j++) {
+      var inc = incomingData[j];
+      if (!inc || !inc.id || deletedSet[inc.id]) continue;
+      
+      if (!map[inc.id]) {
+        map[inc.id] = inc;
+      } else {
+        var ext = map[inc.id];
+        var incTime = inc.updatedAt ? new Date(inc.updatedAt).getTime() : 0;
+        var extTime = ext.updatedAt ? new Date(ext.updatedAt).getTime() : 0;
+        if (incTime >= extTime) {
+          map[inc.id] = inc;
+        }
+      }
+    }
+    
+    for (var delId in deletedSet) {
+      delete map[delId];
+    }
+    
+    var mergedData = [];
+    var processedIds = {};
+    for (var k = 0; k < incomingData.length; k++) {
+      var id = incomingData[k].id;
+      if (map[id] && !processedIds[id]) {
+        mergedData.push(map[id]);
+        processedIds[id] = true;
+      }
+    }
+    for (var remId in map) {
+      if (!processedIds[remId]) {
+        mergedData.push(map[remId]);
+        processedIds[remId] = true;
+      }
+    }
+    
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup') || ss.insertSheet('Raw_JSON_Backup');
-    writeChunkedJson(rawSheet, JSON.stringify(data));
+    writeChunkedJson(rawSheet, JSON.stringify(mergedData));
     
-    // 2. Simpan Data Tabel
     var sheet = ss.getSheetByName('Data_Materi') || ss.insertSheet('Data_Materi');
     sheet.clearContents();
     
@@ -3320,10 +3406,10 @@ function doPost(e) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#4F46E5').setFontColor('#FFFFFF');
     
-    if (data.length > 0) {
+    if (mergedData.length > 0) {
       var rows = [];
-      for (var i = 0; i < data.length; i++) {
-        var item = data[i];
+      for (var m = 0; m < mergedData.length; m++) {
+        var item = mergedData[m];
         var cellContent = (item.content || '').toString();
         if (cellContent.length > 45000) cellContent = cellContent.substring(0, 45000);
         
@@ -3349,14 +3435,48 @@ function doPost(e) {
 
     return createJsonResponse({
       status: 'success',
-      message: 'Berhasil menyimpan ' + data.length + ' materi ke Spreadsheet!',
-      totalItems: data.length,
+      message: 'Berhasil menyimpan data!',
+      data: mergedData,
+      totalItems: mergedData.length,
       timestamp: syncTime,
       lastSync: syncTime
     });
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
   }
+}
+
+function getExistingData(ss) {
+  var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
+  if (rawSheet) {
+    var rawJsonStr = readChunkedJson(rawSheet);
+    if (rawJsonStr && rawJsonStr.trim() !== '') {
+      try {
+        var parsed = JSON.parse(rawJsonStr);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch(err) {}
+    }
+  }
+  var sheet = ss.getSheetByName('Data_Materi');
+  if (!sheet) return [];
+  var values = sheet.getDataRange().getValues();
+  if (values.length <= 1) return [];
+  var list = [];
+  for (var i = 1; i < values.length; i++) {
+    var row = values[i];
+    if (!row[0] && !row[3]) continue;
+    list.push({
+      id: row[0] ? row[0].toString() : Utilities.getUuid(),
+      parentId: row[1] ? row[1].toString() : '',
+      level: typeof row[2] === 'number' ? row[2] : (parseInt(row[2]) || 0),
+      title: row[3] ? row[3].toString() : 'Tanpa Judul',
+      icon: row[4] ? row[4].toString() : 'fa-book-open',
+      bg: row[5] ? row[5].toString() : '',
+      updatedAt: row[6] ? row[6].toString() : new Date().toISOString(),
+      content: row[7] ? row[7].toString() : ''
+    });
+  }
+  return list;
 }
 
 function writeChunkedJson(sheet, jsonStr) {
@@ -3501,9 +3621,11 @@ function createJsonResponse(obj) {
     }
 
     isGasSyncing = true;
+    var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
     var payload = JSON.stringify({
       action: 'save',
       data: dbMateri,
+      deletedIds: delIds,
       timestamp: new Date().toISOString()
     });
 
@@ -3515,6 +3637,10 @@ function createJsonResponse(obj) {
     .then(function(res) { return res.json(); })
     .then(function(res) {
       isGasSyncing = false;
+      localStorage.removeItem('kitnaf_deleted_ids');
+      if (res && res.status === 'success' && Array.isArray(res.data)) {
+        mergeIncomingCloudData(res.data);
+      }
       var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       updateSaveStatus('saved_gas', timeStr);
       if (!silent) {
