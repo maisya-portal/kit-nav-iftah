@@ -20,7 +20,7 @@
   <!-- CSS: Bootstrap, FontAwesome, Google Fonts, QuillJS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Scheherazade+New:wght@400;700&family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
   
   <style>
@@ -712,7 +712,7 @@
       pointer-events: none !important;
     }
 
-    /* --- TAMBAHAN FONT QUILL (SYSTEM FONTS) --- */
+    /* --- TAMBAHAN FONT QUILL (SYSTEM FONTS & ARABIC) --- */
     .ql-snow .ql-picker.ql-font { width: 150px; }
     .ql-snow .ql-picker.ql-font .ql-picker-label::before,
     .ql-snow .ql-picker.ql-font .ql-picker-item::before {
@@ -727,6 +727,10 @@
     .ql-font span[data-value="times-new-roman"]::before { content: "Times New Roman" !important; font-family: "Times New Roman", serif; }
     .ql-font span[data-value="trebuchet-ms"]::before { content: "Trebuchet MS" !important; font-family: "Trebuchet MS", sans-serif; }
     .ql-font span[data-value="verdana"]::before { content: "Verdana" !important; font-family: "Verdana", sans-serif; }
+    .ql-font span[data-value="amiri"]::before { content: "Amiri (Arab)" !important; font-family: "Amiri", serif; font-size: 1.1rem; }
+    .ql-font span[data-value="scheherazade-new"]::before { content: "Scheherazade (Arab)" !important; font-family: "Scheherazade New", serif; font-size: 1.1rem; }
+    .ql-font span[data-value="poppins"]::before { content: "Poppins" !important; font-family: "Poppins", sans-serif; }
+    .ql-font span[data-value="inter"]::before { content: "Inter" !important; font-family: "Inter", sans-serif; }
 
     /* --- QUILL SIZE SETUP (NUMBERS) --- */
     .ql-snow .ql-picker.ql-size { width: 70px; }
@@ -815,14 +819,150 @@
       color: #111827;
     }
     
-    /* Responsive */
+    /* =========================================================
+       RESPONSIVE AUTO-LAYOUT UNTUK HP & TABLET
+       ========================================================= */
     @media (max-width: 768px) {
-      .app-container { flex-direction: column; }
-      .sidebar { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid #E5E7EB; margin-left: 0 !important; }
-      .sidebar-collapsed { display: none; }
-      .main-content { height: 60vh; }
-      .ql-editor { padding: 1rem; }
-      .desktop-container { justify-content: center; }
+      .app-container {
+        flex-direction: column !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+      }
+      
+      /* Sidebar Responsif HP */
+      .sidebar {
+        width: 100% !important;
+        height: 38vh !important;
+        max-height: 38vh !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(229, 231, 235, 0.5) !important;
+        flex-shrink: 0 !important;
+        margin-left: 0 !important;
+        z-index: 15 !important;
+      }
+      .sidebar.sidebar-collapsed {
+        display: none !important;
+      }
+      .sidebar-resizer {
+        display: none !important;
+      }
+
+      /* Main Editor Content Responsif HP */
+      .main-content {
+        height: 62vh !important;
+        flex-grow: 1 !important;
+        overflow: hidden !important;
+      }
+      #editor-wrapper {
+        height: 100% !important;
+      }
+
+      /* Quill Toolbar Responsif HP (Scroll Horizontal Mulus) */
+      .ql-toolbar.ql-snow {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 6px 8px !important;
+        gap: 3px !important;
+        scrollbar-width: none !important;
+        background: rgba(255, 255, 255, 0.88) !important;
+        backdrop-filter: blur(10px) !important;
+        border-bottom: 1px solid rgba(229, 231, 235, 0.6) !important;
+      }
+      .ql-toolbar.ql-snow::-webkit-scrollbar {
+        display: none !important;
+      }
+      .ql-toolbar.ql-snow .ql-formats {
+        margin-right: 4px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+        vertical-align: middle !important;
+      }
+      .ql-snow .ql-picker.ql-font { width: 105px !important; }
+      .ql-snow .ql-picker.ql-size { width: 62px !important; }
+      .ql-snow .ql-picker.ql-header { width: 85px !important; }
+
+      /* Editor Teks Responsif HP */
+      .ql-container.ql-snow {
+        font-size: 0.95rem !important;
+        zoom: 1 !important;
+      }
+      .ql-editor {
+        padding: 14px 14px 100px 14px !important;
+        font-size: 15px !important;
+        line-height: 1.65 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        max-width: 100% !important;
+      }
+      .ql-editor ol > li, 
+      .ql-editor ul > li {
+        padding-left: 1.8em !important;
+        margin-bottom: 0.35rem !important;
+        font-size: 0.95rem !important;
+        line-height: 1.55 !important;
+      }
+      .ql-editor ol > li::before {
+        width: 1.6em !important;
+        margin-left: -1.8em !important;
+        padding-right: 0.25em !important;
+        font-size: 0.92em !important;
+      }
+      .ql-editor ul > li::before {
+        width: 1.6em !important;
+        margin-left: -1.8em !important;
+      }
+      .ql-editor h1 { font-size: 1.4rem !important; line-height: 1.3 !important; }
+      .ql-editor h2 { font-size: 1.22rem !important; line-height: 1.35 !important; }
+      .ql-editor h3 { font-size: 1.08rem !important; line-height: 1.4 !important; }
+
+      /* Header Navigasi Responsif HP */
+      .editor-header {
+        padding: 8px 10px !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+      }
+      #editorTitle {
+        font-size: 1.05rem !important;
+        line-height: 1.3 !important;
+      }
+      .editor-header .breadcrumb {
+        font-size: 0.75rem !important;
+      }
+      #saveStatus {
+        padding: 2px 8px !important;
+        font-size: 0.72rem !important;
+      }
+
+      /* Desktop View Responsif HP */
+      .desktop-header {
+        padding: 10px 12px !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+      .desktop-container {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+        gap: 10px !important;
+        padding: 12px 10px !important;
+        max-height: calc(100vh - 110px) !important;
+        overflow-y: auto !important;
+      }
+      .desktop-icon-card {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 130px !important;
+        padding: 12px 8px !important;
+      }
+      .desktop-icon-card .icon-preview {
+        font-size: 2.3rem !important;
+        margin-bottom: 6px !important;
+      }
+      .desktop-icon-card .card-title {
+        font-size: 0.8rem !important;
+      }
     }
   </style>
 </head>
@@ -1205,6 +1345,33 @@
             <div id="iconGrid" class="d-flex flex-wrap gap-2">
               <!-- Icons will be injected by JS -->
             </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-muted mb-1"><i class="fa-solid fa-font me-1 text-primary"></i>FONT UTAMA HALAMAN INI (OPSIONAL)</label>
+            <select id="nodeFontFamily" class="form-select rounded-3 py-2">
+              <option value="">Default (Plus Jakarta Sans)</option>
+              <optgroup label="Font Umum & Latin">
+                <option value="plus-jakarta-sans">Plus Jakarta Sans (Standar Modern)</option>
+                <option value="arial">Arial</option>
+                <option value="times-new-roman">Times New Roman</option>
+                <option value="comic-sans-ms">Comic Sans MS</option>
+                <option value="georgia">Georgia</option>
+                <option value="tahoma">Tahoma</option>
+                <option value="verdana">Verdana</option>
+                <option value="courier-new">Courier New</option>
+                <option value="poppins">Poppins</option>
+                <option value="inter">Inter</option>
+                <option value="trebuchet-ms">Trebuchet MS</option>
+                <option value="impact">Impact</option>
+              </optgroup>
+              <optgroup label="Font Teks Arab (Kajian Kitab)">
+                <option value="amiri">Amiri (أميري - Tulisan Arab Indah)</option>
+                <option value="scheherazade-new">Scheherazade New (شهرزاد)</option>
+                <option value="traditional-arabic">Traditional Arabic</option>
+              </optgroup>
+            </select>
+            <small class="text-muted" style="font-size: 0.72rem;">Font ini hanya berlaku khusus untuk halaman materi ini tanpa mengubah halaman lain.</small>
           </div>
 
           <div class="mb-3">
@@ -2353,6 +2520,28 @@ var initialMockDB = [
     menu.style.left = x + 'px'; menu.style.top = y + 'px';
   }
 
+  window.getFontFamilyCss = function(fontKey) {
+    if (!fontKey) return '';
+    var map = {
+      'plus-jakarta-sans': "'Plus Jakarta Sans', sans-serif",
+      'arial': "Arial, Helvetica, sans-serif",
+      'times-new-roman': "'Times New Roman', Times, serif",
+      'comic-sans-ms': "'Comic Sans MS', 'Comic Sans', cursive",
+      'georgia': "Georgia, serif",
+      'tahoma': "Tahoma, Verdana, sans-serif",
+      'verdana': "Verdana, Geneva, sans-serif",
+      'courier-new': "'Courier New', Courier, monospace",
+      'poppins': "'Poppins', sans-serif",
+      'inter': "'Inter', sans-serif",
+      'trebuchet-ms': "'Trebuchet MS', sans-serif",
+      'impact': "Impact, Charcoal, sans-serif",
+      'amiri': "'Amiri', 'Traditional Arabic', serif",
+      'scheherazade-new': "'Scheherazade New', serif",
+      'traditional-arabic': "'Traditional Arabic', 'Amiri', serif"
+    };
+    return map[fontKey] || fontKey;
+  };
+
   function editNodePrompt(id) {
     var item = dbMateri.find(function(x) { return x.id == id; });
     if(item) {
@@ -2363,10 +2552,12 @@ var initialMockDB = [
       document.getElementById('nodeTitle').value = item.title;
       document.getElementById('nodeIcon').value = item.icon || '';
       document.getElementById('nodeBg').value = item.bg || '';
+      var fontSelect = document.getElementById('nodeFontFamily');
+      if (fontSelect) fontSelect.value = item.fontFamily || '';
       var bgInput = document.getElementById('nodeBgUrlInput'); if (bgInput) bgInput.value = item.bg || '';
       var applyGlobal = document.getElementById('nodeBgApplyGlobal'); if (applyGlobal) applyGlobal.checked = false;
       renderIconGrid(item.icon || '');
-      document.getElementById('modalTitle').innerText = 'Ganti Nama & Ikon Materi';
+      document.getElementById('modalTitle').innerText = 'Ganti Nama, Font & Ikon Materi';
       new bootstrap.Modal(document.getElementById('nodeModal')).show();
     }
   }
@@ -2404,6 +2595,14 @@ var initialMockDB = [
     quillEditor.root.innerHTML = item.content || '';
     quillEditor.enable();
     syncContinuousListCounters(quillEditor.root);
+    
+    // Terapkan font khusus halaman ini (jika ada) tanpa mengubah halaman lain
+    if (item.fontFamily) {
+      quillEditor.root.style.fontFamily = getFontFamilyCss(item.fontFamily);
+    } else {
+      quillEditor.root.style.fontFamily = '';
+    }
+
     // Apply per-page background if set, otherwise fallback to global
     if (item.bg) applyBackgroundFor(item.bg); else applyBackground();
   };
@@ -2498,6 +2697,8 @@ var initialMockDB = [
     document.getElementById('nodeParentId').value = parentId;
     document.getElementById('nodeLevel').value = level;
     document.getElementById('nodeIcon').value = '';
+    var fontSelect = document.getElementById('nodeFontFamily');
+    if (fontSelect) fontSelect.value = '';
     renderIconGrid('');
     document.getElementById('modalTitle').innerText = level == 0 ? 'Materi Baru' : 'Sub Materi Baru';
     new bootstrap.Modal(document.getElementById('nodeModal')).show();
@@ -2510,6 +2711,7 @@ var initialMockDB = [
       level: document.getElementById('nodeLevel').value,
       title: document.getElementById('nodeTitle').value,
       icon: document.getElementById('nodeIcon').value,
+      fontFamily: document.getElementById('nodeFontFamily') ? document.getElementById('nodeFontFamily').value : '',
       content: '',
       bg: document.getElementById('nodeBg').value || ''
     };
@@ -2530,8 +2732,11 @@ var initialMockDB = [
     if (isEdit) {
       var idx = dbMateri.findIndex(function(x) { return x.id == payload.id; });
       if (idx !== -1) dbMateri[idx] = newItem;
-      if (activeNodeId === payload.id) document.getElementById('editorTitle').innerText = payload.title;
-      if (activeNodeId === payload.id) applyBackgroundFor(payload.bg);
+      if (activeNodeId === payload.id) {
+        document.getElementById('editorTitle').innerText = payload.title;
+        applyBackgroundFor(payload.bg);
+        quillEditor.root.style.fontFamily = payload.fontFamily ? getFontFamilyCss(payload.fontFamily) : '';
+      }
     } else {
       dbMateri.push(newItem);
       if (payload.parentId && expandedNodes.indexOf(payload.parentId) === -1) {
@@ -3282,10 +3487,10 @@ function createJsonResponse(obj) {
   });
   Quill.register(ListResetAttributor, true);
 
-  // --- QUILL FONT SETUP (SYSTEM FONTS) ---
+  // --- QUILL FONT SETUP (SYSTEM FONTS, ARABIC & GOOGLE FONTS) ---
   var FontStyle = Quill.import('attributors/style/font');
   var fonts = [
-    'arial', 'comic-sans-ms', 'courier-new', 'georgia', 'impact', 'tahoma', 'times-new-roman', 'trebuchet-ms', 'verdana'
+    'arial', 'comic-sans-ms', 'courier-new', 'georgia', 'impact', 'tahoma', 'times-new-roman', 'trebuchet-ms', 'verdana', 'amiri', 'scheherazade-new', 'poppins', 'inter'
   ];
   FontStyle.whitelist = fonts;
   Quill.register(FontStyle, true);
