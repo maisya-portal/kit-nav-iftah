@@ -2400,7 +2400,7 @@ var initialMockDB = [
 
     document.getElementById('editorTitle').innerText = item.title;
     
-    document.getElementById('saveStatus').innerHTML = '<i class="fa-solid fa-check-circle text-success"></i> Tersimpan';
+    updateSaveStatus('saved_gas');
     quillEditor.root.innerHTML = item.content || '';
     quillEditor.enable();
     syncContinuousListCounters(quillEditor.root);
@@ -2624,6 +2624,39 @@ var initialMockDB = [
   };
 
   var gasSaveTimeout = null;
+
+  // --- INDIKATOR STATUS SIMPAN REAL-TIME (LOCAL & SPREADSHEET) ---
+  window.updateSaveStatus = function(state, extra) {
+    var statusEl = document.getElementById('saveStatus');
+    if (!statusEl) return;
+
+    if (state === 'typing') {
+      statusEl.innerHTML = '<i class="fa-solid fa-pen-nib text-primary fa-xs"></i> <span class="d-none d-sm-inline">Mengetik...</span>';
+      statusEl.className = "text-muted small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border";
+      statusEl.title = "Sedang mengetik...";
+    } else if (state === 'saving_local') {
+      statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-primary"></i> <span class="d-none d-sm-inline">Menyimpan...</span>';
+      statusEl.title = "Menyimpan ke memori lokal...";
+    } else if (state === 'saved_local') {
+      statusEl.innerHTML = '<i class="fa-solid fa-hard-drive text-secondary"></i> <span class="d-none d-sm-inline">Tersimpan Lokal</span>';
+      statusEl.className = "text-muted small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border";
+      statusEl.title = "Tersimpan di perangkat ini";
+    } else if (state === 'syncing_gas') {
+      statusEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-bounce text-primary"></i> <span class="d-none d-sm-inline text-primary">Ke Spreadsheet...</span>';
+      statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-primary-subtle";
+      statusEl.title = "Sedang menyinkronkan ke Google Spreadsheet...";
+    } else if (state === 'saved_gas') {
+      var timeStr = extra || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      statusEl.innerHTML = '<i class="fa-solid fa-table text-success"></i> <span class="text-success fw-bold">✓ Tersimpan di Sheet</span>';
+      statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-success";
+      statusEl.title = "Data tersimpan di Google Spreadsheet (" + timeStr + ")";
+    } else if (state === 'gas_offline') {
+      statusEl.innerHTML = '<i class="fa-solid fa-cloud-slash text-warning"></i> <span class="d-none d-sm-inline text-secondary">Tersimpan (Offline)</span>';
+      statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-warning-subtle";
+      statusEl.title = "Tersimpan lokal. Akan diunggah ke Spreadsheet saat online.";
+    }
+  };
+
   // --- AUTO SAVE LOGIC ---
   window.performAutoSave = function() {
     if (!activeNodeId) return;
@@ -2636,17 +2669,17 @@ var initialMockDB = [
     item.updatedAt = new Date().toISOString();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     
-    var statusEl = document.getElementById('saveStatus');
-    if (statusEl) {
-      statusEl.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i> Tersimpan';
-    }
+    var isAutoSync = (localStorage.getItem('kitnaf_gas_autosync') !== 'false');
+    var gasUrl = localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL;
 
-    // Auto-sync ke Google Spreadsheet jika diaktifkan
-    if (localStorage.getItem('kitnaf_gas_autosync') === 'true' && localStorage.getItem('kitnaf_gas_url')) {
+    if (isAutoSync && gasUrl) {
+      updateSaveStatus('syncing_gas');
       clearTimeout(gasSaveTimeout);
       gasSaveTimeout = setTimeout(function() {
         syncToSpreadsheet(true);
-      }, 2500);
+      }, 1500);
+    } else {
+      updateSaveStatus('saved_local');
     }
   }
 
@@ -3040,6 +3073,8 @@ function createJsonResponse(obj) {
     .then(function(res) { return res.json(); })
     .then(function(res) {
       isGasSyncing = false;
+      var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      updateSaveStatus('saved_gas', timeStr);
       if (!silent) {
         Swal.fire({
           icon: 'success',
@@ -3054,11 +3089,12 @@ function createJsonResponse(obj) {
     })
     .catch(function(err) {
       isGasSyncing = false;
+      updateSaveStatus('gas_offline');
       if (!silent) {
         Swal.fire({
-          icon: 'success',
-          title: 'Data Dikirim ke Spreadsheet',
-          text: 'Data telah dikirim ke Google Apps Script.',
+          icon: 'warning',
+          title: 'Mode Offline',
+          text: 'Data disimpan lokal di perangkat. Akan diunggah saat koneksi online.',
           toast: true,
           position: 'bottom-end',
           showConfirmButton: false,
@@ -3804,11 +3840,7 @@ function createJsonResponse(obj) {
     quillEditor.on('text-change', function(delta, oldDelta, source) {
       syncContinuousListCounters(quillEditor.root);
       if (source === 'user') {
-        var statusEl = document.getElementById('saveStatus');
-        if (statusEl) {
-          statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-primary"></i> Menyimpan...';
-        }
-        
+        updateSaveStatus('typing');
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(function() {
           window.performAutoSave();
