@@ -2767,14 +2767,14 @@ var initialMockDB = [
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('Data_Materi');
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
+    var sheet = ss.getSheetByName('Data_Materi');
     
     if (rawSheet) {
-      var rawVal = rawSheet.getRange('A1').getValue();
-      if (rawVal && rawVal.toString().trim() !== '') {
+      var rawJsonStr = readChunkedJson(rawSheet);
+      if (rawJsonStr && rawJsonStr.trim() !== '') {
         try {
-          var parsed = JSON.parse(rawVal);
+          var parsed = JSON.parse(rawJsonStr);
           if (Array.isArray(parsed) && parsed.length > 0) {
             return createJsonResponse({ status: 'success', data: parsed });
           }
@@ -2818,11 +2818,9 @@ function doPost(e) {
     
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     
-    // 1. Simpan Raw JSON Backup
+    // 1. Simpan Raw JSON Chunked
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup') || ss.insertSheet('Raw_JSON_Backup');
-    rawSheet.clearContents();
-    rawSheet.getRange('A1').setValue(JSON.stringify(data));
-    rawSheet.getRange('A2').setValue('Terakhir Disinkronkan: ' + new Date().toLocaleString('id-ID'));
+    writeChunkedJson(rawSheet, JSON.stringify(data));
     
     // 2. Simpan Data Tabel
     var sheet = ss.getSheetByName('Data_Materi') || ss.insertSheet('Data_Materi');
@@ -2836,6 +2834,9 @@ function doPost(e) {
       var rows = [];
       for (var i = 0; i < data.length; i++) {
         var item = data[i];
+        var cellContent = (item.content || '').toString();
+        if (cellContent.length > 45000) cellContent = cellContent.substring(0, 45000);
+        
         rows.push([
           item.id || Utilities.getUuid(),
           item.parentId || '',
@@ -2844,7 +2845,7 @@ function doPost(e) {
           item.icon || 'fa-book-open',
           item.bg || '',
           item.updatedAt || new Date().toISOString(),
-          item.content || ''
+          cellContent
         ]);
       }
       sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
@@ -2860,6 +2861,30 @@ function doPost(e) {
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
   }
+}
+
+function writeChunkedJson(sheet, jsonStr) {
+  sheet.clearContents();
+  var chunkSize = 45000;
+  var chunks = [];
+  for (var i = 0; i < jsonStr.length; i += chunkSize) {
+    chunks.push([jsonStr.substring(i, i + chunkSize)]);
+  }
+  if (chunks.length > 0) {
+    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
+  }
+}
+
+function readChunkedJson(sheet) {
+  if (!sheet) return null;
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 1) return null;
+  var values = sheet.getRange(1, 1, lastRow, 1).getValues();
+  var fullStr = '';
+  for (var i = 0; i < values.length; i++) {
+    fullStr += values[i][0].toString();
+  }
+  return fullStr;
 }
 
 function createJsonResponse(obj) {

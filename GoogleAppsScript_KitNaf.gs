@@ -5,36 +5,29 @@
  * 
  * Skrip ini digunakan untuk menghubungkan aplikasi Kit-Naf dengan Google Spreadsheet.
  * 
- * CARA MEMASANG:
- * 1. Buka Google Spreadsheet baru di Google Drive Anda.
- * 2. Beri judul spreadsheet Anda, misalnya: "Database Kit-Naf".
- * 3. Klik menu: Ekstensi (Extensions) > Apps Script.
- * 4. Hapus semua teks yang ada di editor Apps Script, lalu tempel (paste) seluruh kode ini.
- * 5. Klik ikon Simpan (Save) atau tekan Ctrl + S.
- * 6. Klik tombol "Deploy" (Terapkan) di pojok kanan atas > "New deployment" (Penerapan baru).
- * 7. Klik ikon gerigi (Select type) > pilih "Web app" (Aplikasi web).
- * 8. Isi konfigurasi:
- *    - Description : Database Kit-Naf
- *    - Execute as  : Me (email Anda)
- *    - Who has access : Anyone (Siapa saja)  <-- PENTING!
- * 9. Klik "Deploy", lalu klik "Authorize access" dan pilih akun Google Anda.
- *    (Jika muncul peringatan "Google hasn't verified this app", klik "Advanced" > "Go to ... (unsafe)").
- * 10. Salin "Web App URL" yang berakhiran "/exec", lalu tempel ke menu Pengaturan di Kit-Naf.
+ * CARA MEMASANG / MEMPERBARUI:
+ * 1. Buka Google Spreadsheet Anda.
+ * 2. Klik menu: Ekstensi (Extensions) > Apps Script.
+ * 3. Hapus semua teks yang ada di editor Apps Script, lalu tempel (paste) seluruh kode ini.
+ * 4. Klik ikon Simpan (Save) atau tekan Ctrl + S.
+ * 5. Klik tombol "Deploy" (Terapkan) > "Manage deployments" (Kelola penerapan).
+ * 6. Klik ikon pensil (Edit) di penerapan aktif Anda > pilih Version: "New version" (Versi baru).
+ * 7. Klik "Deploy".
  * =======================================================================
  */
 
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName('Data_Materi');
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
+    var sheet = ss.getSheetByName('Data_Materi');
     
-    // Prioritas 1: Ambil dari Raw JSON Backup jika ada
+    // Prioritas 1: Ambil dari Raw JSON Backup (Chunked)
     if (rawSheet) {
-      var rawVal = rawSheet.getRange('A1').getValue();
-      if (rawVal && rawVal.toString().trim() !== '') {
+      var rawJsonStr = readChunkedJson(rawSheet);
+      if (rawJsonStr && rawJsonStr.trim() !== '') {
         try {
-          var parsed = JSON.parse(rawVal);
+          var parsed = JSON.parse(rawJsonStr);
           if (Array.isArray(parsed) && parsed.length > 0) {
             return createJsonResponse({ status: 'success', data: parsed });
           }
@@ -52,12 +45,10 @@ function doGet(e) {
       return createJsonResponse({ status: 'success', data: [] });
     }
     
-    var headers = values[0];
     var list = [];
-    
     for (var i = 1; i < values.length; i++) {
       var row = values[i];
-      if (!row[0] && !row[3]) continue; // Lewati jika kosong
+      if (!row[0] && !row[3]) continue;
       
       list.push({
         id: row[0] ? row[0].toString() : Utilities.getUuid(),
@@ -93,14 +84,12 @@ function doPost(e) {
     
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     
-    // 1. Simpan Raw JSON ke Sheet Raw_JSON_Backup
+    // 1. Simpan Raw JSON Chunked ke Sheet Raw_JSON_Backup (Mendukung ukuran data besar tanpa batas 50rb karakter)
     var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
     if (!rawSheet) {
       rawSheet = ss.insertSheet('Raw_JSON_Backup');
     }
-    rawSheet.clearContents();
-    rawSheet.getRange('A1').setValue(JSON.stringify(data));
-    rawSheet.getRange('A2').setValue('Terakhir Disinkronkan: ' + new Date().toLocaleString('id-ID'));
+    writeChunkedJson(rawSheet, JSON.stringify(data));
     
     // 2. Simpan Data Terstruktur ke Sheet Data_Materi
     var sheet = ss.getSheetByName('Data_Materi');
@@ -118,6 +107,12 @@ function doPost(e) {
       var rows = [];
       for (var i = 0; i < data.length; i++) {
         var item = data[i];
+        // Batasi tiap sel tabel individual maks 45.000 karakter agar mematuhi batas Google Sheet
+        var cellContent = (item.content || '').toString();
+        if (cellContent.length > 45000) {
+          cellContent = cellContent.substring(0, 45000);
+        }
+        
         rows.push([
           item.id || Utilities.getUuid(),
           item.parentId || '',
@@ -126,7 +121,7 @@ function doPost(e) {
           item.icon || 'fa-book-open',
           item.bg || '',
           item.updatedAt || new Date().toISOString(),
-          item.content || ''
+          cellContent
         ]);
       }
       
@@ -143,6 +138,32 @@ function doPost(e) {
   } catch (error) {
     return createJsonResponse({ status: 'error', message: error.toString() });
   }
+}
+
+// Helper: Membagi JSON panjang ke dalam beberapa baris (tiap baris maks 45.000 karakter)
+function writeChunkedJson(sheet, jsonStr) {
+  sheet.clearContents();
+  var chunkSize = 45000;
+  var chunks = [];
+  for (var i = 0; i < jsonStr.length; i += chunkSize) {
+    chunks.push([jsonStr.substring(i, i + chunkSize)]);
+  }
+  if (chunks.length > 0) {
+    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
+  }
+}
+
+// Helper: Membaca kembali JSON panjang dari baris-baris terpecah
+function readChunkedJson(sheet) {
+  if (!sheet) return null;
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 1) return null;
+  var values = sheet.getRange(1, 1, lastRow, 1).getValues();
+  var fullStr = '';
+  for (var i = 0; i < values.length; i++) {
+    fullStr += values[i][0].toString();
+  }
+  return fullStr;
 }
 
 function createJsonResponse(obj) {
