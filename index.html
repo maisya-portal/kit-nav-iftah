@@ -1368,10 +1368,99 @@
           <input type="file" id="restoreFileInput" class="d-none" accept=".json" onchange="restoreData(event)">
         </div>
 
-        <button type="button" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-semibold" onclick="loadDefaultKajianData(true)">
-          <i class="fa-solid fa-book-quran me-1"></i> Muat Ulang Contoh Kitab Kajian (Ikhlas)
+        <button type="button" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-semibold mb-3" onclick="loadDefaultKajianData(true)">
+          <i class="fa-solid fa-book-quran me-1"></i> Muat Ulang Contoh Kitab Kajian
         </button>
 
+        <hr class="my-4 text-muted opacity-25">
+
+        <!-- Google Spreadsheet Cloud Database -->
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="small fw-bold text-muted mb-0"><i class="fa-solid fa-table text-success me-1"></i> DATABASE GOOGLE SPREADSHEET</h6>
+          <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none fw-bold" onclick="openGasGuideModal()">
+            <i class="fa-solid fa-circle-question me-1"></i>Panduan
+          </button>
+        </div>
+        <p class="small text-muted mb-2">Sinkronkan dan simpan semua catatan kajian Anda ke Google Spreadsheet di cloud.</p>
+        
+        <div class="mb-2">
+          <label class="form-label small fw-semibold text-secondary mb-1">URL Web App Google Apps Script:</label>
+          <div class="input-group input-group-sm">
+            <input type="url" id="gasEndpointUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+            <button class="btn btn-outline-secondary" type="button" onclick="testSpreadsheetConnection()" title="Uji Koneksi">
+              <i class="fa-solid fa-plug me-1"></i> Tes
+            </button>
+          </div>
+        </div>
+
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="gasAutoSyncSwitch" onchange="toggleGasAutoSync(event)">
+          <label class="form-check-label small fw-semibold text-dark" for="gasAutoSyncSwitch">
+            Otomatis simpan ke Spreadsheet saat mengedit materi
+          </label>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary btn-sm flex-fill fw-semibold" onclick="syncToSpreadsheet(false)">
+            <i class="fa-solid fa-cloud-arrow-up me-1"></i> Unggah ke Sheet
+          </button>
+          <button class="btn btn-outline-info btn-sm flex-fill fw-semibold" onclick="fetchFromSpreadsheet(true)">
+            <i class="fa-solid fa-cloud-arrow-down me-1"></i> Tarik dari Sheet
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Panduan Google Spreadsheet Database -->
+<div class="modal fade" id="gasGuideModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom pb-3">
+        <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-table text-success me-2"></i>Panduan Menghubungkan Google Spreadsheet</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+        <p class="text-muted small">Ikuti langkah mudah di bawah ini untuk menjadikan Google Spreadsheet pribadi Anda sebagai database cloud Kit-Naf:</p>
+        
+        <ol class="small text-secondary ps-3 mb-3 d-flex flex-column gap-2">
+          <li>
+            <b>Buat Google Spreadsheet baru:</b> Buka <a href="https://sheets.new" target="_blank" class="fw-bold text-primary">sheets.new</a> di browser Anda dan beri judul misalnya <code>Database Kit-Naf</code>.
+          </li>
+          <li>
+            <b>Buka Apps Script:</b> Pada menu spreadsheet di atas, klik <b>Ekstensi (Extensions) &gt; Apps Script</b>.
+          </li>
+          <li>
+            <b>Tempel Kode Skrip:</b> Hapus kode bawaan yang ada di editor Apps Script, lalu salin dan tempel kode skrip di bawah ini:
+            <div class="mt-2 position-relative">
+              <button class="btn btn-sm btn-primary position-absolute top-0 end-0 m-2 shadow-sm" onclick="copyGasScriptCode()">
+                <i class="fa-solid fa-copy me-1"></i> Salin Kode Skrip
+              </button>
+              <textarea id="gasScriptCodeBox" class="form-control font-monospace small bg-light text-dark p-3" rows="8" readonly style="font-size: 0.75rem;"></textarea>
+            </div>
+          </li>
+          <li>
+            <b>Deploy (Terapkan) sebagai Web App:</b>
+            <ul class="ps-3 mt-1">
+              <li>Klik tombol biru <b>Deploy (Terapkan) &gt; New deployment (Penerapan baru)</b> di kanan atas.</li>
+              <li>Klik ikon gerigi (Select type) &gt; pilih <b>Web app (Aplikasi web)</b>.</li>
+              <li>Atur <i>Who has access (Siapa yang memiliki akses)</i> menjadi <b>Anyone (Siapa saja)</b>.</li>
+              <li>Klik <b>Deploy</b>, lalu beri izin akun Google Anda (klik <i>Advanced &gt; Go to ... (unsafe)</i>).</li>
+            </ul>
+          </li>
+          <li>
+            <b>Salin URL Web App:</b> Salin URL yang berakhiran <code>/exec</code>, lalu tempelkan ke kolom <b>URL Web App Google Apps Script</b> di Pengaturan Kit-Naf.
+          </li>
+        </ol>
+        <div class="alert alert-success d-flex align-items-center small py-2 mb-0">
+          <i class="fa-solid fa-circle-check fa-lg me-2"></i>
+          <div>Setelah terhubung, seluruh data materi Anda akan tersimpan rapi per baris di Google Spreadsheet dan dapat diakses dari mana saja!</div>
+        </div>
+      </div>
+      <div class="modal-footer border-top pt-3">
+        <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Saya Mengerti</button>
       </div>
     </div>
   </div>
@@ -2534,6 +2623,7 @@ var initialMockDB = [
     Swal.fire({ icon:'success', title:'Dipindahkan', text:'Item dipindahkan ke bawah.', toast:true, position:'top-end', showConfirmButton:false, timer:1200 });
   };
 
+  var gasSaveTimeout = null;
   // --- AUTO SAVE LOGIC ---
   window.performAutoSave = function() {
     if (!activeNodeId) return;
@@ -2543,11 +2633,20 @@ var initialMockDB = [
     if (!item) return;
 
     item.content = htmlContent;
+    item.updatedAt = new Date().toISOString();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     
     var statusEl = document.getElementById('saveStatus');
     if (statusEl) {
       statusEl.innerHTML = '<i class="fa-solid fa-check-circle text-success"></i> Tersimpan';
+    }
+
+    // Auto-sync ke Google Spreadsheet jika diaktifkan
+    if (localStorage.getItem('kitnaf_gas_autosync') === 'true' && localStorage.getItem('kitnaf_gas_url')) {
+      clearTimeout(gasSaveTimeout);
+      gasSaveTimeout = setTimeout(function() {
+        syncToSpreadsheet(true);
+      }, 2500);
     }
   }
 
@@ -2655,6 +2754,302 @@ var initialMockDB = [
     };
     reader.readAsText(file);
     event.target.value = ''; 
+  };
+
+  // --- GOOGLE SPREADSHEET DATABASE INTEGRATION ---
+  var GAS_URL_KEY = 'kitnaf_gas_url';
+  var GAS_AUTOSYNC_KEY = 'kitnaf_gas_autosync';
+
+  var gasAppsScriptCode = `/**
+ * KIT-NAF (KITABAH-NAFIAH) - GOOGLE APPS SCRIPT DATABASE BACKEND
+ */
+
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Data_Materi');
+    var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
+    
+    if (rawSheet) {
+      var rawVal = rawSheet.getRange('A1').getValue();
+      if (rawVal && rawVal.toString().trim() !== '') {
+        try {
+          var parsed = JSON.parse(rawVal);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return createJsonResponse({ status: 'success', data: parsed });
+          }
+        } catch(err) {}
+      }
+    }
+    
+    if (!sheet) return createJsonResponse({ status: 'success', data: [] });
+    var values = sheet.getDataRange().getValues();
+    if (values.length <= 1) return createJsonResponse({ status: 'success', data: [] });
+    
+    var list = [];
+    for (var i = 1; i < values.length; i++) {
+      var row = values[i];
+      if (!row[0] && !row[3]) continue;
+      list.push({
+        id: row[0] ? row[0].toString() : Utilities.getUuid(),
+        parentId: row[1] ? row[1].toString() : '',
+        level: typeof row[2] === 'number' ? row[2] : (parseInt(row[2]) || 0),
+        title: row[3] ? row[3].toString() : 'Tanpa Judul',
+        icon: row[4] ? row[4].toString() : 'fa-book-open',
+        bg: row[5] ? row[5].toString() : '',
+        updatedAt: row[6] ? row[6].toString() : new Date().toISOString(),
+        content: row[7] ? row[7].toString() : ''
+      });
+    }
+    return createJsonResponse({ status: 'success', data: list });
+  } catch (error) {
+    return createJsonResponse({ status: 'error', message: error.toString() });
+  }
+}
+
+function doPost(e) {
+  try {
+    var contents = e.postData ? e.postData.contents : '';
+    if (!contents) return createJsonResponse({ status: 'error', message: 'Tidak ada data.' });
+    
+    var payload = JSON.parse(contents);
+    var data = payload.data || payload;
+    if (!Array.isArray(data)) return createJsonResponse({ status: 'error', message: 'Data bukan Array.' });
+    
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // 1. Simpan Raw JSON Backup
+    var rawSheet = ss.getSheetByName('Raw_JSON_Backup') || ss.insertSheet('Raw_JSON_Backup');
+    rawSheet.clearContents();
+    rawSheet.getRange('A1').setValue(JSON.stringify(data));
+    rawSheet.getRange('A2').setValue('Terakhir Disinkronkan: ' + new Date().toLocaleString('id-ID'));
+    
+    // 2. Simpan Data Tabel
+    var sheet = ss.getSheetByName('Data_Materi') || ss.insertSheet('Data_Materi');
+    sheet.clearContents();
+    
+    var headers = ['ID', 'Parent_ID', 'Level', 'Judul', 'Ikon', 'Background', 'Terakhir_Diperbarui', 'Isi_Materi_HTML'];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#4F46E5').setFontColor('#FFFFFF');
+    
+    if (data.length > 0) {
+      var rows = [];
+      for (var i = 0; i < data.length; i++) {
+        var item = data[i];
+        rows.push([
+          item.id || Utilities.getUuid(),
+          item.parentId || '',
+          typeof item.level === 'number' ? item.level : (parseInt(item.level) || 0),
+          item.title || '',
+          item.icon || 'fa-book-open',
+          item.bg || '',
+          item.updatedAt || new Date().toISOString(),
+          item.content || ''
+        ]);
+      }
+      sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+      sheet.autoResizeColumns(1, 7);
+    }
+    
+    return createJsonResponse({
+      status: 'success',
+      message: 'Berhasil menyimpan ' + data.length + ' materi ke Spreadsheet!',
+      totalItems: data.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    return createJsonResponse({ status: 'error', message: error.toString() });
+  }
+}
+
+function createJsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+  function initGasConfig() {
+    var savedUrl = localStorage.getItem(GAS_URL_KEY) || '';
+    var savedAutoSync = localStorage.getItem(GAS_AUTOSYNC_KEY) === 'true';
+    var urlInput = document.getElementById('gasEndpointUrl');
+    var switchInput = document.getElementById('gasAutoSyncSwitch');
+    if (urlInput) {
+      urlInput.value = savedUrl;
+      urlInput.addEventListener('input', function() {
+        localStorage.setItem(GAS_URL_KEY, urlInput.value.trim());
+      });
+    }
+    if (switchInput) switchInput.checked = savedAutoSync;
+
+    var scriptBox = document.getElementById('gasScriptCodeBox');
+    if (scriptBox) scriptBox.value = gasAppsScriptCode;
+  }
+
+  var bsGasGuideModal = null;
+  window.openGasGuideModal = function() {
+    var modalEl = document.getElementById('gasGuideModal');
+    if (!bsGasGuideModal) bsGasGuideModal = new bootstrap.Modal(modalEl);
+    var scriptBox = document.getElementById('gasScriptCodeBox');
+    if (scriptBox) scriptBox.value = gasAppsScriptCode;
+    bsGasGuideModal.show();
+  };
+
+  window.copyGasScriptCode = function() {
+    navigator.clipboard.writeText(gasAppsScriptCode).then(function() {
+      Swal.fire({ icon:'success', title:'Kode Disalin!', text:'Kode Google Apps Script berhasil disalin ke clipboard.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+    }).catch(function() {
+      var box = document.getElementById('gasScriptCodeBox');
+      if (box) { box.select(); document.execCommand('copy'); }
+      Swal.fire({ icon:'success', title:'Kode Disalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+    });
+  };
+
+  window.toggleGasAutoSync = function(e) {
+    var checked = e.target.checked;
+    localStorage.setItem(GAS_AUTOSYNC_KEY, checked ? 'true' : 'false');
+    if (checked) {
+      var url = localStorage.getItem(GAS_URL_KEY);
+      if (!url) {
+        Swal.fire('Info', 'Auto-Sync aktif, namun URL Spreadsheet belum diisi. Silakan masukkan URL Web App Google Apps Script.', 'info');
+      } else {
+        Swal.fire({ icon:'success', title:'Auto-Sync Aktif', text:'Perubahan materi akan otomatis tersimpan ke Google Spreadsheet.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2500 });
+      }
+    }
+  };
+
+  window.testSpreadsheetConnection = function() {
+    var url = (document.getElementById('gasEndpointUrl') ? document.getElementById('gasEndpointUrl').value : localStorage.getItem(GAS_URL_KEY) || '').trim();
+    if (!url) {
+      Swal.fire('Perhatian', 'Silakan masukkan URL Web App Google Apps Script terlebih dahulu.', 'warning');
+      return;
+    }
+    localStorage.setItem(GAS_URL_KEY, url);
+
+    Swal.fire({
+      title: 'Menguji Koneksi...',
+      text: 'Menghubungi Google Spreadsheet...',
+      allowOutsideClick: false,
+      didOpen: function() { Swal.showLoading(); }
+    });
+
+    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        if (res && res.status === 'success') {
+          var count = Array.isArray(res.data) ? res.data.length : 0;
+          Swal.fire({
+            icon: 'success',
+            title: 'Koneksi Berhasil!',
+            text: 'Google Spreadsheet terhubung dengan sukses. Total catatan di sheet: ' + count + ' materi.'
+          });
+        } else {
+          Swal.fire('Koneksi Terhubung', res.message || 'Respon diterima dari Google Apps Script.', 'info');
+        }
+      })
+      .catch(function(err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menghubungi Spreadsheet',
+          html: '<p class="small text-muted text-start mb-2">Pastikan pengaturan deployment Web App disetel ke <b>"Who has access: Anyone (Siapa saja)"</b>.</p><code class="small text-danger">' + err.message + '</code>'
+        });
+      });
+  };
+
+  var isGasSyncing = false;
+  window.syncToSpreadsheet = function(silent) {
+    var url = (localStorage.getItem(GAS_URL_KEY) || (document.getElementById('gasEndpointUrl') ? document.getElementById('gasEndpointUrl').value : '') || '').trim();
+    if (!url) {
+      if (!silent) Swal.fire('Perhatian', 'URL Google Spreadsheet belum disetel. Masukkan URL Web App di menu Pengaturan.', 'warning');
+      return;
+    }
+
+    if (!silent) {
+      Swal.fire({
+        title: 'Menyimpan ke Spreadsheet...',
+        text: 'Mengunggah seluruh data kajian ke Google Sheet...',
+        allowOutsideClick: false,
+        didOpen: function() { Swal.showLoading(); }
+      });
+    }
+
+    isGasSyncing = true;
+    var payload = JSON.stringify({
+      action: 'save',
+      data: dbMateri,
+      timestamp: new Date().toISOString()
+    });
+
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(res) {
+      isGasSyncing = false;
+      if (!silent) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Tersimpan di Spreadsheet!',
+          text: 'Berhasil menyimpan ' + (res.totalItems || dbMateri.length) + ' materi ke Google Sheet.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 3000
+        });
+      }
+    })
+    .catch(function(err) {
+      isGasSyncing = false;
+      if (!silent) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Data Dikirim ke Spreadsheet',
+          text: 'Data telah dikirim ke Google Apps Script.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 3000
+        });
+      }
+    });
+  };
+
+  window.fetchFromSpreadsheet = function(showToast) {
+    var url = (localStorage.getItem(GAS_URL_KEY) || (document.getElementById('gasEndpointUrl') ? document.getElementById('gasEndpointUrl').value : '') || '').trim();
+    if (!url) {
+      Swal.fire('Perhatian', 'URL Google Spreadsheet belum disetel. Masukkan URL Web App di menu Pengaturan.', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Menarik Data...',
+      text: 'Mengambil data materi terbaru dari Google Spreadsheet...',
+      allowOutsideClick: false,
+      didOpen: function() { Swal.showLoading(); }
+    });
+
+    fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
+      .then(function(res) { return res.json(); })
+      .then(function(res) {
+        if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+          dbMateri = res.data;
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+          showDesktop();
+          Swal.fire({
+            icon: 'success',
+            title: 'Data Berhasil Dimuat!',
+            text: 'Berhasil menarik ' + res.data.length + ' materi dari Google Spreadsheet.'
+          });
+        } else {
+          Swal.fire('Info', 'Tidak ada data materi yang ditemukan di Google Spreadsheet ini.', 'info');
+        }
+      })
+      .catch(function(err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menarik Data',
+          text: 'Gagal menghubungi Google Apps Script: ' + err.message
+        });
+      });
   };
 
   // Node background helpers: apply URL from modal, clear, and file upload
@@ -3057,6 +3452,7 @@ var initialMockDB = [
     
     initBackground(); 
     initAppearance(); 
+    initGasConfig(); 
 
     var blurSlider = document.getElementById('blurSlider');
     if (blurSlider) {
