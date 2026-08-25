@@ -2675,6 +2675,8 @@ var initialMockDB = [
       });
   }
 
+  var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzaW4BYXGh8VXDC1BIhCoaPh-Q6mkox0eShx4vd59nR1x6RNXk9GgIVngJpCSLe60Z-/exec';
+
   function fetchData() {
     var savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedData) {
@@ -2695,6 +2697,25 @@ var initialMockDB = [
       // First visit: seed with starter study
       loadDefaultKajianData(false);
       showDesktop();
+    }
+
+    // Background Auto Cloud Sync dari Google Spreadsheet (HP & Laptop selalu sinkron otomatis)
+    var gasUrl = localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL;
+    if (gasUrl && navigator.onLine) {
+      fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
+          if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
+            dbMateri = res.data;
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+            if (!activeNodeId) {
+              showDesktop();
+            }
+          }
+        })
+        .catch(function(err) {
+          console.log('[Kit-Naf Cloud Sync] Menggunakan data offline lokal');
+        });
     }
   }
 
@@ -2892,8 +2913,17 @@ function createJsonResponse(obj) {
 }`;
 
   function initGasConfig() {
-    var savedUrl = localStorage.getItem(GAS_URL_KEY) || '';
-    var savedAutoSync = localStorage.getItem(GAS_AUTOSYNC_KEY) === 'true';
+    var savedUrl = localStorage.getItem(GAS_URL_KEY);
+    if (!savedUrl) {
+      savedUrl = DEFAULT_GAS_URL;
+      localStorage.setItem(GAS_URL_KEY, DEFAULT_GAS_URL);
+    }
+    var savedAutoSyncVal = localStorage.getItem(GAS_AUTOSYNC_KEY);
+    var savedAutoSync = (savedAutoSyncVal === null) ? true : (savedAutoSyncVal === 'true');
+    if (savedAutoSyncVal === null) {
+      localStorage.setItem(GAS_AUTOSYNC_KEY, 'true');
+    }
+
     var urlInput = document.getElementById('gasEndpointUrl');
     var switchInput = document.getElementById('gasAutoSyncSwitch');
     if (urlInput) {
