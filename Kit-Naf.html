@@ -28,6 +28,8 @@
       --primary: #4F46E5;
       --primary-light: #EEF2FF;
       --sidebar-width: 320px;
+      --sidebar-zoom: 1;
+      --editor-zoom: 1;
       --glass-blur: 15px;
       --glass-opacity: 0.85;
       --header-opacity: 0.65;
@@ -210,6 +212,7 @@
       flex-grow: 1;
       overflow-y: auto;
       padding: 0.5rem;
+      zoom: var(--sidebar-zoom);
     }
     .tree-item {
       padding: 6px 8px;
@@ -266,6 +269,28 @@
       overflow-y: auto;
       font-family: inherit;
       font-size: 1rem;
+      zoom: var(--editor-zoom);
+    }
+    
+    /* Floating Zoom Toast */
+    #zoomFloatingToast {
+      position: fixed;
+      top: 75px;
+      right: 25px;
+      z-index: 9999;
+      background: rgba(17, 24, 39, 0.9);
+      color: #fff;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
     }
     .ql-editor {
       padding: 1.5rem 1.5rem; /* Jarak teks ke tepi diperkecil (~1.5 cm) */
@@ -393,6 +418,9 @@
 <!-- Background Image -->
 <div id="appBackground"></div>
 
+<!-- Floating Zoom Toast Indicator -->
+<div id="zoomFloatingToast"><i class="fa-solid fa-magnifying-glass me-1"></i> Zoom: 100%</div>
+
 <!-- ==========================================
      1. DESKTOP VIEW
      ========================================== -->
@@ -445,8 +473,14 @@
       <button class="btn btn-sm btn-light rounded-pill px-3 shadow-sm border-0" onclick="showDesktop()" title="Kembali ke Beranda">
         <i class="fa-solid fa-arrow-left"></i>
       </button>
-      <div class="flex-grow-1 text-center">
+      <div class="flex-grow-1 text-center d-flex align-items-center justify-content-center gap-2">
         <span class="fw-bold small text-uppercase text-white" style="letter-spacing: 1px;">Kit-Naf</span>
+        <!-- Zoom Sidebar Controller -->
+        <div class="d-flex align-items-center bg-black bg-opacity-25 rounded-pill px-2 py-0 border border-white border-opacity-10" title="Zoom Menu Sidebar (Ctrl + Scroll Mouse di Sidebar)">
+          <button class="btn btn-sm btn-link p-0 text-white-50 text-decoration-none px-1" onclick="changeSidebarZoom(-10)" title="Perkecil Teks Sidebar"><i class="fa-solid fa-minus fa-xs"></i></button>
+          <span id="sidebarZoomBadge" class="mx-1 small fw-bold text-white user-select-none" style="font-size: 0.7rem; min-width: 32px; text-align: center; cursor: pointer;" onclick="resetSidebarZoom()" title="Klik untuk reset zoom sidebar ke 100%">100%</span>
+          <button class="btn btn-sm btn-link p-0 text-white-50 text-decoration-none px-1" onclick="changeSidebarZoom(10)" title="Perbesar Teks Sidebar"><i class="fa-solid fa-plus fa-xs"></i></button>
+        </div>
       </div>
       <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" onclick="if(window.activeRootId) openNodeModal(window.activeRootId, 1)" title="Tambah Sub Materi">
         <i class="fa-solid fa-plus"></i>
@@ -492,6 +526,12 @@
           <button class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm btn-pwa-install d-none" onclick="installPWA()" title="Pasang Aplikasi">
             <i class="fa-solid fa-download me-1"></i> <span class="d-none d-md-inline">Pasang App</span>
           </button>
+          <!-- Zoom Isi Catatan (Editor Zoom) -->
+          <div class="d-flex align-items-center bg-white rounded-pill px-2 py-1 shadow-sm border me-1" title="Zoom Isi Catatan (Ctrl + Scroll Mouse di halaman isi)">
+            <button class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeEditorZoom(-10)" title="Perkecil Isi Catatan (Ctrl -)"><i class="fa-solid fa-minus fa-xs"></i></button>
+            <span id="editorZoomBadge" class="mx-1 small fw-bold text-dark user-select-none" style="font-size: 0.75rem; min-width: 36px; text-align: center; cursor: pointer;" onclick="resetEditorZoom()" title="Klik untuk reset zoom isi ke 100%">100%</span>
+            <button class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeEditorZoom(10)" title="Perbesar Isi Catatan (Ctrl +)"><i class="fa-solid fa-plus fa-xs"></i></button>
+          </div>
           <!-- Indikator Auto Save -->
           <div id="saveStatus" class="text-muted small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border">
             <i class="fa-solid fa-check-circle text-success"></i> Tersimpan
@@ -648,6 +688,45 @@
             <span class="small text-primary fw-bold" id="opacityValLabel">85%</span>
           </div>
           <input type="range" class="form-range" id="opacitySlider" min="20" max="100" value="85">
+        </div>
+
+        <hr class="my-3 text-muted opacity-25">
+        
+        <!-- PENGATURAN ZOOM TERPISAH -->
+        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-magnifying-glass me-1 text-primary"></i> PENGATURAN ZOOM TERPISAH</h6>
+
+        <!-- Zoom Sidebar -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-muted mb-0"><i class="fa-solid fa-folder-tree text-secondary me-1"></i> Zoom Menu Sidebar</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-primary fw-bold" id="sidebarZoomValLabel">100%</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetSidebarZoom()">Reset</button>
+            </div>
+          </div>
+          <input type="range" class="form-range" id="sidebarZoomSlider" min="60" max="180" value="100">
+          <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+            <span>60%</span>
+            <span>100% (Normal)</span>
+            <span>180%</span>
+          </div>
+        </div>
+
+        <!-- Zoom Editor -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-muted mb-0"><i class="fa-solid fa-file-lines text-secondary me-1"></i> Zoom Isi Catatan (Editor)</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-primary fw-bold" id="editorZoomValLabel">100%</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetEditorZoom()">Reset</button>
+            </div>
+          </div>
+          <input type="range" class="form-range" id="editorZoomSlider" min="50" max="250" value="100">
+          <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+            <span>50%</span>
+            <span>100% (Normal)</span>
+            <span>250%</span>
+          </div>
         </div>
 
         <!-- Custom Sidebar Color -->
@@ -936,13 +1015,60 @@
     }
   }
 
-  // --- APPEARANCE LOGIC (BLUR & OPACITY) ---
+  // --- APPEARANCE & SEPARATE ZOOM LOGIC ---
   var currentBlur = 15;
   var currentOpacity = 85;
   var currentSidebarBg = '#111827';
   var currentSidebarWidth = 320;
   var currentSidebarText = '#E5E7EB';
   var currentEditorText = '#1F2937';
+  var currentSidebarZoom = 100; // Persen (60% - 180%)
+  var currentEditorZoom = 100;  // Persen (50% - 250%)
+
+  // Zoom Toast Helper
+  var zoomToastTimeout = null;
+  function showZoomToast(text, iconClass) {
+    var toastEl = document.getElementById('zoomFloatingToast');
+    if (!toastEl) return;
+    var icon = iconClass || 'fa-magnifying-glass';
+    toastEl.innerHTML = '<i class="fa-solid ' + icon + ' me-1 text-warning"></i> ' + text;
+    toastEl.style.opacity = '1';
+    toastEl.style.transform = 'translateY(0)';
+    clearTimeout(zoomToastTimeout);
+    zoomToastTimeout = setTimeout(function() {
+      toastEl.style.opacity = '0';
+      toastEl.style.transform = 'translateY(-8px)';
+    }, 1200);
+  }
+
+  // --- SEPARATE ZOOM FUNCTIONS ---
+  window.changeSidebarZoom = function(delta) {
+    currentSidebarZoom = Math.min(180, Math.max(60, currentSidebarZoom + delta));
+    localStorage.setItem('catatanku_sidebar_zoom', currentSidebarZoom);
+    applyAppearance();
+    showZoomToast('Zoom Sidebar: ' + currentSidebarZoom + '%', 'fa-folder-tree');
+  };
+
+  window.resetSidebarZoom = function() {
+    currentSidebarZoom = 100;
+    localStorage.setItem('catatanku_sidebar_zoom', currentSidebarZoom);
+    applyAppearance();
+    showZoomToast('Zoom Sidebar direset: 100%', 'fa-folder-tree');
+  };
+
+  window.changeEditorZoom = function(delta) {
+    currentEditorZoom = Math.min(250, Math.max(50, currentEditorZoom + delta));
+    localStorage.setItem('catatanku_editor_zoom', currentEditorZoom);
+    applyAppearance();
+    showZoomToast('Zoom Isi Catatan: ' + currentEditorZoom + '%', 'fa-file-lines');
+  };
+
+  window.resetEditorZoom = function() {
+    currentEditorZoom = 100;
+    localStorage.setItem('catatanku_editor_zoom', currentEditorZoom);
+    applyAppearance();
+    showZoomToast('Zoom Isi Catatan direset: 100%', 'fa-file-lines');
+  };
 
   function initAppearance() {
     var savedBlur = localStorage.getItem('catatanku_blur');
@@ -951,6 +1077,8 @@
     var savedSidebarWidth = localStorage.getItem('catatanku_sidebar_width');
     var savedSidebarText = localStorage.getItem('catatanku_sidebar_text');
     var savedEditorText = localStorage.getItem('catatanku_editor_text');
+    var savedSidebarZoom = localStorage.getItem('catatanku_sidebar_zoom');
+    var savedEditorZoom = localStorage.getItem('catatanku_editor_zoom');
     
     if (savedBlur !== null) currentBlur = parseInt(savedBlur);
     if (savedOpacity !== null) currentOpacity = parseInt(savedOpacity);
@@ -958,6 +1086,8 @@
     if (savedSidebarWidth !== null) currentSidebarWidth = parseInt(savedSidebarWidth);
     if (savedSidebarText !== null) currentSidebarText = savedSidebarText;
     if (savedEditorText !== null) currentEditorText = savedEditorText;
+    if (savedSidebarZoom !== null) currentSidebarZoom = parseInt(savedSidebarZoom);
+    if (savedEditorZoom !== null) currentEditorZoom = parseInt(savedEditorZoom);
     
     applyAppearance();
   }
@@ -970,23 +1100,38 @@
     document.documentElement.style.setProperty('--sidebar-width', currentSidebarWidth + 'px');
     document.documentElement.style.setProperty('--sidebar-text', currentSidebarText);
     document.documentElement.style.setProperty('--editor-text', currentEditorText);
+    document.documentElement.style.setProperty('--sidebar-zoom', (currentSidebarZoom / 100));
+    document.documentElement.style.setProperty('--editor-zoom', (currentEditorZoom / 100));
     
     var blurSlider = document.getElementById('blurSlider');
     var opacitySlider = document.getElementById('opacitySlider');
     var sidebarColorPicker = document.getElementById('sidebarColorPicker');
     var sidebarTextColorPicker = document.getElementById('sidebarTextColorPicker');
     var editorTextColorPicker = document.getElementById('editorTextColorPicker');
+    var sidebarZoomSlider = document.getElementById('sidebarZoomSlider');
+    var editorZoomSlider = document.getElementById('editorZoomSlider');
     
     if (blurSlider) blurSlider.value = currentBlur;
     if (opacitySlider) opacitySlider.value = currentOpacity;
     if (sidebarColorPicker) sidebarColorPicker.value = currentSidebarBg;
     if (sidebarTextColorPicker) sidebarTextColorPicker.value = currentSidebarText;
     if (editorTextColorPicker) editorTextColorPicker.value = currentEditorText;
+    if (sidebarZoomSlider) sidebarZoomSlider.value = currentSidebarZoom;
+    if (editorZoomSlider) editorZoomSlider.value = currentEditorZoom;
     
     var blurLbl = document.getElementById('blurValLabel');
     var opLbl = document.getElementById('opacityValLabel');
+    var sidebarZoomLbl = document.getElementById('sidebarZoomValLabel');
+    var editorZoomLbl = document.getElementById('editorZoomValLabel');
+    var sidebarZoomBadge = document.getElementById('sidebarZoomBadge');
+    var editorZoomBadge = document.getElementById('editorZoomBadge');
+    
     if (blurLbl) blurLbl.innerText = currentBlur + 'px';
     if (opLbl) opLbl.innerText = currentOpacity + '%';
+    if (sidebarZoomLbl) sidebarZoomLbl.innerText = currentSidebarZoom + '%';
+    if (editorZoomLbl) editorZoomLbl.innerText = currentEditorZoom + '%';
+    if (sidebarZoomBadge) sidebarZoomBadge.innerText = currentSidebarZoom + '%';
+    if (editorZoomBadge) editorZoomBadge.innerText = currentEditorZoom + '%';
   }
 
   window.openSettingsModal = function() {
@@ -1707,6 +1852,53 @@
         localStorage.setItem('catatanku_editor_text', currentEditorText);
         applyAppearance();
       });
+    }
+
+    var sidebarZoomSlider = document.getElementById('sidebarZoomSlider');
+    if (sidebarZoomSlider) {
+      sidebarZoomSlider.addEventListener('input', function(e) {
+        currentSidebarZoom = parseInt(e.target.value);
+        localStorage.setItem('catatanku_sidebar_zoom', currentSidebarZoom);
+        applyAppearance();
+      });
+    }
+
+    var editorZoomSlider = document.getElementById('editorZoomSlider');
+    if (editorZoomSlider) {
+      editorZoomSlider.addEventListener('input', function(e) {
+        currentEditorZoom = parseInt(e.target.value);
+        localStorage.setItem('catatanku_editor_zoom', currentEditorZoom);
+        applyAppearance();
+      });
+    }
+
+    // --- INTERACTIVE CTRL + WHEEL ZOOM (SEPARATED FOR SIDEBAR & EDITOR) ---
+    var sidebarEl = document.getElementById('explorerSidebar');
+    if (sidebarEl) {
+      sidebarEl.addEventListener('wheel', function(e) {
+        if (e.ctrlKey) {
+          e.preventDefault();
+          if (e.deltaY < 0) {
+            changeSidebarZoom(5);
+          } else if (e.deltaY > 0) {
+            changeSidebarZoom(-5);
+          }
+        }
+      }, { passive: false });
+    }
+
+    var editorWrapperEl = document.querySelector('.main-content');
+    if (editorWrapperEl) {
+      editorWrapperEl.addEventListener('wheel', function(e) {
+        if (e.ctrlKey) {
+          e.preventDefault();
+          if (e.deltaY < 0) {
+            changeEditorZoom(5);
+          } else if (e.deltaY > 0) {
+            changeEditorZoom(-5);
+          }
+        }
+      }, { passive: false });
     }
 
     quillEditor = new Quill('#quillEditor', {
