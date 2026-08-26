@@ -316,11 +316,22 @@
       backdrop-filter: blur(8px);
       border: 1px solid rgba(255,255,255,0.15);
     }
+    :root {
+      --editor-margin-shift: 0px;
+      --note-margin-shift: 0px;
+    }
     .ql-editor {
       padding: 1.5rem 1.5rem; /* Jarak teks ke tepi diperkecil (~1.5 cm) */
       max-width: 100%; /* Membiarkan teks melebar penuh */
       margin: 0 auto;
       color: var(--editor-text);
+      transition: padding-left 0.15s ease;
+    }
+    #quillEditor .ql-editor {
+      padding-left: calc(1.5rem + var(--editor-margin-shift, 0px)) !important;
+    }
+    #noteQuillEditor .ql-editor {
+      padding-left: calc(1.5rem + var(--note-margin-shift, 0px)) !important;
     }
 
     /* =========================================================
@@ -1435,6 +1446,12 @@
             <span id="editorZoomBadge" class="mx-1 small fw-bold text-dark user-select-none" style="font-size: 0.75rem; min-width: 36px; text-align: center; cursor: pointer;" onclick="resetEditorZoom()" title="Klik untuk reset zoom isi ke 100%">100%</span>
             <button class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeEditorZoom(10)" title="Perbesar Isi Catatan (Ctrl +)"><i class="fa-solid fa-plus fa-xs"></i></button>
           </div>
+          <!-- Geser Posisi Teks Editor (Kiri / Kanan) -->
+          <div class="d-flex align-items-center bg-white rounded-pill px-2 py-1 shadow-sm border me-1" title="Geser Seluruh Teks ke Kiri atau Kanan (Ctrl+Alt+← / Ctrl+Alt+→)">
+            <button class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeEditorMarginShift(-10)" title="Geser Teks ke Kiri"><i class="fa-solid fa-arrow-left fa-xs"></i></button>
+            <span id="editorMarginBadge" class="mx-1 small fw-bold text-dark user-select-none" style="font-size: 0.75rem; min-width: 36px; text-align: center; cursor: pointer;" onclick="resetEditorMarginShift()" title="Klik untuk reset posisi teks (0px)">0px</span>
+            <button class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeEditorMarginShift(10)" title="Geser Teks ke Kanan"><i class="fa-solid fa-arrow-right fa-xs"></i></button>
+          </div>
           <!-- Indikator Auto Save -->
           <div id="saveStatus" class="text-muted small fw-semibold d-flex align-items-center gap-2 me-1 bg-white px-3 py-1 rounded-pill shadow-sm border">
             <i class="fa-solid fa-check-circle text-success"></i> Tersimpan
@@ -1667,6 +1684,18 @@
       <span class="color-dot cursor-pointer rounded-circle" style="width:16px;height:16px;background:#bfdbfe;border:1px solid #3b82f6;display:inline-block;" onclick="handleCtxHighlight('#bfdbfe')" title="Biru"></span>
       <span class="color-dot cursor-pointer rounded-circle" style="width:16px;height:16px;background:#fbcfe8;border:1px solid #ec4899;display:inline-block;" onclick="handleCtxHighlight('#fbcfe8')" title="Merah Muda"></span>
       <button class="btn btn-sm btn-link p-0 text-muted text-decoration-none ms-1" onclick="handleCtxHighlight(false)" title="Hapus Warna Sorot"><i class="fa-solid fa-ban fa-xs"></i></button>
+    </div>
+  </div>
+
+  <div class="dropdown-divider my-1"></div>
+
+  <!-- Geser Posisi Teks Kiri / Kanan -->
+  <div class="px-3 py-1 small fw-bold text-muted d-flex align-items-center justify-content-between">
+    <span><i class="fa-solid fa-arrows-left-right me-1 text-primary"></i> Geser Posisi Teks:</span>
+    <div class="d-flex gap-1 align-items-center">
+      <button type="button" class="btn btn-sm btn-light border py-0 px-2 rounded" onclick="changeEditorMarginShift(-10)" title="Geser Teks ke Kiri"><i class="fa-solid fa-arrow-left fa-xs"></i></button>
+      <span id="ctxMarginBadge" class="small fw-bold text-dark px-1">0px</span>
+      <button type="button" class="btn btn-sm btn-light border py-0 px-2 rounded" onclick="changeEditorMarginShift(10)" title="Geser Teks ke Kanan"><i class="fa-solid fa-arrow-right fa-xs"></i></button>
     </div>
   </div>
 
@@ -1909,6 +1938,45 @@
           </div>
         </div>
 
+        <hr class="my-3 text-muted opacity-25">
+        
+        <!-- PENGATURAN GESER POSISI TEKS (MARGIN KIRI/KANAN) -->
+        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-arrows-left-right me-1 text-primary"></i> PENGATURAN GESER POSISI TEKS (KIRI ↔ KANAN)</h6>
+
+        <!-- Geser Teks Editor Utama -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-muted mb-0"><i class="fa-solid fa-file-lines text-secondary me-1"></i> Posisi Teks Editor Utama</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-primary fw-bold" id="settingsEditorMarginLabel">0px</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetEditorMarginShift()">Reset (0px)</button>
+            </div>
+          </div>
+          <input type="range" class="form-range" id="settingsEditorMarginSlider" min="0" max="150" step="5" value="0" oninput="setEditorMarginShift(parseInt(this.value))">
+          <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+            <span>0px (Rata Tepi)</span>
+            <span>75px (Sedang)</span>
+            <span>150px (Lebar)</span>
+          </div>
+        </div>
+
+        <!-- Geser Teks Catatan Tambahan -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-bold text-muted mb-0"><i class="fa-solid fa-note-sticky text-secondary me-1"></i> Posisi Teks Catatan Tambahan</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-primary fw-bold" id="settingsNoteMarginLabel">0px</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetNoteMarginShift()">Reset (0px)</button>
+            </div>
+          </div>
+          <input type="range" class="form-range" id="settingsNoteMarginSlider" min="0" max="150" step="5" value="0" oninput="setNoteMarginShift(parseInt(this.value))">
+          <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+            <span>0px (Rata Tepi)</span>
+            <span>75px (Sedang)</span>
+            <span>150px (Lebar)</span>
+          </div>
+        </div>
+
         <!-- Custom Sidebar Color -->
         <div class="mb-3 d-flex align-items-center justify-content-between">
           <label class="form-label small fw-bold text-muted mb-0">Warna Background Sidebar:</label>
@@ -2077,6 +2145,12 @@
       <div class="modal-header border-0 pb-0" style="cursor: move;" id="noteEditorHeader">
         <h5 class="modal-title fw-bold text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif;"><i class="fa-solid fa-note-sticky text-warning me-2"></i>Edit Catatan Teks</h5>
         <div class="d-flex align-items-center gap-2">
+            <!-- Geser Posisi Teks Catatan (Kiri / Kanan) -->
+            <div class="d-flex align-items-center bg-white rounded-pill px-2 py-1 shadow-sm border" title="Geser Seluruh Teks Catatan ke Kiri atau Kanan">
+              <button type="button" class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeNoteMarginShift(-10)" title="Geser Teks Catatan ke Kiri"><i class="fa-solid fa-arrow-left fa-xs"></i></button>
+              <span id="noteMarginBadge" class="mx-1 small fw-bold text-dark user-select-none" style="font-size: 0.75rem; min-width: 36px; text-align: center; cursor: pointer;" onclick="resetNoteMarginShift()" title="Klik untuk reset posisi teks catatan (0px)">0px</span>
+              <button type="button" class="btn btn-sm btn-link p-0 text-secondary text-decoration-none px-1" onclick="changeNoteMarginShift(10)" title="Geser Teks Catatan ke Kanan"><i class="fa-solid fa-arrow-right fa-xs"></i></button>
+            </div>
             <button type="button" class="btn btn-sm btn-light border shadow-sm" onclick="toggleNoteModalFullscreen()" title="Perbesar Layar">
                 <i class="fa-solid fa-expand text-primary" id="noteFullscreenIcon"></i>
             </button>
@@ -3131,6 +3205,8 @@ var initialMockDB = [
   var currentEditorText = '#1F2937';
   var currentSidebarZoom = 100; // Persen (60% - 180%)
   var currentEditorZoom = 100;  // Persen (50% - 250%)
+  var currentEditorMarginShift = 0; // px (0 - 200px)
+  var currentNoteMarginShift = 0;   // px (0 - 200px)
 
   // Zoom Toast Helper
   var zoomToastTimeout = null;
@@ -3177,6 +3253,49 @@ var initialMockDB = [
     showZoomToast('Zoom Isi Catatan direset: 100%', 'fa-file-lines');
   };
 
+  // --- PENGATURAN GESER TEKS (MARGIN SHIFT) ---
+  window.changeEditorMarginShift = function(delta) {
+    currentEditorMarginShift = Math.min(200, Math.max(0, currentEditorMarginShift + delta));
+    localStorage.setItem('catatanku_editor_margin_shift', currentEditorMarginShift);
+    applyAppearance();
+    showZoomToast('Posisi Teks Editor: ' + currentEditorMarginShift + 'px', 'fa-arrows-left-right');
+  };
+
+  window.resetEditorMarginShift = function() {
+    currentEditorMarginShift = 0;
+    localStorage.setItem('catatanku_editor_margin_shift', currentEditorMarginShift);
+    applyAppearance();
+    showZoomToast('Posisi Teks Editor direset: 0px', 'fa-arrows-left-right');
+  };
+
+  window.setEditorMarginShift = function(val) {
+    if (isNaN(val)) val = 0;
+    currentEditorMarginShift = Math.min(200, Math.max(0, val));
+    localStorage.setItem('catatanku_editor_margin_shift', currentEditorMarginShift);
+    applyAppearance();
+  };
+
+  window.changeNoteMarginShift = function(delta) {
+    currentNoteMarginShift = Math.min(200, Math.max(0, currentNoteMarginShift + delta));
+    localStorage.setItem('catatanku_note_margin_shift', currentNoteMarginShift);
+    applyAppearance();
+    showZoomToast('Posisi Teks Catatan: ' + currentNoteMarginShift + 'px', 'fa-arrows-left-right');
+  };
+
+  window.resetNoteMarginShift = function() {
+    currentNoteMarginShift = 0;
+    localStorage.setItem('catatanku_note_margin_shift', currentNoteMarginShift);
+    applyAppearance();
+    showZoomToast('Posisi Teks Catatan direset: 0px', 'fa-arrows-left-right');
+  };
+
+  window.setNoteMarginShift = function(val) {
+    if (isNaN(val)) val = 0;
+    currentNoteMarginShift = Math.min(200, Math.max(0, val));
+    localStorage.setItem('catatanku_note_margin_shift', currentNoteMarginShift);
+    applyAppearance();
+  };
+
   function initAppearance() {
     var savedBlur = localStorage.getItem('catatanku_blur');
     var savedOpacity = localStorage.getItem('catatanku_opacity');
@@ -3186,6 +3305,8 @@ var initialMockDB = [
     var savedEditorText = localStorage.getItem('catatanku_editor_text');
     var savedSidebarZoom = localStorage.getItem('catatanku_sidebar_zoom');
     var savedEditorZoom = localStorage.getItem('catatanku_editor_zoom');
+    var savedEditorMarginShift = localStorage.getItem('catatanku_editor_margin_shift');
+    var savedNoteMarginShift = localStorage.getItem('catatanku_note_margin_shift');
     
     if (savedBlur !== null) currentBlur = parseInt(savedBlur);
     if (savedOpacity !== null) currentOpacity = parseInt(savedOpacity);
@@ -3195,6 +3316,8 @@ var initialMockDB = [
     if (savedEditorText !== null) currentEditorText = savedEditorText;
     if (savedSidebarZoom !== null) currentSidebarZoom = parseInt(savedSidebarZoom);
     if (savedEditorZoom !== null) currentEditorZoom = parseInt(savedEditorZoom);
+    if (savedEditorMarginShift !== null) currentEditorMarginShift = parseInt(savedEditorMarginShift);
+    if (savedNoteMarginShift !== null) currentNoteMarginShift = parseInt(savedNoteMarginShift);
     
     applyAppearance();
   }
@@ -3209,6 +3332,8 @@ var initialMockDB = [
     document.documentElement.style.setProperty('--editor-text', currentEditorText);
     document.documentElement.style.setProperty('--sidebar-zoom', (currentSidebarZoom / 100));
     document.documentElement.style.setProperty('--editor-zoom', (currentEditorZoom / 100));
+    document.documentElement.style.setProperty('--editor-margin-shift', currentEditorMarginShift + 'px');
+    document.documentElement.style.setProperty('--note-margin-shift', currentNoteMarginShift + 'px');
     
     var blurSlider = document.getElementById('blurSlider');
     var opacitySlider = document.getElementById('opacitySlider');
@@ -3217,6 +3342,8 @@ var initialMockDB = [
     var editorTextColorPicker = document.getElementById('editorTextColorPicker');
     var sidebarZoomSlider = document.getElementById('sidebarZoomSlider');
     var editorZoomSlider = document.getElementById('editorZoomSlider');
+    var settingsEditorMarginSlider = document.getElementById('settingsEditorMarginSlider');
+    var settingsNoteMarginSlider = document.getElementById('settingsNoteMarginSlider');
     
     if (blurSlider) blurSlider.value = currentBlur;
     if (opacitySlider) opacitySlider.value = currentOpacity;
@@ -3225,6 +3352,8 @@ var initialMockDB = [
     if (editorTextColorPicker) editorTextColorPicker.value = currentEditorText;
     if (sidebarZoomSlider) sidebarZoomSlider.value = currentSidebarZoom;
     if (editorZoomSlider) editorZoomSlider.value = currentEditorZoom;
+    if (settingsEditorMarginSlider) settingsEditorMarginSlider.value = currentEditorMarginShift;
+    if (settingsNoteMarginSlider) settingsNoteMarginSlider.value = currentNoteMarginShift;
     
     var blurLbl = document.getElementById('blurValLabel');
     var opLbl = document.getElementById('opacityValLabel');
@@ -3232,6 +3361,11 @@ var initialMockDB = [
     var editorZoomLbl = document.getElementById('editorZoomValLabel');
     var sidebarZoomBadge = document.getElementById('sidebarZoomBadge');
     var editorZoomBadge = document.getElementById('editorZoomBadge');
+    var editorMarginBadge = document.getElementById('editorMarginBadge');
+    var noteMarginBadge = document.getElementById('noteMarginBadge');
+    var ctxMarginBadge = document.getElementById('ctxMarginBadge');
+    var settingsEditorMarginLabel = document.getElementById('settingsEditorMarginLabel');
+    var settingsNoteMarginLabel = document.getElementById('settingsNoteMarginLabel');
     
     if (blurLbl) blurLbl.innerText = currentBlur + 'px';
     if (opLbl) opLbl.innerText = currentOpacity + '%';
@@ -3239,6 +3373,11 @@ var initialMockDB = [
     if (editorZoomLbl) editorZoomLbl.innerText = currentEditorZoom + '%';
     if (sidebarZoomBadge) sidebarZoomBadge.innerText = currentSidebarZoom + '%';
     if (editorZoomBadge) editorZoomBadge.innerText = currentEditorZoom + '%';
+    if (editorMarginBadge) editorMarginBadge.innerText = currentEditorMarginShift + 'px';
+    if (noteMarginBadge) noteMarginBadge.innerText = currentNoteMarginShift + 'px';
+    if (ctxMarginBadge) ctxMarginBadge.innerText = currentEditorMarginShift + 'px';
+    if (settingsEditorMarginLabel) settingsEditorMarginLabel.innerText = currentEditorMarginShift + 'px';
+    if (settingsNoteMarginLabel) settingsNoteMarginLabel.innerText = currentNoteMarginShift + 'px';
   }
 
   window.openSettingsModal = function() {
@@ -5276,6 +5415,14 @@ function createJsonResponse(obj) {
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           hideOverlay();
+          if (typeof window.closeEditorTextContextMenu === 'function') window.closeEditorTextContextMenu();
+        }
+        if (e.ctrlKey && e.altKey && e.key === 'ArrowLeft') {
+          e.preventDefault();
+          window.changeEditorMarginShift(-10);
+        } else if (e.ctrlKey && e.altKey && e.key === 'ArrowRight') {
+          e.preventDefault();
+          window.changeEditorMarginShift(10);
         }
       });
     }
