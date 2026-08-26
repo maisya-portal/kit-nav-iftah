@@ -1094,6 +1094,18 @@
       font-family: monospace;
     }
 
+    .ql-snow .ql-toolbar button.ql-speechTranscribe,
+    .ql-snow .ql-toolbar button.ql-customNote {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+    }
+    .ql-snow .ql-toolbar button.ql-speechTranscribe *,
+    .ql-snow .ql-toolbar button.ql-customNote * {
+      pointer-events: none !important;
+    }
+
     /* --- AUDIO & SPEECH TRANSCRIPTION STUDIO --- */
     .audio-studio-modal .modal-content {
       background: rgba(255, 255, 255, 0.98);
@@ -4963,17 +4975,26 @@ function createJsonResponse(obj) {
             }
           }
         },
-        toolbar: [
-          [{ 'font': fonts }, { 'size': ['10px', '12px', '14px', false, '18px', '20px', '24px', '28px', '32px', '36px'] }],
-          [{ 'header': [1, 2, 3, false] }],
-          [{ 'align': [] }, { 'direction': 'rtl' }], /* Perataan teks & Dukungan Teks Arab (RTL) */
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
-          [{ 'color': [] }, { 'background': [] }],
-          ['blockquote', 'code-block'],
-          ['link', 'image', 'video', 'customNote', 'speechTranscribe'],
-          ['clean']
-        ]
+        toolbar: {
+          container: [
+            [{ 'font': fonts }, { 'size': ['10px', '12px', '14px', false, '18px', '20px', '24px', '28px', '32px', '36px'] }],
+            [{ 'header': [1, 2, 3, false] }],
+            [{ 'align': [] }, { 'direction': 'rtl' }], /* Perataan teks & Dukungan Teks Arab (RTL) */
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'color': [] }, { 'background': [] }],
+            ['blockquote', 'code-block'],
+            ['link', 'image', 'video', 'customNote', 'speechTranscribe'],
+            ['clean']
+          ],
+          handlers: {
+            'speechTranscribe': function() {
+              if (typeof window.openAudioTranscribeModal === 'function') {
+                window.openAudioTranscribeModal();
+              }
+            }
+          }
+        }
       }
     });
 
@@ -5025,11 +5046,31 @@ function createJsonResponse(obj) {
       customNoteBtn.title = "Tambahkan Catatan pada Teks";
     }
 
-    var speechTranscribeBtn = document.querySelector('.ql-speechTranscribe');
-    if (speechTranscribeBtn) {
-      speechTranscribeBtn.innerHTML = '<i class="fa-solid fa-microphone text-danger" style="font-size:1.1rem; line-height:1;"></i>';
-      speechTranscribeBtn.title = "Studio Transkripsi Suara & File Audio (Mic & MP3)";
-    }
+    var speechTranscribeBtns = document.querySelectorAll('.ql-speechTranscribe');
+    speechTranscribeBtns.forEach(function(btn) {
+      btn.type = "button";
+      btn.innerHTML = '<i class="fa-solid fa-microphone text-danger" style="font-size:1.1rem; line-height:1;"></i>';
+      btn.title = "Studio Transkripsi Suara & File Audio (Mic & MP3)";
+      btn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.openAudioTranscribeModal === 'function') {
+          window.openAudioTranscribeModal();
+        }
+      };
+    });
+
+    // Event delegation global untuk tombol toolbar Transkrip
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.ql-speechTranscribe');
+      if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.openAudioTranscribeModal === 'function') {
+          window.openAudioTranscribeModal();
+        }
+      }
+    });
 
     var currentNoteRange = null;
     var noteModalEl = document.getElementById('noteEditorModal');
@@ -5064,10 +5105,6 @@ function createJsonResponse(obj) {
       } else {
         Swal.fire('Info', 'Pilih (blok) teks terlebih dahulu untuk menambahkan catatan.', 'info');
       }
-    });
-
-    toolbar.addHandler('speechTranscribe', function() {
-      window.openAudioTranscribeModal();
     });
 
     // Otomatis fokus ke area ketik ketika halaman catatan terbuka
