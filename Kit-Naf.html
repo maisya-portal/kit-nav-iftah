@@ -989,6 +989,226 @@
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
+
+    /* --- IMAGE RESIZER & FLOATING TOOLBAR --- */
+    .ql-editor img {
+      max-width: 100%;
+      height: auto;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: outline 0.15s ease, box-shadow 0.15s ease;
+      vertical-align: middle;
+    }
+    .ql-editor img:hover {
+      outline: 2px dashed #3b82f6;
+      outline-offset: 3px;
+    }
+    .img-resizer-overlay {
+      position: absolute;
+      border: 2px solid #2563eb;
+      pointer-events: none;
+      z-index: 1050;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25), 0 4px 12px rgba(37, 99, 235, 0.15);
+      border-radius: 6px;
+    }
+    .img-resizer-handle {
+      position: absolute;
+      width: 13px;
+      height: 13px;
+      background: #ffffff;
+      border: 2px solid #2563eb;
+      border-radius: 50%;
+      pointer-events: all;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      z-index: 1051;
+      transition: transform 0.1s ease, background 0.1s ease;
+    }
+    .img-resizer-handle:hover {
+      transform: scale(1.35);
+      background: #2563eb;
+    }
+    .img-resizer-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+    .img-resizer-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+    .img-resizer-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+    .img-resizer-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+    .img-resizer-toolbar {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 30px;
+      padding: 5px 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 1055;
+      box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.4), 0 6px 12px -4px rgba(0, 0, 0, 0.2);
+      pointer-events: all;
+      user-select: none;
+      font-family: inherit;
+    }
+    .img-resizer-btn {
+      background: transparent;
+      border: none;
+      color: #f1f5f9;
+      padding: 4px 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      line-height: 1;
+    }
+    .img-resizer-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+    .img-resizer-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .img-resizer-btn.btn-delete {
+      color: #f87171;
+    }
+    .img-resizer-btn.btn-delete:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+    .img-resizer-divider {
+      width: 1px;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 0 3px;
+    }
+    .img-resizer-size-badge {
+      font-size: 11px;
+      color: #93c5fd;
+      padding: 0 4px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    /* --- AUDIO & SPEECH TRANSCRIPTION STUDIO --- */
+    .audio-studio-modal .modal-content {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .mic-pulse-btn {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+    }
+    .mic-pulse-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.6);
+    }
+    .mic-pulse-btn.recording {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      animation: micPulseAnimation 1.5s infinite;
+    }
+    @keyframes micPulseAnimation {
+      0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 0 10px rgba(239, 68, 68, 0.25);
+      }
+      50% {
+        box-shadow: 0 0 0 16px rgba(239, 68, 68, 0.35), 0 0 0 28px rgba(239, 68, 68, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+    .voice-wave-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 38px;
+    }
+    .voice-wave-bar {
+      width: 4px;
+      height: 8px;
+      background: #93c5fd;
+      border-radius: 4px;
+      transition: height 0.15s ease, background 0.15s ease;
+    }
+    .voice-wave-container.active .voice-wave-bar {
+      animation: waveBarAnimation 1.2s infinite ease-in-out;
+    }
+    .voice-wave-container.active .voice-wave-bar:nth-child(1) { animation-delay: 0.0s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(5) { animation-delay: 0.6s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(6) { animation-delay: 0.45s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(7) { animation-delay: 0.3s; }
+    .voice-wave-container.active .voice-wave-bar:nth-child(8) { animation-delay: 0.15s; }
+    @keyframes waveBarAnimation {
+      0%, 100% { height: 6px; background: #3b82f6; }
+      50% { height: 34px; background: #ef4444; }
+    }
+    .audio-dropzone {
+      border: 2px dashed #93c5fd;
+      background: #f0fdf4;
+      border-radius: 14px;
+      padding: 26px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .audio-dropzone:hover, .audio-dropzone.dragover {
+      border-color: #2563eb;
+      background: #eff6ff;
+      transform: translateY(-2px);
+    }
+    .transcript-output-box {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 0.95rem;
+      line-height: 1.65;
+      min-height: 130px;
+      max-height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .transcript-output-box:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+    .transcript-output-box[placeholder]:empty:before {
+      content: attr(placeholder);
+      color: #94a3b8;
+      font-style: italic;
+    }
+    .interim-text {
+      color: #64748b;
+      font-style: italic;
+      background: #f8fafc;
+      padding: 0 2px;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
@@ -998,11 +1218,6 @@
 
 <!-- Floating Zoom Toast Indicator -->
 <div id="zoomFloatingToast"><i class="fa-solid fa-magnifying-glass me-1"></i> Zoom: 100%</div>
-
-<!-- Floating Realtime Cloud Sync Toast -->
-<div id="realtimeSyncToast" class="realtime-sync-badge">
-  <i class="fa-solid fa-arrows-rotate fa-spin text-success me-2"></i> Tersinkron otomatis dari perangkat lain
-</div>
 
 <!-- ==========================================
      1. DESKTOP VIEW
@@ -1028,8 +1243,8 @@
         <i class="fa-solid fa-download me-1"></i> <span class="d-none d-sm-inline">Pasang Aplikasi</span>
       </button>
       <!-- Tombol Pengaturan Tampilan -->
-      <button class="btn btn-light rounded-pill px-3 shadow-sm border border-white" onclick="openSettingsModal()" title="Pengaturan Tampilan & Data">
-        <i class="fa-solid fa-sliders text-primary"></i>
+      <button class="btn btn-light rounded-pill px-3 shadow-sm border border-white" onclick="openSettingsModal()" title="Pengaturan Tampilan, Database & Cache">
+        <i class="fa-solid fa-gear text-primary"></i>
       </button>
       <!-- Tombol Ganti Background -->
       <button class="btn btn-light rounded-pill px-3 shadow-sm border border-white" onclick="changeBackground()" title="Ganti Latar Belakang Acak">
@@ -1127,6 +1342,10 @@
           <div id="saveStatus" class="text-muted small fw-semibold d-flex align-items-center gap-2 me-1 bg-white px-3 py-1 rounded-pill shadow-sm border">
             <i class="fa-solid fa-check-circle text-success"></i> Tersimpan
           </div>
+          <!-- Tombol Transkripsi Audio & Suara -->
+          <button class="btn btn-sm btn-light rounded-pill px-3 shadow-sm border border-white d-flex align-items-center gap-1 text-danger fw-semibold me-1" onclick="openAudioTranscribeModal()" title="Studio Transkripsi Suara & File Audio (Mic & MP3)">
+            <i class="fa-solid fa-microphone me-1"></i> <span class="d-none d-md-inline">Transkrip Audio</span>
+          </button>
           <!-- Tombol Sinkron Manual Cepat -->
           <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-1 btn-manual-sync me-1" onclick="manualSyncNow(this)" title="Klik untuk langsung menyinkronkan data dengan Google Spreadsheet detik ini juga">
             <i class="fa-solid fa-arrows-rotate me-1" id="manualSyncIcon"></i>
@@ -1137,8 +1356,8 @@
             <i class="fa-solid fa-pen-ruler text-primary" id="toolbarToggleIcon"></i>
           </button>
           <!-- Tombol Pengaturan Tampilan -->
-          <button class="btn btn-sm btn-light border border-white shadow-sm" onclick="openSettingsModal()" title="Pengaturan Tampilan & Data">
-            <i class="fa-solid fa-sliders text-primary"></i>
+          <button class="btn btn-sm btn-light border border-white shadow-sm" onclick="openSettingsModal()" title="Pengaturan Tampilan, Database & Cache">
+            <i class="fa-solid fa-gear text-primary"></i>
           </button>
           <!-- Tombol Ganti Background -->
           <button class="btn btn-sm btn-light border border-white shadow-sm" onclick="changeBackground()" title="Ganti Latar Belakang Acak">
@@ -1606,7 +1825,7 @@
           </label>
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 mb-3">
           <button class="btn btn-outline-primary btn-sm flex-fill fw-semibold" onclick="syncToSpreadsheet(false)">
             <i class="fa-solid fa-cloud-arrow-up me-1"></i> Unggah ke Sheet
           </button>
@@ -1614,6 +1833,15 @@
             <i class="fa-solid fa-cloud-arrow-down me-1"></i> Tarik dari Sheet
           </button>
         </div>
+
+        <hr class="my-4 text-muted opacity-25">
+
+        <!-- Pembersihan Cache & Segarkan Versi -->
+        <h6 class="small fw-bold text-muted mb-2"><i class="fa-solid fa-broom text-warning me-1"></i> PEMBARUAN & CACHE APLIKASI</h6>
+        <p class="small text-muted mb-2">Jika Anda baru saja memperbarui kode dan ingin memastikan versi kode paling mutakhir aktif tanpa menghapus catatan Anda:</p>
+        <button class="btn btn-outline-warning btn-sm w-100 fw-semibold text-dark mb-1" onclick="forceClearAppCache()">
+          <i class="fa-solid fa-arrows-rotate me-1 text-warning"></i> Bersihkan Cache & Muat Ulang Versi Terbaru
+        </button>
 
       </div>
     </div>
@@ -1706,6 +1934,232 @@
            <button type="button" class="btn btn-light rounded-pill px-4 me-2 border shadow-sm" data-bs-dismiss="modal">Sembunyikan</button>
            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" id="btnSaveNote"><i class="fa-solid fa-check me-2"></i>Simpan</button>
          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Studio Transkripsi Audio & Suara -->
+<div class="modal fade audio-studio-modal" id="audioTranscribeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+      <!-- Header Modal -->
+      <div class="modal-header border-0 bg-gradient text-white p-3 px-4" style="background: linear-gradient(135deg, #1e3a8a, #2563eb);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; font-size: 1.2rem;">
+            <i class="fa-solid fa-microphone"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0 text-white">Studio Transkripsi Audio & Suara</h5>
+            <small class="text-white-50">Ubah suara langsung dari Mic atau file rekaman audio menjadi catatan rapi</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopLiveMicRecording()"></button>
+      </div>
+
+      <!-- Nav Tabs -->
+      <div class="bg-light px-4 pt-2 border-bottom">
+        <ul class="nav nav-tabs border-0" id="audioTranscribeTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold small text-dark d-flex align-items-center gap-2" id="tab-mic-btn" data-bs-toggle="tab" data-bs-target="#tab-mic-pane" type="button" role="tab">
+              <i class="fa-solid fa-microphone text-primary"></i> 1. Bicara Langsung (Mic)
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold small text-dark d-flex align-items-center gap-2" id="tab-file-btn" data-bs-toggle="tab" data-bs-target="#tab-file-pane" type="button" role="tab">
+              <i class="fa-solid fa-file-audio text-warning"></i> 2. Unggah File Audio (MP3/WAV)
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold small text-dark d-flex align-items-center gap-2" id="tab-ai-btn" data-bs-toggle="tab" data-bs-target="#tab-ai-pane" type="button" role="tab">
+              <i class="fa-solid fa-wand-magic-sparkles text-success"></i> 3. Pengaturan AI (Opsional)
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="modal-body p-4">
+        <div class="tab-content" id="audioTranscribeTabContent">
+          
+          <!-- TAB 1: LIVE MIC -->
+          <div class="tab-pane fade show active" id="tab-mic-pane" role="tabpanel">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <label class="small fw-bold text-muted mb-0"><i class="fa-solid fa-language me-1 text-primary"></i>Bahasa:</label>
+                <select id="micLangSelect" class="form-select form-select-sm shadow-sm" style="width: auto; font-weight: 600;" onchange="changeMicLanguage()">
+                  <option value="id-ID" selected>🇮🇩 Bahasa Indonesia</option>
+                  <option value="ar-SA">🇸🇦 Bahasa Arab (العربية)</option>
+                  <option value="en-US">🇬🇧 English</option>
+                </select>
+              </div>
+              <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" id="micLiveStreamToggle" checked>
+                <label class="form-check-label small fw-semibold text-secondary" for="micLiveStreamToggle">Ketik Langsung ke Lembar Catatan</label>
+              </div>
+            </div>
+
+            <!-- Pulsing Mic Visualizer Card -->
+            <div class="card border bg-light shadow-sm rounded-4 p-4 text-center mb-3">
+              <div class="d-flex flex-column align-items-center justify-content-center">
+                <button type="button" id="micRecordBtn" class="mic-pulse-btn mb-3" onclick="toggleLiveMicRecording()" title="Klik untuk Mulai / Berhenti Merekam">
+                  <i class="fa-solid fa-microphone" id="micRecordIcon"></i>
+                </button>
+                <h6 class="fw-bold mb-1" id="micStatusHeading">Klik Mikrofon untuk Mulai Bicara</h6>
+                <p class="small text-muted mb-2" id="micStatusDesc">Peramban akan mendengarkan dan mentranskripsikan suara Anda secara langsung.</p>
+                
+                <!-- Voice Wave Indicator -->
+                <div class="voice-wave-container" id="micVoiceWave">
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                  <div class="voice-wave-bar"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Text Output Box -->
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+              <span class="small fw-bold text-muted"><i class="fa-solid fa-font me-1"></i>Hasil Teks Transkripsi:</span>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearMicTranscript()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
+                <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyMicTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
+              </div>
+            </div>
+            <div id="micTranscriptBox" class="transcript-output-box mb-3" contenteditable="true" placeholder="Teks hasil ucapan suara Anda akan otomatis muncul di sini..."></div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-primary rounded-pill flex-grow-1 fw-semibold shadow-sm" onclick="insertMicTranscriptToEditor('cursor')">
+                <i class="fa-solid fa-file-import me-1"></i> Sisipkan di Posisi Kursor
+              </button>
+              <button type="button" class="btn btn-outline-primary rounded-pill fw-semibold" onclick="insertMicTranscriptToEditor('append')">
+                <i class="fa-solid fa-plus me-1"></i> Tambah di Akhir Catatan
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: AUDIO FILE UPLOAD -->
+          <div class="tab-pane fade" id="tab-file-pane" role="tabpanel">
+            <!-- Dropzone -->
+            <div class="audio-dropzone mb-3" id="audioDropzone" onclick="document.getElementById('audioFileInput').click()">
+              <input type="file" id="audioFileInput" class="d-none" accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.aac,.flac,.opus" onchange="handleAudioFileSelected(event)">
+              <div class="d-flex flex-column align-items-center">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-3 mb-2 shadow-sm">
+                  <i class="fa-solid fa-cloud-arrow-up fa-2x"></i>
+                </div>
+                <h6 class="fw-bold mb-1 text-dark" id="audioDropzoneTitle">Pilih atau Tarik File Audio ke Sini</h6>
+                <p class="small text-muted mb-0">Mendukung MP3, WAV, M4A, OGG, WebM, AAC (Rekaman Kajian, Voice Note, dll)</p>
+              </div>
+            </div>
+
+            <!-- Audio Player Preview (Hidden until file selected) -->
+            <div id="audioPlayerContainer" class="card border rounded-3 p-3 mb-3 bg-light d-none">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <div class="d-flex align-items-center gap-2 text-truncate">
+                  <i class="fa-solid fa-file-audio text-primary fa-lg"></i>
+                  <div>
+                    <div class="fw-bold small text-dark text-truncate" id="audioFileNameDisplay">nama_file.mp3</div>
+                    <small class="text-muted" id="audioFileSizeDisplay">0 MB</small>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill" onclick="removeAudioFile()">Ganti File</button>
+              </div>
+              <audio id="audioPreviewElement" controls class="w-100 mb-2"></audio>
+              
+              <!-- Engine Choice -->
+              <div class="p-2 bg-white rounded border">
+                <label class="small fw-bold text-muted mb-1"><i class="fa-solid fa-microchip me-1 text-primary"></i>Pilih Metode Transkripsi:</label>
+                <div class="d-flex flex-column gap-1">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="transcribeEngine" id="engineGeminiAI" value="gemini" checked>
+                    <label class="form-check-label small fw-semibold text-dark" for="engineGeminiAI">
+                      ⚡ <b>AI Multimodal Gemini (Sangat Cepat & Akurat, Ejaan & Istilah Islam Rapi)</b>
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="transcribeEngine" id="engineBrowserStream" value="browser">
+                    <label class="form-check-label small fw-semibold text-secondary" for="engineBrowserStream">
+                      🌐 <b>Pemutar Suara Browser (Gratis Tanpa Kunci API)</b>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Button Transkripsi -->
+              <button type="button" id="btnStartFileTranscribe" class="btn btn-success rounded-pill w-100 fw-bold shadow-sm mt-3" onclick="startAudioFileTranscription()">
+                <i class="fa-solid fa-play me-1"></i> Mulai Transkripsikan File Audio
+              </button>
+
+              <!-- Progress Indicator -->
+              <div id="audioTranscribeProgress" class="mt-3 d-none">
+                <div class="d-flex justify-content-between small fw-bold text-primary mb-1">
+                  <span id="transcribeProgressText"><i class="fa-solid fa-spinner fa-spin me-1"></i> Sedang mentranskripsikan audio...</span>
+                  <span id="transcribeProgressPercent">0%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div id="transcribeProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 50%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- File Transcript Result Box -->
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+              <span class="small fw-bold text-muted"><i class="fa-solid fa-font me-1"></i>Hasil Transkripsi File Audio:</span>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearFileTranscript()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
+                <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyFileTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
+              </div>
+            </div>
+            <div id="fileTranscriptBox" class="transcript-output-box mb-3" contenteditable="true" placeholder="Hasil transkripsi dari file audio akan muncul di sini..."></div>
+
+            <!-- Insertion Buttons -->
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-primary rounded-pill flex-grow-1 fw-semibold shadow-sm" onclick="insertFileTranscriptToEditor('cursor')">
+                <i class="fa-solid fa-file-import me-1"></i> Sisipkan di Posisi Kursor
+              </button>
+              <button type="button" class="btn btn-outline-primary rounded-pill fw-semibold" onclick="insertFileTranscriptToEditor('append')">
+                <i class="fa-solid fa-plus me-1"></i> Tambah di Akhir Catatan
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 3: AI SETTINGS -->
+          <div class="tab-pane fade" id="tab-ai-pane" role="tabpanel">
+            <div class="p-3 bg-light rounded-3 border mb-3">
+              <h6 class="fw-bold text-dark mb-1"><i class="fa-solid fa-key text-warning me-2"></i>Google Gemini API Key (Gratis)</h6>
+              <p class="small text-muted mb-3">
+                Kunci API Gemini digunakan untuk mentranskripsikan rekaman kajian atau file audio panjang secara instan dengan kecerdasan AI berkecepatan tinggi. Kunci tersimpan aman secara lokal di memori peramban Anda.
+              </p>
+              
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-dark">Kunci API Gemini (Google AI Studio):</label>
+                <div class="input-group input-group-sm">
+                  <input type="password" id="geminiApiKeyInput" class="form-control" placeholder="AIzaSy..." autocomplete="off">
+                  <button class="btn btn-outline-secondary" type="button" onclick="toggleGeminiKeyVisibility()" title="Lihat/Sembunyikan Key">
+                    <i class="fa-solid fa-eye" id="geminiKeyEyeIcon"></i>
+                  </button>
+                  <button class="btn btn-primary" type="button" onclick="saveGeminiApiKey()">
+                    <i class="fa-solid fa-save me-1"></i> Simpan
+                  </button>
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="small fw-bold text-primary text-decoration-none">
+                  <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Dapatkan Kunci API Gratis di Google AI Studio
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" onclick="testGeminiApiKey()">
+                  <i class="fa-solid fa-circle-check me-1"></i> Tes Kunci API
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
@@ -2173,6 +2627,7 @@ var initialMockDB = [
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('./sw.js')
         .then(function(reg) {
+          reg.update();
           console.log('[PWA] Service Worker aktif di:', reg.scope);
         })
         .catch(function(err) {
@@ -2180,6 +2635,48 @@ var initialMockDB = [
         });
     });
   }
+
+  // --- BERSIHKAN CACHE & MUAT ULANG VERSI TERBARU (TANPA MENGHAPUS DATA CATATAN) ---
+  window.forceClearAppCache = function() {
+    Swal.fire({
+      title: 'Membersihkan Cache...',
+      text: 'Menghapus cache versi lama browser dan memuat ulang kode aplikasi terbaru...',
+      allowOutsideClick: false,
+      didOpen: function() { Swal.showLoading(); }
+    });
+
+    var clearTasks = [];
+
+    // 1. Hapus Cache Storage
+    if ('caches' in window) {
+      clearTasks.push(
+        caches.keys().then(function(names) {
+          return Promise.all(names.map(function(name) {
+            return caches.delete(name);
+          }));
+        })
+      );
+    }
+
+    // 2. Unregister Service Worker
+    if ('serviceWorker' in navigator) {
+      clearTasks.push(
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          return Promise.all(registrations.map(function(reg) {
+            return reg.unregister();
+          }));
+        })
+      );
+    }
+
+    Promise.all(clearTasks).then(function() {
+      setTimeout(function() {
+        window.location.reload(true);
+      }, 500);
+    }).catch(function() {
+      window.location.reload(true);
+    });
+  };
 
   // --- AVAILABLE ICONS ---
   var availableIcons = [
@@ -2748,25 +3245,31 @@ var initialMockDB = [
       id: document.getElementById('nodeId').value,
       parentId: document.getElementById('nodeParentId').value,
       level: document.getElementById('nodeLevel').value,
-      title: document.getElementById('nodeTitle').value,
+      title: document.getElementById('nodeTitle').value.trim(),
       icon: document.getElementById('nodeIcon').value,
       fontFamily: document.getElementById('nodeFontFamily') ? document.getElementById('nodeFontFamily').value : '',
       content: '',
-      bg: document.getElementById('nodeBg').value || ''
+      bg: document.getElementById('nodeBg').value || '',
+      updatedAt: new Date().toISOString()
     };
     
     if (!payload.title) return;
     var modalEl = document.getElementById('nodeModal');
-    bootstrap.Modal.getInstance(modalEl).hide();
+    var modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) modalInstance.hide();
 
     var isEdit = !!payload.id;
     if (isEdit) {
       var exist = dbMateri.find(function(x) { return x.id == payload.id; });
-      if (exist) payload.content = exist.content;
+      if (exist) payload.content = exist.content || '';
     }
 
-    var finalId = payload.id || crypto.randomUUID();
-    var newItem = Object.assign({}, payload, { id: finalId });
+    var finalId = payload.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)));
+    var newItem = Object.assign({}, payload, {
+      id: finalId,
+      level: parseInt(payload.level) || 0,
+      updatedAt: new Date().toISOString()
+    });
 
     if (isEdit) {
       var idx = dbMateri.findIndex(function(x) { return x.id == payload.id; });
@@ -2774,7 +3277,9 @@ var initialMockDB = [
       if (activeNodeId === payload.id) {
         document.getElementById('editorTitle').innerText = payload.title;
         applyBackgroundFor(payload.bg);
-        quillEditor.root.style.fontFamily = payload.fontFamily ? getFontFamilyCss(payload.fontFamily) : '';
+        if (quillEditor && quillEditor.root) {
+          quillEditor.root.style.fontFamily = payload.fontFamily ? getFontFamilyCss(payload.fontFamily) : '';
+        }
       }
     } else {
       dbMateri.push(newItem);
@@ -2783,8 +3288,10 @@ var initialMockDB = [
       }
     }
     
+    lastLocalEditTime = Date.now();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     updateActiveUI();
+    triggerCloudAutoSave(true);
     Swal.fire({ icon:'success', title:'Tersimpan', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
   };
 
@@ -2799,7 +3306,7 @@ var initialMockDB = [
     }).then(function(result) {
       if (!result.isConfirmed) return;
 
-      let idsToDelete = [id];
+      var idsToDelete = [id];
       function findChildren(parentId) {
         dbMateri.forEach(function(item) {
           if (item.parentId === parentId && !idsToDelete.includes(item.id)) {
@@ -2821,7 +3328,9 @@ var initialMockDB = [
         localStorage.setItem('kitnaf_deleted_ids', JSON.stringify(delIds));
       } catch(e) {}
 
-      if (activeNodeId === id || dbMateri.findIndex(function(x){ return x.id == activeNodeId && idsToDelete.includes(x.id)}) !== -1) {
+      lastLocalEditTime = Date.now();
+
+      if (activeNodeId === id || idsToDelete.includes(activeNodeId)) {
         activeNodeId = null;
         document.getElementById('editorState').classList.add('d-none');
         document.getElementById('editorState').classList.remove('d-flex');
@@ -2831,8 +3340,8 @@ var initialMockDB = [
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
       updateActiveUI();
 
-      // Trigger auto sync untuk kirim penghapusan ke spreadsheet
-      performAutoSave();
+      // Trigger auto sync untuk kirim penghapusan ke spreadsheet secara instan
+      triggerCloudAutoSave(true);
 
       if (window.activeRootId === id) {
         showDesktop();
@@ -2855,9 +3364,15 @@ var initialMockDB = [
       Swal.fire({ icon:'info', title:'Tidak bisa dipindahkan', text:'Sudah berada di posisi atas.', toast:true, position:'top-end', showConfirmButton:false, timer:1500 });
       return;
     }
+    var nowIso = new Date().toISOString();
+    dbMateri[idx].updatedAt = nowIso;
+    dbMateri[found].updatedAt = nowIso;
+    lastLocalEditTime = Date.now();
+
     var tmp = dbMateri[found]; dbMateri[found] = dbMateri[idx]; dbMateri[idx] = tmp;
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     updateActiveUI();
+    triggerCloudAutoSave(true);
     Swal.fire({ icon:'success', title:'Dipindahkan', text:'Item dipindahkan ke atas.', toast:true, position:'top-end', showConfirmButton:false, timer:1200 });
   };
 
@@ -2873,9 +3388,15 @@ var initialMockDB = [
       Swal.fire({ icon:'info', title:'Tidak bisa dipindahkan', text:'Sudah berada di posisi bawah.', toast:true, position:'top-end', showConfirmButton:false, timer:1500 });
       return;
     }
+    var nowIso = new Date().toISOString();
+    dbMateri[idx].updatedAt = nowIso;
+    dbMateri[found].updatedAt = nowIso;
+    lastLocalEditTime = Date.now();
+
     var tmp = dbMateri[found]; dbMateri[found] = dbMateri[idx]; dbMateri[idx] = tmp;
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     updateActiveUI();
+    triggerCloudAutoSave(true);
     Swal.fire({ icon:'success', title:'Dipindahkan', text:'Item dipindahkan ke bawah.', toast:true, position:'top-end', showConfirmButton:false, timer:1200 });
   };
 
@@ -2929,23 +3450,49 @@ var initialMockDB = [
     }, 2400);
   }
 
+  function ensureAllTimestamps() {
+    var nowIso = new Date().toISOString();
+    if (Array.isArray(dbMateri)) {
+      dbMateri.forEach(function(item) {
+        if (!item.updatedAt) item.updatedAt = nowIso;
+      });
+    }
+  }
+
   // --- ALGORITMA MERGE ANTI-HILANG & ANTI-TIMPA (CONFLICT-FREE LWW PER MATERI) ---
   function mergeIncomingCloudData(incomingData) {
     if (!Array.isArray(incomingData) || incomingData.length === 0) return false;
 
+    // Filter out deleted IDs that are pending sync deletion
+    var delIds = [];
+    try {
+      delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
+    } catch(e) {}
+    var deletedSet = {};
+    for (var d = 0; d < delIds.length; d++) {
+      deletedSet[delIds[d]] = true;
+    }
+
+    // Perlindungan kuat: Jika ada editan lokal dalam 25 detik terakhir atau sedang mengetik/syncing, JANGAN TIMPA!
+    var hasRecentEdits = isActivelyTyping || isGasSyncing || (Date.now() - lastLocalEditTime < 25000);
+    if (hasRecentEdits) return false;
+
     var localMap = {};
     for (var i = 0; i < dbMateri.length; i++) {
       var itm = dbMateri[i];
-      if (itm && itm.id) localMap[itm.id] = itm;
+      if (itm && itm.id) {
+        if (!deletedSet[itm.id]) {
+          localMap[itm.id] = itm;
+        }
+      }
     }
 
     var hasChanges = false;
     var isEditorFocused = quillEditor && quillEditor.hasFocus && quillEditor.hasFocus();
-    var hasRecentTyping = isActivelyTyping || (Date.now() - lastLocalEditTime < 6000);
 
     for (var j = 0; j < incomingData.length; j++) {
       var inc = incomingData[j];
-      if (!inc || !inc.id) continue;
+      if (!inc || !inc.id || deletedSet[inc.id]) continue;
 
       if (!localMap[inc.id]) {
         // Catatan baru dari server / perangkat lain
@@ -2955,10 +3502,8 @@ var initialMockDB = [
         var loc = localMap[inc.id];
 
         // PERLINDUNGAN UTAMA: Jika materi ini sedang dibuka & aktif diketik di perangkat ini, JANGAN PERNAH DITIMPA!
-        if (activeNodeId && inc.id === activeNodeId) {
-          if (isEditorFocused || hasRecentTyping) {
-            continue; // Lindungi 100% ketikan aktif pengguna!
-          }
+        if (activeNodeId && inc.id === activeNodeId && (isEditorFocused || isActivelyTyping)) {
+          continue;
         }
 
         var incTime = inc.updatedAt ? new Date(inc.updatedAt).getTime() : 0;
@@ -2975,13 +3520,16 @@ var initialMockDB = [
     if (hasChanges) {
       var merged = [];
       var seen = {};
+
+      // 1. PRIORITAS UTAMA: Selalu pertahankan urutan dan hirarki pohon lokal perangkat ini!
       for (var k = 0; k < dbMateri.length; k++) {
         var id = dbMateri[k].id;
-        if (localMap[id]) {
+        if (localMap[id] && !seen[id]) {
           merged.push(localMap[id]);
           seen[id] = true;
         }
       }
+      // 2. Tambahkan materi baru yang memang dibuat dari perangkat lain
       for (var m = 0; m < incomingData.length; m++) {
         var incId = incomingData[m].id;
         if (localMap[incId] && !seen[incId]) {
@@ -2997,64 +3545,15 @@ var initialMockDB = [
     return false;
   }
 
-  // --- ENGINE SINKRONISASI REAL-TIME CLOUD (MULTI-PERANGKAT HP & LAPTOP) ---
+  // --- ENGINE SINKRONISASI REAL-TIME CLOUD (DINONAKTIFKAN POLLING OTOMATIS AGAR TIDAK MENIMPA DATA LOKAL) ---
   window.triggerBackgroundCloudSync = function(isSilentPoll) {
-    var gasUrl = (localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL || '').trim();
-    if (!gasUrl || !navigator.onLine || isCloudPulling || isGasSyncing) return;
-
-    var isEditorFocused = quillEditor && quillEditor.hasFocus && quillEditor.hasFocus();
-    var hasRecentTyping = isActivelyTyping || (Date.now() - lastLocalEditTime < 4000);
-    // Jika pengguna sedang mengetik aktif, tunda polling background agar tidak mengganggu
-    if (isEditorFocused || hasRecentTyping) return;
-
-    isCloudPulling = true;
-    fetch(gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now())
-      .then(function(res) { return res.json(); })
-      .then(function(res) {
-        isCloudPulling = false;
-        if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-          var updated = mergeIncomingCloudData(res.data);
-          if (updated) {
-            lastKnownCloudSync = res.lastSync || new Date().toISOString();
-
-            if (currentView === 'desktop') {
-              renderDesktop();
-            } else {
-              renderTree();
-              if (activeNodeId) {
-                var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
-                if (curItem) {
-                  // Pastikan sekali lagi sebelum update isi teks editor bahwa pengguna tidak sedang mengetik
-                  if (!isActivelyTyping && (Date.now() - lastLocalEditTime > 4000) && !(quillEditor && quillEditor.hasFocus && quillEditor.hasFocus())) {
-                    if (quillEditor && quillEditor.root && quillEditor.root.innerHTML !== (curItem.content || '')) {
-                      quillEditor.root.innerHTML = curItem.content || '';
-                      syncContinuousListCounters(quillEditor.root);
-                    }
-                  }
-                  var titleEl = document.getElementById('editorTitle');
-                  if (titleEl) titleEl.innerText = curItem.title;
-                  if (curItem.fontFamily && quillEditor && quillEditor.root) {
-                    quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
-                  }
-                  if (curItem.bg) applyBackgroundFor(curItem.bg); else applyBackground();
-                }
-              }
-            }
-
-            var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            updateSaveStatus('saved_gas', timeStr);
-            showRealtimeSyncToast();
-          }
-        }
-      })
-      .catch(function(err) {
-        isCloudPulling = false;
-      });
+    // Background polling dinonaktifkan agar tidak menimpa editan menu sidebar atau catatan aktif
+    return;
   };
 
   // --- MANUAL SYNC CEPAT (INSTAN 1-KLIK) ---
   window.manualSyncNow = function(btnEl) {
-    var gasUrl = (localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL || '').trim();
+    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
     if (!gasUrl) {
       Swal.fire('Perhatian', 'URL Google Spreadsheet belum disetel. Buka menu Pengaturan untuk memasukkan URL Web App.', 'warning');
       return;
@@ -3067,17 +3566,21 @@ var initialMockDB = [
       if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin me-1';
     });
 
+    var nowIso = new Date().toISOString();
+
     // 1. Simpan ketikan aktif di perangkat ini dengan timestamp terbaru agar terlindungi saat diunggah
     if (activeNodeId && quillEditor && quillEditor.root) {
       var htmlContent = quillEditor.root.innerHTML;
       var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
       if (item) {
         item.content = htmlContent;
-        item.updatedAt = new Date().toISOString();
-        lastLocalEditTime = Date.now();
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+        item.updatedAt = nowIso;
       }
     }
+
+    ensureAllTimestamps();
+    lastLocalEditTime = Date.now();
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
 
     updateSaveStatus('syncing_gas');
 
@@ -3086,7 +3589,7 @@ var initialMockDB = [
       action: 'save',
       data: dbMateri,
       deletedIds: delIds,
-      timestamp: new Date().toISOString()
+      timestamp: nowIso
     });
 
     fetch(gasUrl, {
@@ -3097,34 +3600,9 @@ var initialMockDB = [
     .then(function(res) { return res.json(); })
     .then(function(res) {
       localStorage.removeItem('kitnaf_deleted_ids');
-      if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-        mergeIncomingCloudData(res.data);
-      }
+      // Data lokal perangkat ini adalah sumber utama, tetap simpan state lokal terkini
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
       
-      // Render ulang tampilan dengan data gabungan yang mutakhir
-      if (currentView === 'desktop') {
-        renderDesktop();
-      } else {
-        renderTree();
-        if (activeNodeId) {
-          var curItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
-          if (curItem) {
-            if (quillEditor && quillEditor.root) {
-              var sel = quillEditor.getSelection();
-              quillEditor.root.innerHTML = curItem.content || '';
-              if (sel) { try { quillEditor.setSelection(sel); } catch(e){} }
-              syncContinuousListCounters(quillEditor.root);
-            }
-            var titleEl = document.getElementById('editorTitle');
-            if (titleEl) titleEl.innerText = curItem.title;
-            if (curItem.fontFamily && quillEditor && quillEditor.root) {
-              quillEditor.root.style.fontFamily = getFontFamilyCss(curItem.fontFamily);
-            }
-            if (curItem.bg) applyBackgroundFor(curItem.bg); else applyBackground();
-          }
-        }
-      }
-
       var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       updateSaveStatus('saved_gas', timeStr);
       
@@ -3139,7 +3617,7 @@ var initialMockDB = [
       Swal.fire({
         icon: 'success',
         title: 'Data Tersinkronkan!',
-        text: 'Data materi berhasil digabungkan dan diperbarui tanpa ada yang tertimpa atau hilang.',
+        text: 'Data materi berhasil disimpan dan disinkronkan ke Google Spreadsheet.',
         toast: true,
         position: 'bottom-end',
         showConfirmButton: false,
@@ -3165,20 +3643,36 @@ var initialMockDB = [
   };
 
   function startRealtimeCloudSync() {
-    if (realtimePollInterval) clearInterval(realtimePollInterval);
-    // Polling real-time background setiap 3.5 detik saat layar aktif
-    realtimePollInterval = setInterval(function() {
-      if (document.visibilityState === 'visible' && navigator.onLine) {
-        triggerBackgroundCloudSync(true);
-      }
-    }, 3500);
+    if (realtimePollInterval) {
+      clearInterval(realtimePollInterval);
+      realtimePollInterval = null;
+    }
   }
 
-  // --- AUTO SAVE LOGIC ---
+  // --- AUTO SAVE & AUTO SYNC UNIFIED HELPER ---
+  window.triggerCloudAutoSave = function(immediate) {
+    var isAutoSync = (localStorage.getItem(GAS_AUTOSYNC_KEY) !== 'false');
+    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
+
+    if (isAutoSync && gasUrl) {
+      updateSaveStatus('syncing_gas');
+      clearTimeout(gasSaveTimeout);
+      if (immediate) {
+        syncToSpreadsheet(true);
+      } else {
+        gasSaveTimeout = setTimeout(function() {
+          syncToSpreadsheet(true);
+        }, 900);
+      }
+    } else {
+      updateSaveStatus('saved_local');
+    }
+  };
+
   window.performAutoSave = function() {
     if (!activeNodeId) return;
     
-    var htmlContent = quillEditor.root.innerHTML;
+    var htmlContent = (quillEditor && quillEditor.root) ? quillEditor.root.innerHTML : '';
     var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
     if (!item) return;
 
@@ -3187,18 +3681,7 @@ var initialMockDB = [
     lastLocalEditTime = Date.now();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
     
-    var isAutoSync = (localStorage.getItem('kitnaf_gas_autosync') !== 'false');
-    var gasUrl = localStorage.getItem('kitnaf_gas_url') || DEFAULT_GAS_URL;
-
-    if (isAutoSync && gasUrl) {
-      updateSaveStatus('syncing_gas');
-      clearTimeout(gasSaveTimeout);
-      gasSaveTimeout = setTimeout(function() {
-        syncToSpreadsheet(true);
-      }, 900);
-    } else {
-      updateSaveStatus('saved_local');
-    }
+    triggerCloudAutoSave(false);
   };
 
   // --- INIT DATA (LOCAL STORAGE & STARTER BACKUP) ---
@@ -3235,24 +3718,25 @@ var initialMockDB = [
         var parsed = JSON.parse(savedData);
         if (Array.isArray(parsed) && parsed.length > 0) {
           dbMateri = parsed;
+          ensureAllTimestamps();
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
           showDesktop();
         } else {
           loadDefaultKajianData(false);
+          ensureAllTimestamps();
           showDesktop();
         }
       } catch (e) { 
         loadDefaultKajianData(false);
+        ensureAllTimestamps();
         showDesktop();
       }
     } else {
       // First visit: seed with starter study
       loadDefaultKajianData(false);
+      ensureAllTimestamps();
       showDesktop();
     }
-
-    // Mulai sinkronisasi cloud real-time dan background polling
-    startRealtimeCloudSync();
-    triggerBackgroundCloudSync(false);
   }
 
   // --- BACKUP & RESTORE DATA ---
@@ -3364,16 +3848,10 @@ function doPost(e) {
       var inc = incomingData[j];
       if (!inc || !inc.id || deletedSet[inc.id]) continue;
       
-      if (!map[inc.id]) {
-        map[inc.id] = inc;
-      } else {
-        var ext = map[inc.id];
-        var incTime = inc.updatedAt ? new Date(inc.updatedAt).getTime() : 0;
-        var extTime = ext.updatedAt ? new Date(ext.updatedAt).getTime() : 0;
-        if (incTime >= extTime) {
-          map[inc.id] = inc;
-        }
+      if (!inc.updatedAt) {
+        inc.updatedAt = new Date().toISOString();
       }
+      map[inc.id] = inc;
     }
     
     for (var delId in deletedSet) {
@@ -3402,7 +3880,7 @@ function doPost(e) {
     var sheet = ss.getSheetByName('Data_Materi') || ss.insertSheet('Data_Materi');
     sheet.clearContents();
     
-    var headers = ['ID', 'Parent_ID', 'Level', 'Judul', 'Ikon', 'Background', 'Terakhir_Diperbarui', 'Isi_Materi_HTML'];
+    var headers = ['ID', 'Parent_ID', 'Level', 'Judul', 'Ikon', 'Background', 'Terakhir_Diperbarui', 'Isi_Materi_HTML', 'Font_Family'];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#4F46E5').setFontColor('#FFFFFF');
     
@@ -3421,11 +3899,12 @@ function doPost(e) {
           item.icon || 'fa-book-open',
           item.bg || '',
           item.updatedAt || new Date().toISOString(),
-          cellContent
+          cellContent,
+          item.fontFamily || ''
         ]);
       }
       sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
-      sheet.autoResizeColumns(1, 7);
+      sheet.autoResizeColumns(1, 9);
     }
     
     var syncTime = new Date().toISOString();
@@ -3473,7 +3952,8 @@ function getExistingData(ss) {
       icon: row[4] ? row[4].toString() : 'fa-book-open',
       bg: row[5] ? row[5].toString() : '',
       updatedAt: row[6] ? row[6].toString() : new Date().toISOString(),
-      content: row[7] ? row[7].toString() : ''
+      content: row[7] ? row[7].toString() : '',
+      fontFamily: row[8] ? row[8].toString() : ''
     });
   }
   return list;
@@ -3621,12 +4101,16 @@ function createJsonResponse(obj) {
     }
 
     isGasSyncing = true;
+    var nowIso = new Date().toISOString();
+    ensureAllTimestamps();
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+
     var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
     var payload = JSON.stringify({
       action: 'save',
       data: dbMateri,
       deletedIds: delIds,
-      timestamp: new Date().toISOString()
+      timestamp: nowIso
     });
 
     fetch(url, {
@@ -3634,13 +4118,10 @@ function createJsonResponse(obj) {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: payload
     })
-    .then(function(res) { return res.json(); })
     .then(function(res) {
       isGasSyncing = false;
       localStorage.removeItem('kitnaf_deleted_ids');
-      if (res && res.status === 'success' && Array.isArray(res.data)) {
-        mergeIncomingCloudData(res.data);
-      }
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
       var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       updateSaveStatus('saved_gas', timeStr);
       if (!silent) {
@@ -4205,6 +4686,258 @@ function createJsonResponse(obj) {
       }, { passive: false });
     }
 
+    // --- FITUR RESIZE & ALIGNMENT GAMBAR INTERAKTIF UNTUK EDITOR ---
+    function initQuillImageResizer(quill) {
+      if (!quill || !quill.root) return;
+
+      var overlay = null;
+      var toolbar = null;
+      var currentImg = null;
+      var isDragging = false;
+      var dragHandle = null;
+      var startX = 0;
+      var startY = 0;
+      var startWidth = 0;
+      var startHeight = 0;
+
+      function createOverlay() {
+        if (document.getElementById('quillImgResizerOverlay')) {
+          overlay = document.getElementById('quillImgResizerOverlay');
+          toolbar = document.getElementById('quillImgResizerToolbar');
+          return;
+        }
+
+        overlay = document.createElement('div');
+        overlay.id = 'quillImgResizerOverlay';
+        overlay.className = 'img-resizer-overlay';
+        overlay.style.display = 'none';
+
+        ['tl', 'tr', 'bl', 'br'].forEach(function(pos) {
+          var h = document.createElement('div');
+          h.className = 'img-resizer-handle ' + pos;
+          h.setAttribute('data-handle', pos);
+          overlay.appendChild(h);
+        });
+
+        toolbar = document.createElement('div');
+        toolbar.id = 'quillImgResizerToolbar';
+        toolbar.className = 'img-resizer-toolbar';
+        toolbar.style.display = 'none';
+        toolbar.innerHTML = `
+          <button type="button" class="img-resizer-btn" data-size="25%" title="Ukuran 25%">25%</button>
+          <button type="button" class="img-resizer-btn" data-size="50%" title="Ukuran 50%">50%</button>
+          <button type="button" class="img-resizer-btn" data-size="75%" title="Ukuran 75%">75%</button>
+          <button type="button" class="img-resizer-btn" data-size="100%" title="Ukuran 100%">100%</button>
+          <button type="button" class="img-resizer-btn" data-size="auto" title="Ukuran Asli">Asli</button>
+          <div class="img-resizer-divider"></div>
+          <button type="button" class="img-resizer-btn" data-align="left" title="Rata Kiri"><i class="fa-solid fa-align-left"></i></button>
+          <button type="button" class="img-resizer-btn" data-align="center" title="Rata Tengah"><i class="fa-solid fa-align-center"></i></button>
+          <button type="button" class="img-resizer-btn" data-align="right" title="Rata Kanan"><i class="fa-solid fa-align-right"></i></button>
+          <div class="img-resizer-divider"></div>
+          <button type="button" class="img-resizer-btn btn-delete" data-action="delete" title="Hapus Gambar"><i class="fa-solid fa-trash-can"></i></button>
+          <div class="img-resizer-divider"></div>
+          <span class="img-resizer-size-badge" id="imgResizerBadge"></span>
+        `;
+
+        document.body.appendChild(overlay);
+        document.body.appendChild(toolbar);
+
+        toolbar.addEventListener('click', function(e) {
+          var btn = e.target.closest('.img-resizer-btn');
+          if (!btn || !currentImg) return;
+          e.preventDefault();
+          e.stopPropagation();
+
+          var size = btn.getAttribute('data-size');
+          var align = btn.getAttribute('data-align');
+          var action = btn.getAttribute('data-action');
+
+          if (size) {
+            if (size === 'auto') {
+              currentImg.style.width = 'auto';
+            } else {
+              currentImg.style.width = size;
+            }
+            currentImg.style.maxWidth = '100%';
+            currentImg.style.height = 'auto';
+            updateOverlayPosition();
+            triggerEditorSave();
+          } else if (align) {
+            currentImg.style.display = 'block';
+            if (align === 'left') {
+              currentImg.style.marginLeft = '0';
+              currentImg.style.marginRight = 'auto';
+            } else if (align === 'center') {
+              currentImg.style.marginLeft = 'auto';
+              currentImg.style.marginRight = 'auto';
+            } else if (align === 'right') {
+              currentImg.style.marginLeft = 'auto';
+              currentImg.style.marginRight = '0';
+            }
+            currentImg.style.float = 'none';
+            updateOverlayPosition();
+            triggerEditorSave();
+          } else if (action === 'delete') {
+            var blot = Quill.find(currentImg);
+            if (blot) blot.deleteAt(0);
+            else currentImg.remove();
+            hideOverlay();
+            triggerEditorSave();
+          }
+        });
+
+        overlay.addEventListener('mousedown', onDragStart);
+        overlay.addEventListener('touchstart', onDragStart, { passive: false });
+      }
+
+      function onDragStart(e) {
+        var handle = e.target.closest('.img-resizer-handle');
+        if (!handle || !currentImg) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        isDragging = true;
+        dragHandle = handle.getAttribute('data-handle');
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+        startWidth = currentImg.getBoundingClientRect().width;
+        startHeight = currentImg.getBoundingClientRect().height;
+
+        document.addEventListener('mousemove', onDragging);
+        document.addEventListener('touchmove', onDragging, { passive: false });
+        document.addEventListener('mouseup', onDragEnd);
+        document.addEventListener('touchend', onDragEnd);
+      }
+
+      function onDragging(e) {
+        if (!isDragging || !currentImg) return;
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var dx = clientX - startX;
+
+        var edRect = quill.root.getBoundingClientRect();
+        var maxWidth = edRect.width - 20;
+
+        var newWidth = startWidth;
+        if (dragHandle === 'br' || dragHandle === 'tr') {
+          newWidth = startWidth + dx;
+        } else if (dragHandle === 'bl' || dragHandle === 'tl') {
+          newWidth = startWidth - dx;
+        }
+
+        newWidth = Math.max(50, Math.min(maxWidth, newWidth));
+        currentImg.style.width = Math.round(newWidth) + 'px';
+        currentImg.style.height = 'auto';
+        currentImg.style.maxWidth = '100%';
+
+        updateOverlayPosition();
+      }
+
+      function onDragEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        dragHandle = null;
+        document.removeEventListener('mousemove', onDragging);
+        document.removeEventListener('touchmove', onDragging);
+        document.removeEventListener('mouseup', onDragEnd);
+        document.removeEventListener('touchend', onDragEnd);
+        triggerEditorSave();
+      }
+
+      function updateOverlayPosition() {
+        if (!currentImg || !overlay || !toolbar) return;
+        var rect = currentImg.getBoundingClientRect();
+        var scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (rect.width === 0 || rect.height === 0 || !document.body.contains(currentImg)) {
+          hideOverlay();
+          return;
+        }
+
+        overlay.style.display = 'block';
+        overlay.style.left = (rect.left + scrollX) + 'px';
+        overlay.style.top = (rect.top + scrollY) + 'px';
+        overlay.style.width = rect.width + 'px';
+        overlay.style.height = rect.height + 'px';
+
+        toolbar.style.display = 'flex';
+        var tbLeft = rect.left + scrollX + (rect.width / 2) - (toolbar.offsetWidth / 2);
+        if (tbLeft < 10) tbLeft = 10;
+        if (tbLeft + toolbar.offsetWidth > window.innerWidth - 10) {
+          tbLeft = window.innerWidth - toolbar.offsetWidth - 10;
+        }
+
+        var tbTop = rect.top + scrollY - toolbar.offsetHeight - 8;
+        if (tbTop < scrollY + 10) {
+          tbTop = rect.bottom + scrollY + 8;
+        }
+
+        toolbar.style.left = tbLeft + 'px';
+        toolbar.style.top = tbTop + 'px';
+
+        var badge = document.getElementById('imgResizerBadge');
+        if (badge) {
+          badge.innerText = Math.round(rect.width) + 'px';
+        }
+      }
+
+      function showOverlay(img) {
+        currentImg = img;
+        createOverlay();
+        updateOverlayPosition();
+      }
+
+      function hideOverlay() {
+        if (isDragging) return;
+        currentImg = null;
+        if (overlay) overlay.style.display = 'none';
+        if (toolbar) toolbar.style.display = 'none';
+      }
+
+      function triggerEditorSave() {
+        if (quill && quill.emitter) {
+          quill.emitter.emit('text-change', null, null, 'user');
+        }
+        if (window.performAutoSave) {
+          window.performAutoSave();
+        }
+      }
+
+      quill.root.addEventListener('click', function(e) {
+        if (e.target && e.target.tagName === 'IMG') {
+          e.stopPropagation();
+          showOverlay(e.target);
+        } else {
+          hideOverlay();
+        }
+      });
+
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('#quillImgResizerToolbar') || e.target.closest('#quillImgResizerOverlay')) {
+          return;
+        }
+        if (e.target.tagName !== 'IMG') {
+          hideOverlay();
+        }
+      });
+
+      window.addEventListener('scroll', function() {
+        if (currentImg) updateOverlayPosition();
+      }, { passive: true });
+
+      window.addEventListener('resize', function() {
+        if (currentImg) updateOverlayPosition();
+      }, { passive: true });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          hideOverlay();
+        }
+      });
+    }
+
     quillEditor = new Quill('#quillEditor', {
       theme: 'snow',
       placeholder: 'Mulai ketik materi di sini...',
@@ -4238,11 +4971,14 @@ function createJsonResponse(obj) {
           [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
           [{ 'color': [] }, { 'background': [] }],
           ['blockquote', 'code-block'],
-          ['link', 'image', 'video', 'customNote'],
+          ['link', 'image', 'video', 'customNote', 'speechTranscribe'],
           ['clean']
         ]
       }
     });
+
+    // Inisialisasi Resizer Gambar untuk Editor Utama
+    initQuillImageResizer(quillEditor);
 
     // Inisialisasi tombol dropdown panah pada toolbar list
     setupListToolbarDropdowns();
@@ -4270,6 +5006,9 @@ function createJsonResponse(obj) {
       }
     });
 
+    // Inisialisasi Resizer Gambar untuk Editor Catatan Tambahan
+    initQuillImageResizer(noteQuillEditor);
+
     if (window.MutationObserver && noteQuillEditor.root) {
       var noteListObserver = new MutationObserver(function() {
         syncContinuousListCounters(noteQuillEditor.root);
@@ -4284,6 +5023,12 @@ function createJsonResponse(obj) {
     if (customNoteBtn) {
       customNoteBtn.innerHTML = '<i class="fa-solid fa-comment-dots text-primary" style="font-size:1.1rem; line-height:1;"></i>';
       customNoteBtn.title = "Tambahkan Catatan pada Teks";
+    }
+
+    var speechTranscribeBtn = document.querySelector('.ql-speechTranscribe');
+    if (speechTranscribeBtn) {
+      speechTranscribeBtn.innerHTML = '<i class="fa-solid fa-microphone text-danger" style="font-size:1.1rem; line-height:1;"></i>';
+      speechTranscribeBtn.title = "Studio Transkripsi Suara & File Audio (Mic & MP3)";
     }
 
     var currentNoteRange = null;
@@ -4319,6 +5064,10 @@ function createJsonResponse(obj) {
       } else {
         Swal.fire('Info', 'Pilih (blok) teks terlebih dahulu untuk menambahkan catatan.', 'info');
       }
+    });
+
+    toolbar.addHandler('speechTranscribe', function() {
+      window.openAudioTranscribeModal();
     });
 
     // Otomatis fokus ke area ketik ketika halaman catatan terbuka
@@ -4419,19 +5168,6 @@ function createJsonResponse(obj) {
       }
     });
 
-    // Pemicu Sinkronisasi Instan Saat Beralih Tab / Buka Kunci Layar HP / Online
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'visible') {
-        window.triggerBackgroundCloudSync(false);
-      }
-    });
-    window.addEventListener('focus', function() {
-      window.triggerBackgroundCloudSync(false);
-    });
-    window.addEventListener('online', function() {
-      window.triggerBackgroundCloudSync(false);
-    });
-
     var nodeForm = document.getElementById('nodeForm');
     if (nodeForm) {
       nodeForm.addEventListener('submit', function(e) {
@@ -4518,6 +5254,593 @@ function createJsonResponse(obj) {
         }
       }
     });
+
+    // ==========================================
+    // --- STUDIO TRANSKRIPSI SUARA & AUDIO (MIC & FILE AUDIO) ---
+    // ==========================================
+    var audioTranscribeModalEl = null;
+    var bsAudioTranscribeModal = null;
+    var liveSpeechRecognition = null;
+    var isLiveRecording = false;
+    var isRecordingUserIntent = false;
+    var micFinalTranscript = '';
+    var currentSelectedAudioFile = null;
+    var isTranscribingFile = false;
+
+    window.openAudioTranscribeModal = function() {
+      if (!audioTranscribeModalEl) {
+        audioTranscribeModalEl = document.getElementById('audioTranscribeModal');
+        if (audioTranscribeModalEl) {
+          bsAudioTranscribeModal = new bootstrap.Modal(audioTranscribeModalEl);
+          audioTranscribeModalEl.addEventListener('hidden.bs.modal', function() {
+            stopLiveMicRecording();
+            var audioEl = document.getElementById('audioPreviewElement');
+            if (audioEl) audioEl.pause();
+          });
+        }
+      }
+      
+      // Muat API Key Gemini jika ada
+      var savedGeminiKey = localStorage.getItem('kitnaf_gemini_api_key') || '';
+      var geminiInput = document.getElementById('geminiApiKeyInput');
+      if (geminiInput) geminiInput.value = savedGeminiKey;
+
+      if (bsAudioTranscribeModal) {
+        bsAudioTranscribeModal.show();
+      }
+    };
+
+    // Inisialisasi Speech Recognition
+    function initSpeechRecognitionEngine() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return null;
+
+      var recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      var langSelect = document.getElementById('micLangSelect');
+      recognition.lang = (langSelect && langSelect.value) ? langSelect.value : 'id-ID';
+
+      recognition.onstart = function() {
+        isLiveRecording = true;
+        updateMicUIState('recording');
+      };
+
+      recognition.onresult = function(event) {
+        var interimTranscript = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          var transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            micFinalTranscript += (micFinalTranscript ? ' ' : '') + transcript.trim();
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        var box = document.getElementById('micTranscriptBox');
+        if (box) {
+          var displayHtml = escapeHTML(micFinalTranscript);
+          if (interimTranscript) {
+            displayHtml += (displayHtml ? ' ' : '') + '<span class="interim-text">' + escapeHTML(interimTranscript) + '</span>';
+          }
+          box.innerHTML = displayHtml;
+          box.scrollTop = box.scrollHeight;
+        }
+
+        // Mode Live Typing ke lembar catatan langsung
+        var liveStreamToggle = document.getElementById('micLiveStreamToggle');
+        if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
+          if (event.results[event.results.length - 1].isFinal) {
+            var finalChunk = event.results[event.results.length - 1][0].transcript.trim();
+            if (finalChunk) {
+              var range = quillEditor.getSelection();
+              var insertIndex = range ? range.index : (quillEditor.getLength() - 1);
+              quillEditor.insertText(insertIndex, (insertIndex > 0 ? ' ' : '') + finalChunk, 'user');
+              quillEditor.setSelection(insertIndex + finalChunk.length + 1, 0, 'user');
+              lastLocalEditTime = Date.now();
+              window.performAutoSave();
+            }
+          }
+        }
+      };
+
+      recognition.onerror = function(event) {
+        if (event.error === 'no-speech') {
+          // Abaikan jeda hening
+          return;
+        }
+        if (event.error === 'not-allowed') {
+          Swal.fire('Izin Mikrofon Diperlukan', 'Harap izinkan akses mikrofon pada peramban (browser) Anda untuk menggunakan fitur transkripsi suara.', 'warning');
+          isRecordingUserIntent = false;
+          stopLiveMicRecording();
+        }
+      };
+
+      recognition.onend = function() {
+        isLiveRecording = false;
+        if (isRecordingUserIntent) {
+          // Otomatis sambung ulang saat pengguna masih berniat merekam (mencegah putus di jeda nafas)
+          try {
+            recognition.start();
+          } catch(e) {
+            updateMicUIState('idle');
+          }
+        } else {
+          updateMicUIState('idle');
+        }
+      };
+
+      return recognition;
+    }
+
+    function updateMicUIState(state) {
+      var btn = document.getElementById('micRecordBtn');
+      var icon = document.getElementById('micRecordIcon');
+      var wave = document.getElementById('micVoiceWave');
+      var heading = document.getElementById('micStatusHeading');
+      var desc = document.getElementById('micStatusDesc');
+
+      if (!btn) return;
+
+      if (state === 'recording') {
+        btn.classList.add('recording');
+        if (icon) icon.className = 'fa-solid fa-stop';
+        if (wave) wave.classList.add('active');
+        if (heading) heading.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle fa-xs me-1 fa-fade"></i> Sedang Mendengarkan...</span>';
+        if (desc) desc.innerText = 'Bicaralah sekarang. Suara Anda sedang ditranskripsikan secara langsung.';
+      } else {
+        btn.classList.remove('recording');
+        if (icon) icon.className = 'fa-solid fa-microphone';
+        if (wave) wave.classList.remove('active');
+        if (heading) heading.innerText = 'Klik Mikrofon untuk Mulai Bicara';
+        if (desc) desc.innerText = 'Peramban akan mendengarkan dan mentranskripsikan suara Anda secara langsung.';
+      }
+    }
+
+    window.toggleLiveMicRecording = function() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung Web Speech Recognition. Disarankan menggunakan Google Chrome, Edge, atau Safari versi terbaru.', 'info');
+        return;
+      }
+
+      if (!liveSpeechRecognition) {
+        liveSpeechRecognition = initSpeechRecognitionEngine();
+      }
+
+      if (isLiveRecording || isRecordingUserIntent) {
+        stopLiveMicRecording();
+      } else {
+        isRecordingUserIntent = true;
+        try {
+          var langSelect = document.getElementById('micLangSelect');
+          if (liveSpeechRecognition && langSelect) {
+            liveSpeechRecognition.lang = langSelect.value;
+          }
+          liveSpeechRecognition.start();
+        } catch(e) {
+          liveSpeechRecognition = initSpeechRecognitionEngine();
+          if (liveSpeechRecognition) liveSpeechRecognition.start();
+        }
+      }
+    };
+
+    window.stopLiveMicRecording = function() {
+      isRecordingUserIntent = false;
+      if (liveSpeechRecognition) {
+        try {
+          liveSpeechRecognition.stop();
+        } catch(e) {}
+      }
+      isLiveRecording = false;
+      updateMicUIState('idle');
+    };
+
+    window.changeMicLanguage = function() {
+      var langSelect = document.getElementById('micLangSelect');
+      if (liveSpeechRecognition && langSelect) {
+        liveSpeechRecognition.lang = langSelect.value;
+        if (isLiveRecording) {
+          stopLiveMicRecording();
+          setTimeout(function() {
+            toggleLiveMicRecording();
+          }, 300);
+        }
+      }
+    };
+
+    window.clearMicTranscript = function() {
+      micFinalTranscript = '';
+      var box = document.getElementById('micTranscriptBox');
+      if (box) box.innerHTML = '';
+    };
+
+    window.copyMicTranscript = function() {
+      var box = document.getElementById('micTranscriptBox');
+      var text = box ? (box.innerText || box.textContent || '').trim() : '';
+      if (!text) {
+        Swal.fire({ icon: 'info', title: 'Belum Ada Teks', text: 'Ketik atau ucapkan suara terlebih dahulu.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+        return;
+      }
+      navigator.clipboard.writeText(text).then(function() {
+        Swal.fire({ icon: 'success', title: 'Tersalin ke Clipboard!', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+      });
+    };
+
+    window.insertMicTranscriptToEditor = function(mode) {
+      if (!activeNodeId || !quillEditor) {
+        Swal.fire('Pilih Materi', 'Silakan buka atau buat materi terlebih dahulu di lembar catatan sebelum menyisipkan teks.', 'warning');
+        return;
+      }
+
+      var box = document.getElementById('micTranscriptBox');
+      var text = box ? (box.innerText || box.textContent || '').trim() : '';
+      if (!text) {
+        Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
+        return;
+      }
+
+      insertTextToQuill(text, mode);
+      stopLiveMicRecording();
+      if (bsAudioTranscribeModal) bsAudioTranscribeModal.hide();
+    };
+
+    function insertTextToQuill(text, mode) {
+      if (!quillEditor) return;
+
+      if (mode === 'cursor') {
+        var range = quillEditor.getSelection();
+        var idx = range ? range.index : (quillEditor.getLength() - 1);
+        quillEditor.insertText(idx, '\n' + text + '\n', 'user');
+        quillEditor.setSelection(idx + text.length + 2, 0, 'user');
+      } else if (mode === 'append') {
+        var lastIdx = quillEditor.getLength() - 1;
+        quillEditor.insertText(lastIdx, '\n\n' + text, 'user');
+        quillEditor.setSelection(quillEditor.getLength() - 1, 0, 'user');
+      }
+
+      lastLocalEditTime = Date.now();
+      window.performAutoSave();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Teks Berhasil Disisipkan!',
+        text: 'Transkripsi telah masuk ke lembar catatan materi aktif.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 2000
+      });
+    }
+
+    // --- AUDIO FILE UPLOAD & TRANSCRIPTION ---
+    window.handleAudioFileSelected = function(event) {
+      var file = event.target.files ? event.target.files[0] : null;
+      if (!file) return;
+      processAudioFile(file);
+    };
+
+    function processAudioFile(file) {
+      currentSelectedAudioFile = file;
+
+      var dropzone = document.getElementById('audioDropzone');
+      var playerContainer = document.getElementById('audioPlayerContainer');
+      var fileNameDisplay = document.getElementById('audioFileNameDisplay');
+      var fileSizeDisplay = document.getElementById('audioFileSizeDisplay');
+      var audioEl = document.getElementById('audioPreviewElement');
+
+      if (fileNameDisplay) fileNameDisplay.innerText = file.name;
+      if (fileSizeDisplay) fileSizeDisplay.innerText = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+      if (audioEl) {
+        audioEl.src = URL.createObjectURL(file);
+      }
+
+      if (playerContainer) playerContainer.classList.remove('d-none');
+      if (dropzone) dropzone.classList.add('d-none');
+    }
+
+    window.removeAudioFile = function() {
+      currentSelectedAudioFile = null;
+      var dropzone = document.getElementById('audioDropzone');
+      var playerContainer = document.getElementById('audioPlayerContainer');
+      var audioFileInput = document.getElementById('audioFileInput');
+      var audioEl = document.getElementById('audioPreviewElement');
+
+      if (audioFileInput) audioFileInput.value = '';
+      if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+      if (playerContainer) playerContainer.classList.add('d-none');
+      if (dropzone) dropzone.classList.remove('d-none');
+    };
+
+    // Drag & drop support untuk dropzone audio
+    var dropzoneEl = document.getElementById('audioDropzone');
+    if (dropzoneEl) {
+      ['dragenter', 'dragover'].forEach(function(eventName) {
+        dropzoneEl.addEventListener(eventName, function(e) {
+          e.preventDefault(); e.stopPropagation();
+          dropzoneEl.classList.add('dragover');
+        }, false);
+      });
+      ['dragleave', 'drop'].forEach(function(eventName) {
+        dropzoneEl.addEventListener(eventName, function(e) {
+          e.preventDefault(); e.stopPropagation();
+          dropzoneEl.classList.remove('dragover');
+        }, false);
+      });
+      dropzoneEl.addEventListener('drop', function(e) {
+        var dt = e.dataTransfer;
+        var files = dt.files;
+        if (files && files[0]) {
+          processAudioFile(files[0]);
+        }
+      }, false);
+    }
+
+    window.startAudioFileTranscription = function() {
+      if (!currentSelectedAudioFile) {
+        Swal.fire('Pilih File', 'Silakan pilih file audio terlebih dahulu.', 'warning');
+        return;
+      }
+
+      var engine = document.querySelector('input[name="transcribeEngine"]:checked');
+      var engineVal = engine ? engine.value : 'gemini';
+
+      if (engineVal === 'gemini') {
+        transcribeAudioWithGeminiAI();
+      } else {
+        transcribeAudioWithBrowserStream();
+      }
+    };
+
+    function transcribeAudioWithGeminiAI() {
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (!apiKey) {
+        Swal.fire({
+          title: 'Kunci API Gemini Diperlukan',
+          html: 'Untuk mentranskripsikan file audio dengan AI berkecepatan tinggi, masukkan Kunci API Google Gemini (Gratis) Anda pada <b>Tab 3. Pengaturan AI</b>.',
+          icon: 'info',
+          confirmButtonText: 'Buka Pengaturan AI',
+          showCancelButton: true,
+          cancelButtonText: 'Batal'
+        }).then(function(result) {
+          if (result.isConfirmed) {
+            var aiTabBtn = document.getElementById('tab-ai-btn');
+            if (aiTabBtn) aiTabBtn.click();
+          }
+        });
+        return;
+      }
+
+      var progressBox = document.getElementById('audioTranscribeProgress');
+      var progressText = document.getElementById('transcribeProgressText');
+      var progressPercent = document.getElementById('transcribeProgressPercent');
+      var progressBar = document.getElementById('transcribeProgressBar');
+      var startBtn = document.getElementById('btnStartFileTranscribe');
+
+      if (progressBox) progressBox.classList.remove('d-none');
+      if (startBtn) startBtn.disabled = true;
+      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Membaca file audio...';
+      if (progressPercent) progressPercent.innerText = '20%';
+      if (progressBar) progressBar.style.width = '20%';
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var base64Data = e.target.result.split(',')[1];
+        var mimeType = currentSelectedAudioFile.type || 'audio/mp3';
+
+        if (progressText) progressText.innerHTML = '<i class="fa-solid fa-brain fa-bounce me-1"></i> AI Gemini sedang mentranskripsikan audio kajian...';
+        if (progressPercent) progressPercent.innerText = '55%';
+        if (progressBar) progressBar.style.width = '55%';
+
+        var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+        var prompt = "Transkripsikan seluruh isi rekaman suara/kajian audio ini secara lengkap, kata demi kata, akurat dengan ejaan, tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. Tuliskan lafadz dan istilah Arab/Islam dengan benar. Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
+
+        var payload = {
+          contents: [
+            {
+              parts: [
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data
+                  }
+                },
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        };
+
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (progressPercent) progressPercent.innerText = '100%';
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressBox) progressBox.classList.add('d-none');
+          if (startBtn) startBtn.disabled = false;
+
+          if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            var transcriptResult = data.candidates[0].content.parts[0].text.trim();
+            var resultBox = document.getElementById('fileTranscriptBox');
+            if (resultBox) {
+              resultBox.innerText = transcriptResult;
+            }
+            Swal.fire({
+              icon: 'success',
+              title: 'Transkripsi Selesai!',
+              text: 'Audio berhasil ditranskripsikan dengan akurasi AI Gemini.',
+              toast: true,
+              position: 'bottom-end',
+              showConfirmButton: false,
+              timer: 2500
+            });
+          } else if (data.error) {
+            Swal.fire('Gagal Transkripsi', 'Error AI: ' + (data.error.message || 'Kunci API tidak valid atau kuota terlampaui.'), 'error');
+          } else {
+            Swal.fire('Gagal', 'Tidak dapat mengenali teks dalam audio tersebut.', 'warning');
+          }
+        })
+        .catch(function(err) {
+          if (progressBox) progressBox.classList.add('d-none');
+          if (startBtn) startBtn.disabled = false;
+          Swal.fire('Gagal Menghubungi AI', 'Terjadi kesalahan jaringan atau ukuran audio terlalu besar. Pastikan koneksi internet aktif.', 'error');
+        });
+      };
+
+      reader.readAsDataURL(currentSelectedAudioFile);
+    }
+
+    function transcribeAudioWithBrowserStream() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung Web Speech Recognition.', 'info');
+        return;
+      }
+
+      var audioEl = document.getElementById('audioPreviewElement');
+      if (!audioEl) return;
+
+      var recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      var langSelect = document.getElementById('micLangSelect');
+      recognition.lang = (langSelect && langSelect.value) ? langSelect.value : 'id-ID';
+
+      var fileTransResult = '';
+      var resultBox = document.getElementById('fileTranscriptBox');
+      var progressBox = document.getElementById('audioTranscribeProgress');
+      var progressText = document.getElementById('transcribeProgressText');
+
+      if (progressBox) progressBox.classList.remove('d-none');
+      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-headphones fa-bounce me-1"></i> Memutar audio dan menyimak suara secara langsung...';
+
+      recognition.onresult = function(event) {
+        var interim = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            fileTransResult += (fileTransResult ? ' ' : '') + event.results[i][0].transcript.trim();
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        if (resultBox) {
+          resultBox.innerHTML = escapeHTML(fileTransResult) + (interim ? ' <span class="interim-text">' + escapeHTML(interim) + '</span>' : '');
+          resultBox.scrollTop = resultBox.scrollHeight;
+        }
+      };
+
+      audioEl.onended = function() {
+        recognition.stop();
+        if (progressBox) progressBox.classList.add('d-none');
+        Swal.fire({ icon: 'success', title: 'Pemutaran Selesai', text: 'Transkripsi audio telah selesai.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 2000 });
+      };
+
+      audioEl.play();
+      try {
+        recognition.start();
+      } catch(e) {}
+    }
+
+    window.clearFileTranscript = function() {
+      var box = document.getElementById('fileTranscriptBox');
+      if (box) box.innerHTML = '';
+    };
+
+    window.copyFileTranscript = function() {
+      var box = document.getElementById('fileTranscriptBox');
+      var text = box ? (box.innerText || box.textContent || '').trim() : '';
+      if (!text) {
+        Swal.fire({ icon: 'info', title: 'Belum Ada Teks', text: 'Transkripsikan file audio terlebih dahulu.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+        return;
+      }
+      navigator.clipboard.writeText(text).then(function() {
+        Swal.fire({ icon: 'success', title: 'Tersalin ke Clipboard!', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+      });
+    };
+
+    window.insertFileTranscriptToEditor = function(mode) {
+      if (!activeNodeId || !quillEditor) {
+        Swal.fire('Pilih Materi', 'Silakan buka atau buat materi terlebih dahulu di lembar catatan sebelum menyisipkan teks.', 'warning');
+        return;
+      }
+
+      var box = document.getElementById('fileTranscriptBox');
+      var text = box ? (box.innerText || box.textContent || '').trim() : '';
+      if (!text) {
+        Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
+        return;
+      }
+
+      insertTextToQuill(text, mode);
+      if (bsAudioTranscribeModal) bsAudioTranscribeModal.hide();
+    };
+
+    // --- GEMINI API KEY MANAGEMENT ---
+    window.saveGeminiApiKey = function() {
+      var input = document.getElementById('geminiApiKeyInput');
+      var key = input ? input.value.trim() : '';
+      localStorage.setItem('kitnaf_gemini_api_key', key);
+      Swal.fire({
+        icon: 'success',
+        title: 'Kunci API Tersimpan!',
+        text: 'Kunci API Gemini telah disimpan secara aman di peramban Anda.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 1800
+      });
+    };
+
+    window.toggleGeminiKeyVisibility = function() {
+      var input = document.getElementById('geminiApiKeyInput');
+      var icon = document.getElementById('geminiKeyEyeIcon');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.className = 'fa-solid fa-eye-slash';
+      } else {
+        input.type = 'password';
+      }
+    };
+
+    window.testGeminiApiKey = function() {
+      var input = document.getElementById('geminiApiKeyInput');
+      var key = input ? input.value.trim() : (localStorage.getItem('kitnaf_gemini_api_key') || '');
+      if (!key) {
+        Swal.fire('Kunci API Kosong', 'Masukkan Kunci API Google Gemini terlebih dahulu.', 'warning');
+        return;
+      }
+
+      Swal.fire({
+        title: 'Menguji Kunci API...',
+        html: 'Sedang menghubungkan ke server Google Gemini AI...',
+        allowOutsideClick: false,
+        didOpen: function() {
+          Swal.showLoading();
+        }
+      });
+
+      fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + encodeURIComponent(key))
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data && Array.isArray(data.models)) {
+            localStorage.setItem('kitnaf_gemini_api_key', key);
+            Swal.fire('Berhasil Terhubung! ✓', 'Kunci API Gemini valid dan siap digunakan untuk mentranskripsikan audio rekaman secara instan.', 'success');
+          } else {
+            Swal.fire('Kunci API Tidak Valid', (data.error && data.error.message) ? data.error.message : 'Periksa kembali kunci API yang Anda salin dari Google AI Studio.', 'error');
+          }
+        })
+        .catch(function(err) {
+          Swal.fire('Gagal Terhubung', 'Tidak dapat menghubungi server Gemini. Pastikan internet Anda aktif.', 'error');
+        });
+    };
 
     // Load Data
     fetchData();

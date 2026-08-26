@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitnaf-v1.1.0';
+const CACHE_NAME = 'kitnaf-v1.2.3';
 
 const PRECACHE_ASSETS = [
   './',

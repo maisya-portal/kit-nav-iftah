@@ -73,19 +73,11 @@ function doPost(e) {
       if (!inc || !inc.id) continue;
       if (deletedSet[inc.id]) continue;
       
-      if (!map[inc.id]) {
-        // Catatan baru dari perangkat ini
-        map[inc.id] = inc;
-      } else {
-        var ext = map[inc.id];
-        var incTime = inc.updatedAt ? new Date(inc.updatedAt).getTime() : 0;
-        var extTime = ext.updatedAt ? new Date(ext.updatedAt).getTime() : 0;
-        
-        // Simpan versi yang memiliki waktu update paling baru
-        if (incTime >= extTime) {
-          map[inc.id] = inc;
-        }
+      // Selalu terima dan simpan data terkini yang dikirim oleh perangkat yang sedang menyimpan
+      if (!inc.updatedAt) {
+        inc.updatedAt = new Date().toISOString();
       }
+      map[inc.id] = inc;
     }
     
     // Hapus catatan yang ada di daftar deletedIds
@@ -125,7 +117,7 @@ function doPost(e) {
     sheet.clearContents();
     
     // Buat Header Tabel
-    var headers = ['ID', 'Parent_ID', 'Level', 'Judul', 'Ikon', 'Background', 'Terakhir_Diperbarui', 'Isi_Materi_HTML'];
+    var headers = ['ID', 'Parent_ID', 'Level', 'Judul', 'Ikon', 'Background', 'Terakhir_Diperbarui', 'Isi_Materi_HTML', 'Font_Family'];
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#4F46E5').setFontColor('#FFFFFF');
     
@@ -146,12 +138,13 @@ function doPost(e) {
           item.icon || 'fa-book-open',
           item.bg || '',
           item.updatedAt || new Date().toISOString(),
-          cellContent
+          cellContent,
+          item.fontFamily || ''
         ]);
       }
       
       sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
-      sheet.autoResizeColumns(1, 7);
+      sheet.autoResizeColumns(1, 9);
     }
     
     var syncTime = new Date().toISOString();
@@ -206,7 +199,8 @@ function getExistingData(ss) {
       icon: row[4] ? row[4].toString() : 'fa-book-open',
       bg: row[5] ? row[5].toString() : '',
       updatedAt: row[6] ? row[6].toString() : new Date().toISOString(),
-      content: row[7] ? row[7].toString() : ''
+      content: row[7] ? row[7].toString() : '',
+      fontFamily: row[8] ? row[8].toString() : ''
     });
   }
   return list;
