@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Kit-Naf">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
   <link rel="alternate icon" href="favicon.ico">
   
   <!-- CSS: Bootstrap, FontAwesome, Google Fonts, QuillJS -->
@@ -1237,12 +1237,10 @@
 <div id="desktopView" class="desktop-wrapper glass-panel">
   <div class="desktop-header glass-header p-3 px-4 d-flex justify-content-between align-items-center shadow-sm">
     <div class="d-flex align-items-center gap-3">
-      <div class="bg-primary text-white rounded d-flex justify-content-center align-items-center shadow-sm" style="width:40px;height:40px;">
-        <i class="fa-solid fa-book-open"></i>
-      </div>
+      <img src="./icons/app-logo.png" alt="Kit-Naf Logo" class="rounded-3 shadow-sm border border-white border-opacity-50" style="width:42px; height:42px; object-fit:cover;">
       <div>
         <h5 class="mb-0 fw-bold text-dark">Kit-Naf (Kitabah-Nafiah)</h5>
-        <small class="text-muted fw-semibold">Aplikasi Catatan Ilmu yang bermanfaat</small>
+        <small class="text-muted fw-semibold">Aplikasi PWA Catatan Online</small>
       </div>
     </div>
     <div class="d-flex gap-2 align-items-center">
@@ -1288,7 +1286,8 @@
         <button class="btn btn-sm btn-light rounded-circle shadow-sm border-0 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;" onclick="showDesktop()" title="Kembali ke Beranda">
           <i class="fa-solid fa-arrow-left"></i>
         </button>
-        <div class="text-center px-1 text-truncate">
+        <div class="d-flex align-items-center gap-2 px-1 text-truncate">
+          <img src="./icons/app-logo.png" alt="Kit-Naf Logo" class="rounded-2 shadow-sm border border-white border-opacity-25" style="width: 26px; height: 26px; object-fit: cover;">
           <span class="fw-bold small text-uppercase text-white text-nowrap user-select-none" style="letter-spacing: 1px;">Kit-Naf</span>
         </div>
         <button class="btn btn-sm btn-primary rounded-circle shadow-sm d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px;" onclick="if(window.activeRootId) openNodeModal(window.activeRootId, 1)" title="Tambah Sub Materi">

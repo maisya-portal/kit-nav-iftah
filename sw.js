@@ -1,11 +1,12 @@
-const CACHE_NAME = 'kitnaf-v1.2.4';
+const CACHE_NAME = 'kitnaf-v1.3.0';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './favicon.ico',
-  './icons/favicon.svg',
+  './icons/favicon.png',
+  './icons/app-logo.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
