@@ -1641,6 +1641,75 @@
   </div>
 </div>
 
+<!-- Context Menu Klik Kanan Teks Editor -->
+<div id="editorTextContextMenu" class="dropdown-menu shadow-2xl border rounded-3 p-1 position-fixed" style="display: none; z-index: 1060; min-width: 230px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); border-color: rgba(0,0,0,0.12);">
+  
+  <!-- Item Utama: Tambahkan Catatan pada Teks -->
+  <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded-2 fw-bold text-primary" id="ctxAddNoteBtn" onclick="handleCtxAddNote()">
+    <i class="fa-solid fa-comment-dots text-primary" style="font-size: 1.1rem; width: 20px;"></i>
+    <span id="ctxAddNoteLabel">Tambahkan Catatan pada Teks</span>
+  </button>
+  
+  <!-- Item: Jelaskan dengan AI Ilmiah -->
+  <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded-2 fw-semibold" id="ctxAiExplainBtn" onclick="handleCtxAiExplain()" style="color: #4f46e5;">
+    <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 1.05rem; width: 20px; color: #4f46e5;"></i>
+    <span>Jelaskan dengan AI Ilmiah</span>
+  </button>
+
+  <div class="dropdown-divider my-1"></div>
+
+  <!-- Sub-menu / Pilihan Sorot Warna Teks (Highlight) -->
+  <div class="px-3 py-1 small fw-bold text-muted d-flex align-items-center justify-content-between">
+    <span><i class="fa-solid fa-highlighter me-1 text-warning"></i> Stabilo / Sorot:</span>
+    <div class="d-flex gap-1 align-items-center">
+      <span class="color-dot cursor-pointer rounded-circle" style="width:16px;height:16px;background:#fef08a;border:1px solid #eab308;display:inline-block;" onclick="handleCtxHighlight('#fef08a')" title="Kuning"></span>
+      <span class="color-dot cursor-pointer rounded-circle" style="width:16px;height:16px;background:#bbf7d0;border:1px solid #22c55e;display:inline-block;" onclick="handleCtxHighlight('#bbf7d0')" title="Hijau"></span>
+      <span class="color-dot cursor-pointer rounded-circle" style="width:16px;height:16px;background:#bfdbfe;border:1px solid #3b82f6;display:inline-block;" onclick="handleCtxHighlight('#bfdbfe')" title="Biru"></span>
+      <span class="color-dot cursor-pointer rounded-circle" style="width:16px;height:16px;background:#fbcfe8;border:1px solid #ec4899;display:inline-block;" onclick="handleCtxHighlight('#fbcfe8')" title="Merah Muda"></span>
+      <button class="btn btn-sm btn-link p-0 text-muted text-decoration-none ms-1" onclick="handleCtxHighlight(false)" title="Hapus Warna Sorot"><i class="fa-solid fa-ban fa-xs"></i></button>
+    </div>
+  </div>
+
+  <div class="dropdown-divider my-1"></div>
+
+  <!-- Format Teks Cepat -->
+  <div class="d-flex px-2 gap-1 my-1">
+    <button type="button" class="btn btn-sm btn-light flex-grow-1 border fw-bold" onclick="handleCtxFormat('bold')" title="Tebal (Ctrl+B)"><b>B</b></button>
+    <button type="button" class="btn btn-sm btn-light flex-grow-1 border fst-italic" onclick="handleCtxFormat('italic')" title="Miring (Ctrl+I)"><em>I</em></button>
+    <button type="button" class="btn btn-sm btn-light flex-grow-1 border text-decoration-underline" onclick="handleCtxFormat('underline')" title="Garis Bawah (Ctrl+U)"><u>U</u></button>
+  </div>
+
+  <div class="dropdown-divider my-1"></div>
+
+  <!-- Pilihan Ubah Bullets/Numbering jika pada list -->
+  <div id="ctxListOptionsContainer" class="d-none">
+    <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1 px-3 small rounded-2" onclick="handleCtxOpenListMenu()">
+      <i class="fa-solid fa-list-check text-success" style="width: 20px;"></i>
+      <span id="ctxListOptionsLabel">Ubah Simbol Bullet / Penomoran...</span>
+    </button>
+    <div class="dropdown-divider my-1"></div>
+  </div>
+
+  <!-- Cut, Copy -->
+  <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1 px-3 small rounded-2" id="ctxCopyBtn" onclick="handleCtxCopy()">
+    <i class="fa-solid fa-copy text-secondary" style="width: 20px;"></i>
+    <span>Salin Teks</span>
+  </button>
+  <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1 px-3 small rounded-2" id="ctxCutBtn" onclick="handleCtxCut()">
+    <i class="fa-solid fa-scissors text-secondary" style="width: 20px;"></i>
+    <span>Potong Teks</span>
+  </button>
+
+  <!-- Item: Hapus Catatan (hanya jika ada note) -->
+  <div id="ctxDeleteNoteContainer" class="d-none">
+    <div class="dropdown-divider my-1"></div>
+    <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1 px-3 small rounded-2 text-danger" onclick="handleCtxDeleteNote()">
+      <i class="fa-solid fa-trash text-danger" style="width: 20px;"></i>
+      <span>Hapus Catatan Teks Ini</span>
+    </button>
+  </div>
+</div>
+
 <!-- Modal Atur Nomor Awal -->
 <div class="modal fade" id="listStartModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -5367,32 +5436,39 @@ function createJsonResponse(obj) {
     var noteModalEl = document.getElementById('noteEditorModal');
     var bsNoteModal = new bootstrap.Modal(noteModalEl);
 
+    function openNoteModalForRange(range, existingNoteData) {
+      if (!range) return;
+      currentNoteRange = range;
+      var format = quillEditor.getFormat(range);
+      var existingNote = existingNoteData || format.customNote || '';
+      
+      var noteHtml = '';
+      var noteColor = '#2563EB';
+      
+      if (existingNote) {
+        try {
+          var parsed = (typeof existingNote === 'string') ? JSON.parse(existingNote) : existingNote;
+          noteHtml = parsed.html || '';
+          noteColor = parsed.color || '#2563EB';
+        } catch(e) {
+          noteHtml = existingNote;
+        }
+      }
+      
+      var picker = document.getElementById('noteColorPicker');
+      if (picker) picker.value = noteColor;
+      noteQuillEditor.root.innerHTML = noteHtml;
+      var delBtn = document.getElementById('btnDeleteNote');
+      if (delBtn) delBtn.style.display = existingNote ? 'block' : 'none';
+      
+      bsNoteModal.show();
+    }
+
     var toolbar = quillEditor.getModule('toolbar');
     toolbar.addHandler('customNote', function() {
       var range = quillEditor.getSelection();
       if (range && range.length > 0) {
-        currentNoteRange = range;
-        var format = quillEditor.getFormat(range);
-        var existingNote = format.customNote || '';
-        
-        var noteHtml = '';
-        var noteColor = '#2563EB';
-        
-        if (existingNote) {
-            try {
-                var parsed = JSON.parse(existingNote);
-                noteHtml = parsed.html || '';
-                noteColor = parsed.color || '#2563EB';
-            } catch(e) {
-                noteHtml = existingNote;
-            }
-        }
-        
-        document.getElementById('noteColorPicker').value = noteColor;
-        noteQuillEditor.root.innerHTML = noteHtml;
-        document.getElementById('btnDeleteNote').style.display = existingNote ? 'block' : 'none';
-        
-        bsNoteModal.show();
+        openNoteModalForRange(range);
       } else {
         Swal.fire('Info', 'Pilih (blok) teks terlebih dahulu untuk menambahkan catatan.', 'info');
       }
@@ -5430,57 +5506,246 @@ function createJsonResponse(obj) {
 
     var editorContainer = document.getElementById('quillEditor');
     
+    // Klik kiri pada teks yang memiliki catatan
     editorContainer.addEventListener('click', function(e) {
       if (e.target && e.target.classList.contains('has-note')) {
         var blot = Quill.find(e.target);
         if (blot) {
-            var index = quillEditor.getIndex(blot);
-            var length = blot.length();
-            currentNoteRange = { index: index, length: length };
-            
-            var noteData = e.target.getAttribute('data-note');
-            var noteHtml = '';
-            var noteColor = '#2563EB';
-            
-            if (noteData) {
-                try {
-                    var parsed = JSON.parse(noteData);
-                    noteHtml = parsed.html || '';
-                    noteColor = parsed.color || '#2563EB';
-                } catch(err) {
-                    noteHtml = noteData;
-                }
-            }
-            
-            document.getElementById('noteColorPicker').value = noteColor;
-            noteQuillEditor.root.innerHTML = noteHtml;
-            document.getElementById('btnDeleteNote').style.display = 'block';
-            
-            bsNoteModal.show();
+          var index = quillEditor.getIndex(blot);
+          var length = blot.length();
+          var noteData = e.target.getAttribute('data-note');
+          openNoteModalForRange({ index: index, length: length }, noteData);
         }
       }
     });
 
-    editorContainer.addEventListener('contextmenu', function(e) {
-      var li = e.target.closest('li');
-      if (li) {
-        e.preventDefault();
-        var isOrdered = li.getAttribute('data-list') === 'ordered';
+    // ==========================================
+    // --- CONTEXT MENU KLIK KANAN TEKS EDITOR ---
+    // ==========================================
+    var ctxActiveRange = null;
+    var ctxActiveElement = null;
+    var ctxActiveListLi = null;
+
+    window.closeEditorTextContextMenu = function() {
+      var ctxMenu = document.getElementById('editorTextContextMenu');
+      if (ctxMenu) ctxMenu.style.display = 'none';
+    };
+
+    window.handleCtxAddNote = function() {
+      closeEditorTextContextMenu();
+      if (ctxActiveElement && ctxActiveElement.classList.contains('has-note')) {
+        var noteData = ctxActiveElement.getAttribute('data-note');
+        openNoteModalForRange(ctxActiveRange, noteData);
+      } else if (ctxActiveRange) {
+        openNoteModalForRange(ctxActiveRange);
+      }
+    };
+
+    window.handleCtxAiExplain = function() {
+      closeEditorTextContextMenu();
+      if (typeof window.openAiExplainerModal === 'function') {
+        window.openAiExplainerModal();
+      }
+    };
+
+    window.handleCtxHighlight = function(color) {
+      closeEditorTextContextMenu();
+      if (ctxActiveRange) {
+        quillEditor.formatText(ctxActiveRange.index, ctxActiveRange.length, 'background', color || false, 'user');
+      }
+    };
+
+    window.handleCtxFormat = function(fmt) {
+      closeEditorTextContextMenu();
+      if (ctxActiveRange) {
+        var currentFmt = quillEditor.getFormat(ctxActiveRange);
+        var newVal = !currentFmt[fmt];
+        quillEditor.formatText(ctxActiveRange.index, ctxActiveRange.length, fmt, newVal, 'user');
+      }
+    };
+
+    window.handleCtxCopy = function() {
+      closeEditorTextContextMenu();
+      if (ctxActiveRange) {
+        var text = quillEditor.getText(ctxActiveRange.index, ctxActiveRange.length);
+        if (text) {
+          navigator.clipboard.writeText(text);
+          Swal.fire({ icon: 'success', title: 'Tersalin', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+        }
+      }
+    };
+
+    window.handleCtxCut = function() {
+      closeEditorTextContextMenu();
+      if (ctxActiveRange) {
+        var text = quillEditor.getText(ctxActiveRange.index, ctxActiveRange.length);
+        if (text) {
+          navigator.clipboard.writeText(text);
+          quillEditor.deleteText(ctxActiveRange.index, ctxActiveRange.length, 'user');
+        }
+      }
+    };
+
+    window.handleCtxDeleteNote = function() {
+      closeEditorTextContextMenu();
+      if (ctxActiveRange) {
+        quillEditor.formatText(ctxActiveRange.index, ctxActiveRange.length, 'customNote', false, 'user');
+        Swal.fire({ icon: 'success', title: 'Catatan Dihapus', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+      }
+    };
+
+    window.handleCtxOpenListMenu = function() {
+      closeEditorTextContextMenu();
+      if (ctxActiveListLi) {
+        var isOrdered = ctxActiveListLi.getAttribute('data-list') === 'ordered';
         var menuId = isOrdered ? 'numberingDropdownMenu' : 'bulletsDropdownMenu';
         var menu = document.getElementById(menuId);
         closeListDropdowns();
         if (menu) {
           menu.style.display = 'block';
-          var left = e.clientX;
-          if (left + 295 > window.innerWidth) left = window.innerWidth - 305;
-          if (left < 10) left = 10;
-          var top = e.clientY + 5;
-          if (top + 320 > window.innerHeight) top = window.innerHeight - 330;
-          menu.style.top = top + 'px';
-          menu.style.left = left + 'px';
+          menu.style.top = '120px';
+          menu.style.left = '40%';
         }
       }
+    };
+
+    // Event Listener Klik Kanan pada Editor
+    editorContainer.addEventListener('contextmenu', function(e) {
+      var noteSpan = e.target.closest('.has-note');
+      var listLi = e.target.closest('li');
+      var sel = quillEditor.getSelection();
+
+      // 1. Jika klik kanan pada teks yang sudah ada catatan (.has-note)
+      if (noteSpan) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeListDropdowns();
+
+        var blot = Quill.find(noteSpan);
+        if (blot) {
+          var index = quillEditor.getIndex(blot);
+          var length = blot.length();
+          ctxActiveRange = { index: index, length: length };
+          currentNoteRange = ctxActiveRange;
+        } else {
+          ctxActiveRange = sel || { index: 0, length: 0 };
+        }
+        ctxActiveElement = noteSpan;
+        ctxActiveListLi = listLi;
+
+        showEditorContextMenu(e.clientX, e.clientY, true);
+        return;
+      }
+
+      // 2. Jika ada teks yang diseleksi (di-blok)
+      if (sel && sel.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeListDropdowns();
+
+        ctxActiveRange = sel;
+        currentNoteRange = sel;
+        ctxActiveElement = null;
+        ctxActiveListLi = listLi;
+
+        showEditorContextMenu(e.clientX, e.clientY, false);
+        return;
+      }
+
+      // 3. Jika klik kanan pada teks tanpa seleksi, seleksi kata di bawah kursor otomatis
+      e.preventDefault();
+      e.stopPropagation();
+      closeListDropdowns();
+
+      var range = null;
+      if (document.caretRangeFromPoint) {
+        var domRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+        if (domRange && domRange.startContainer) {
+          var textNode = domRange.startContainer;
+          if (textNode.nodeType === Node.TEXT_NODE) {
+            var fullStr = textNode.textContent;
+            var offset = domRange.startOffset;
+            var start = offset;
+            while (start > 0 && /\S/.test(fullStr[start - 1])) start--;
+            var end = offset;
+            while (end < fullStr.length && /\S/.test(fullStr[end])) end++;
+            
+            if (end > start) {
+              var blotNode = Quill.find(textNode);
+              if (blotNode) {
+                var blotIndex = quillEditor.getIndex(blotNode);
+                quillEditor.setSelection(blotIndex + start, end - start, 'silent');
+                range = { index: blotIndex + start, length: end - start };
+              }
+            }
+          }
+        }
+      }
+
+      if (!range) {
+        range = quillEditor.getSelection() || { index: quillEditor.getLength() - 1, length: 0 };
+      }
+
+      ctxActiveRange = range;
+      currentNoteRange = range;
+      ctxActiveElement = null;
+      ctxActiveListLi = listLi;
+
+      showEditorContextMenu(e.clientX, e.clientY, false);
     });
+
+    function showEditorContextMenu(clientX, clientY, hasExistingNote) {
+      var ctxMenu = document.getElementById('editorTextContextMenu');
+      if (!ctxMenu) return;
+
+      var addNoteLabel = document.getElementById('ctxAddNoteLabel');
+      var delContainer = document.getElementById('ctxDeleteNoteContainer');
+      var listContainer = document.getElementById('ctxListOptionsContainer');
+
+      if (hasExistingNote) {
+        if (addNoteLabel) addNoteLabel.innerText = 'Edit / Buka Catatan Teks Ini';
+        if (delContainer) delContainer.classList.remove('d-none');
+      } else {
+        if (addNoteLabel) addNoteLabel.innerText = 'Tambahkan Catatan pada Teks';
+        if (delContainer) delContainer.classList.add('d-none');
+      }
+
+      if (ctxActiveListLi && listContainer) {
+        listContainer.classList.remove('d-none');
+      } else if (listContainer) {
+        listContainer.classList.add('d-none');
+      }
+
+      ctxMenu.style.display = 'block';
+
+      // Posisi kontekstual agar selalu pas di layar
+      var left = clientX + 5;
+      var top = clientY + 5;
+      var menuW = 240;
+      var menuH = 330;
+
+      if (left + menuW > window.innerWidth) {
+        left = window.innerWidth - menuW - 15;
+      }
+      if (top + menuH > window.innerHeight) {
+        top = window.innerHeight - menuH - 15;
+      }
+      if (left < 10) left = 10;
+      if (top < 10) top = 10;
+
+      ctxMenu.style.left = left + 'px';
+      ctxMenu.style.top = top + 'px';
+    }
+
+    // Tutup context menu jika klik di tempat lain
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#editorTextContextMenu')) {
+        closeEditorTextContextMenu();
+      }
+    });
+    document.addEventListener('scroll', function() {
+      closeEditorTextContextMenu();
+    }, true);
 
     quillEditor.on('text-change', function(delta, oldDelta, source) {
       syncContinuousListCounters(quillEditor.root);
