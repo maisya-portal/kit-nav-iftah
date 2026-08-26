@@ -1095,15 +1095,101 @@
     }
 
     .ql-snow .ql-toolbar button.ql-speechTranscribe,
-    .ql-snow .ql-toolbar button.ql-customNote {
+    .ql-snow .ql-toolbar button.ql-customNote,
+    .ql-snow .ql-toolbar button.ql-aiExplain {
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       cursor: pointer !important;
     }
     .ql-snow .ql-toolbar button.ql-speechTranscribe *,
-    .ql-snow .ql-toolbar button.ql-customNote * {
+    .ql-snow .ql-toolbar button.ql-customNote *,
+    .ql-snow .ql-toolbar button.ql-aiExplain * {
       pointer-events: none !important;
+    }
+
+    /* --- ASISTEN AI ILMIAH PENJELAS CATATAN STYLES --- */
+    .ai-mode-card {
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      border-color: #e2e8f0 !important;
+    }
+    .ai-mode-card:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1 !important;
+      transform: translateY(-1px);
+    }
+    .ai-mode-card.active {
+      background: #eef2ff !important;
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 1px #6366f1;
+    }
+    .ai-mode-card.active .mode-check-icon {
+      display: inline-block !important;
+    }
+    .ai-rendered-content {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #1e293b;
+    }
+    .ai-rendered-content h1, 
+    .ai-rendered-content h2, 
+    .ai-rendered-content h3, 
+    .ai-rendered-content h4 {
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 0.35rem;
+    }
+    .ai-rendered-content ul, 
+    .ai-rendered-content ol {
+      padding-left: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .ai-rendered-content li {
+      margin-bottom: 0.35rem;
+    }
+    .ai-rendered-content blockquote {
+      border-left: 4px solid #4f46e5;
+      background: #f8fafc;
+      padding: 0.75rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      color: #334155;
+    }
+    .ai-rendered-content .scholarly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+      margin-bottom: 0.5rem;
+    }
+    .ai-rendered-content a.scholarly-link {
+      color: #2563eb;
+      text-decoration: underline;
+      font-weight: 600;
+      transition: color 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .ai-rendered-content a.scholarly-link:hover {
+      color: #1d4ed8;
+    }
+    .ai-rendered-content a.scholarly-link::after {
+      content: "\f08e";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      font-size: 0.72rem;
     }
 
     /* --- AUDIO & SPEECH TRANSCRIPTION STUDIO --- */
@@ -1353,6 +1439,10 @@
           <div id="saveStatus" class="text-muted small fw-semibold d-flex align-items-center gap-2 me-1 bg-white px-3 py-1 rounded-pill shadow-sm border">
             <i class="fa-solid fa-check-circle text-success"></i> Tersimpan
           </div>
+          <!-- Tombol Asisten AI Ilmiah Penjelas Catatan -->
+          <button class="btn btn-sm btn-light rounded-pill px-3 shadow-sm border border-white d-flex align-items-center gap-1 text-primary fw-semibold me-1" onclick="openAiExplainerModal()" title="Asisten AI Ilmiah: Jelaskan, Syarah & Takhrij Catatan Ini">
+            <i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i> <span class="d-none d-md-inline">AI Penjelas</span>
+          </button>
           <!-- Tombol Transkripsi Audio & Suara -->
           <button class="btn btn-sm btn-light rounded-pill px-3 shadow-sm border border-white d-flex align-items-center gap-1 text-danger fw-semibold me-1" onclick="openAudioTranscribeModal()" title="Studio Transkripsi Suara & File Audio (Mic & MP3)">
             <i class="fa-solid fa-microphone me-1"></i> <span class="d-none d-md-inline">Transkrip Audio</span>
@@ -2172,6 +2262,178 @@
 
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     MODAL ASISTEN AI ILMIAH PENJELAS CATATAN
+     ========================================== -->
+<div class="modal fade" id="aiExplainerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-2xl rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px);">
+      
+      <!-- Header -->
+      <div class="modal-header border-bottom px-4 py-3 bg-white" style="background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px; font-size: 1.25rem;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+              Asisten AI Ilmiah Penjelas Catatan
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1" style="font-size: 0.7rem;">Rujukan Terpercaya & Tautan Valid</span>
+            </h5>
+            <p class="text-muted small mb-0">Syarah, Takhrij Dalil & Analisis Mendalam Berdasarkan Metodologi Keilmuan Shahih</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4">
+        <div class="row g-3">
+          
+          <!-- Kolom Kiri: Pengaturan & Teks Input -->
+          <div class="col-lg-5 col-md-12 d-flex flex-column gap-3 border-end-lg pe-lg-3">
+            
+            <!-- Mode Selector Pills -->
+            <div>
+              <label class="form-label small fw-bold text-dark mb-2 d-flex align-items-center gap-1">
+                <i class="fa-solid fa-layer-group text-primary"></i> Pilih Mode Penjelasan Ilmiah:
+              </label>
+              <div class="d-flex flex-column gap-2" id="aiModeSelectorContainer">
+                <div class="ai-mode-card active p-2 px-3 rounded-3 border cursor-pointer" onclick="selectAiMode('syarah', this)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold small text-dark"><i class="fa-solid fa-book-open text-primary me-2"></i>Syarah & Penjelasan Ilmiah</span>
+                    <i class="fa-solid fa-check-circle text-primary mode-check-icon"></i>
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Penjelasan komprehensif, hikmah, serta kaidah ilmiah terkait materi.</small>
+                </div>
+
+                <div class="ai-mode-card p-2 px-3 rounded-3 border cursor-pointer" onclick="selectAiMode('takhrij', this)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold small text-dark"><i class="fa-solid fa-magnifying-glass-chart text-success me-2"></i>Takhrij Dalil & Referensi</span>
+                    <i class="fa-solid fa-check-circle text-primary mode-check-icon d-none"></i>
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Menelusuri ayat Al-Qur'an, keshahihan Hadits, dan rujukan kitab mu'tamad.</small>
+                </div>
+
+                <div class="ai-mode-card p-2 px-3 rounded-3 border cursor-pointer" onclick="selectAiMode('summary', this)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold small text-dark"><i class="fa-solid fa-list-check text-warning me-2"></i>Intisari & Poin Sistematis</span>
+                    <i class="fa-solid fa-check-circle text-primary mode-check-icon d-none"></i>
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Menyusun bagan kesimpulan ringkas, poin pokok, dan faidah praktis.</small>
+                </div>
+
+                <div class="ai-mode-card p-2 px-3 rounded-3 border cursor-pointer" onclick="selectAiMode('qa', this)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold small text-dark"><i class="fa-solid fa-comments text-info me-2"></i>Tanya Jawab Seputar Topik Ini</span>
+                    <i class="fa-solid fa-check-circle text-primary mode-check-icon d-none"></i>
+                  </div>
+                  <small class="text-muted" style="font-size: 0.75rem;">Ajukan pertanyaan spesifik atau minta rincian tertentu dari catatan ini.</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Question Input (hanya jika mode qa) -->
+            <div id="aiCustomQuestionBox" class="d-none">
+              <label class="form-label small fw-bold text-dark mb-1"><i class="fa-solid fa-question-circle text-info me-1"></i>Pertanyaan / Permintaan Khusus:</label>
+              <input type="text" id="aiCustomQuestionInput" class="form-control form-control-sm rounded-3" placeholder="Contoh: Apa dalil penguat untuk poin nomor 2 dan bagaimana penerapannya?">
+            </div>
+
+            <!-- Input Context Textarea -->
+            <div class="flex-grow-1 d-flex flex-column">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="form-label small fw-bold text-dark mb-0">
+                  <i class="fa-solid fa-file-lines text-secondary me-1"></i> Sumber Teks Catatan:
+                </label>
+                <span class="badge bg-light text-secondary border small" id="aiContextSourceBadge">Seluruh Materi</span>
+              </div>
+              <textarea id="aiContextTextInput" class="form-control form-control-sm rounded-3 flex-grow-1 font-monospace" rows="6" placeholder="Teks catatan yang akan dianalisis..." style="font-size: 0.82rem; resize: vertical;"></textarea>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <small class="text-muted" id="aiContextWordCount">0 kata</small>
+                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small text-primary" onclick="loadSelectedOrFullTextToAi(true)">
+                  <i class="fa-solid fa-rotate me-1"></i>Muat Ulang Teks Editor
+                </button>
+              </div>
+            </div>
+
+            <!-- Tombol Eksekusi -->
+            <div>
+              <button class="btn btn-primary w-100 py-2 rounded-3 shadow-sm fw-semibold d-flex align-items-center justify-content-center gap-2" id="btnGenerateAiExplanation" onclick="runScholarlyAiAnalysis()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span id="btnGenerateAiExplanationText">Mulai Analisis & Jelaskan</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Kolom Kanan: Hasil Output Ilmiah -->
+          <div class="col-lg-7 col-md-12 d-flex flex-column">
+            
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-success"></i> Hasil Penjelasan & Rujukan Ilmiah:
+              </h6>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="copyAiResultText()" id="btnCopyAiResult" disabled title="Salin Hasil">
+                  <i class="fa-solid fa-copy me-1"></i> Salin
+                </button>
+                <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" onclick="insertAiResultToEditor()" id="btnInsertAiResult" disabled title="Sisipkan ke Catatan">
+                  <i class="fa-solid fa-file-import me-1"></i> Sisip ke Catatan
+                </button>
+              </div>
+            </div>
+
+            <!-- Container Output -->
+            <div class="ai-output-wrapper rounded-3 border p-3 flex-grow-1 bg-white position-relative shadow-inner" id="aiOutputContainer" style="min-height: 380px; max-height: 480px; overflow-y: auto;">
+              
+              <!-- State Kosong Awal -->
+              <div id="aiOutputPlaceholder" class="h-100 d-flex flex-column align-items-center justify-content-center text-center p-4 text-muted">
+                <div class="rounded-circle bg-light p-3 mb-3 border text-primary" style="font-size: 2rem;">
+                  <i class="fa-solid fa-book-bookmark"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-1">Siap Memberikan Penjelasan Ilmiah</h6>
+                <p class="small text-muted mb-3" style="max-width: 380px;">Pilih mode penjelasan di sebelah kiri dan klik <b>"Mulai Analisis & Jelaskan"</b> untuk mendapatkan syarah mendalam, dalil shahih, dan rujukan dengan tautan valid.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                  <span class="badge bg-light text-secondary border"><i class="fa-solid fa-check text-success me-1"></i>Al-Qur'an & Hadits Shahih</span>
+                  <span class="badge bg-light text-secondary border"><i class="fa-solid fa-check text-success me-1"></i>Kitab Ulama Mu'tamad</span>
+                  <span class="badge bg-light text-secondary border"><i class="fa-solid fa-check text-success me-1"></i>Tautan Sumber Valid</span>
+                </div>
+              </div>
+
+              <!-- Loading State -->
+              <div id="aiOutputLoading" class="h-100 d-none flex-column align-items-center justify-content-center text-center p-4">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                <h6 class="fw-bold text-dark mb-1" id="aiLoadingTitle">Sedang Menganalisis Catatan...</h6>
+                <p class="small text-muted mb-0" id="aiLoadingSubtitle">Menelusuri dalil Al-Qur'an, Hadits Shahih, dan rujukan kitab mu'tamad...</p>
+              </div>
+
+              <!-- Content Rendered Area -->
+              <div id="aiOutputRendered" class="ai-rendered-content d-none"></div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer px-4 py-2 bg-light border-top d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <span class="small text-muted"><i class="fa-solid fa-shield-halved text-success me-1"></i>Metodologi: <b>Ilmiah Mu'tamad (Dengan Tautan Valid)</b></span>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="openGeminiApiKeyModalFromExplainer()">
+            <i class="fa-solid fa-key me-1"></i> Atur Kunci API
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Tutup</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -4983,13 +5245,18 @@ function createJsonResponse(obj) {
             [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
             [{ 'color': [] }, { 'background': [] }],
             ['blockquote', 'code-block'],
-            ['link', 'image', 'video', 'customNote', 'speechTranscribe'],
+            ['link', 'image', 'video', 'customNote', 'speechTranscribe', 'aiExplain'],
             ['clean']
           ],
           handlers: {
             'speechTranscribe': function() {
               if (typeof window.openAudioTranscribeModal === 'function') {
                 window.openAudioTranscribeModal();
+              }
+            },
+            'aiExplain': function() {
+              if (typeof window.openAiExplainerModal === 'function') {
+                window.openAiExplainerModal();
               }
             }
           }
@@ -5059,15 +5326,40 @@ function createJsonResponse(obj) {
       };
     });
 
-    // Event delegation global untuk tombol toolbar Transkrip
+    var aiExplainBtns = document.querySelectorAll('.ql-aiExplain');
+    aiExplainBtns.forEach(function(btn) {
+      btn.type = "button";
+      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-primary" style="font-size:1.1rem; line-height:1;"></i>';
+      btn.title = "Asisten AI Ilmiah: Syarah, Dalil & Penjelasan Catatan";
+      btn.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.openAiExplainerModal === 'function') {
+          window.openAiExplainerModal();
+        }
+      };
+    });
+
+    // Event delegation global untuk tombol toolbar Transkrip & AI Penjelas
     document.addEventListener('click', function(e) {
-      var btn = e.target.closest('.ql-speechTranscribe');
-      if (btn) {
+      var transcribeBtn = e.target.closest('.ql-speechTranscribe');
+      if (transcribeBtn) {
         e.preventDefault();
         e.stopPropagation();
         if (typeof window.openAudioTranscribeModal === 'function') {
           window.openAudioTranscribeModal();
         }
+        return;
+      }
+
+      var aiBtn = e.target.closest('.ql-aiExplain');
+      if (aiBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof window.openAiExplainerModal === 'function') {
+          window.openAiExplainerModal();
+        }
+        return;
       }
     });
 
@@ -5876,6 +6168,369 @@ function createJsonResponse(obj) {
         .catch(function(err) {
           Swal.fire('Gagal Terhubung', 'Tidak dapat menghubungi server Gemini. Pastikan internet Anda aktif.', 'error');
         });
+    };
+
+    // ==========================================
+    // --- ASISTEN AI ILMIAH PENJELAS CATATAN ---
+    // ==========================================
+    var aiExplainerModalEl = null;
+    var bsAiExplainerModal = null;
+    var currentAiMode = 'syarah';
+    var latestAiExplanationMarkdown = '';
+    var latestAiExplanationHtml = '';
+
+    window.openAiExplainerModal = function() {
+      if (!aiExplainerModalEl) {
+        aiExplainerModalEl = document.getElementById('aiExplainerModal');
+        if (aiExplainerModalEl) {
+          bsAiExplainerModal = new bootstrap.Modal(aiExplainerModalEl);
+        }
+      }
+
+      loadSelectedOrFullTextToAi(false);
+
+      if (bsAiExplainerModal) {
+        bsAiExplainerModal.show();
+      }
+    };
+
+    window.loadSelectedOrFullTextToAi = function(forceReload) {
+      var textarea = document.getElementById('aiContextTextInput');
+      var badge = document.getElementById('aiContextSourceBadge');
+      var countEl = document.getElementById('aiContextWordCount');
+      if (!textarea) return;
+
+      var textToAnalyze = '';
+      var isSelection = false;
+
+      if (quillEditor) {
+        var range = quillEditor.getSelection();
+        if (range && range.length > 0) {
+          var selectedText = quillEditor.getText(range.index, range.length).trim();
+          if (selectedText) {
+            textToAnalyze = selectedText;
+            isSelection = true;
+          }
+        }
+        if (!textToAnalyze) {
+          textToAnalyze = quillEditor.getText().trim();
+        }
+      }
+
+      if (!textarea.value || forceReload) {
+        textarea.value = textToAnalyze;
+      }
+
+      if (badge) {
+        badge.innerText = isSelection ? 'Teks Terpilih (Blok)' : 'Seluruh Materi';
+        badge.className = isSelection ? 'badge bg-primary-subtle text-primary border border-primary-subtle small' : 'badge bg-light text-secondary border small';
+      }
+
+      updateAiWordCount();
+    };
+
+    function updateAiWordCount() {
+      var textarea = document.getElementById('aiContextTextInput');
+      var countEl = document.getElementById('aiContextWordCount');
+      if (!textarea || !countEl) return;
+      var words = textarea.value.trim().split(/\s+/).filter(Boolean).length;
+      countEl.innerText = words + ' kata';
+    }
+
+    var aiTextareaEl = document.getElementById('aiContextTextInput');
+    if (aiTextareaEl) {
+      aiTextareaEl.addEventListener('input', updateAiWordCount);
+    }
+
+    window.selectAiMode = function(mode, el) {
+      currentAiMode = mode;
+      var cards = document.querySelectorAll('#aiModeSelectorContainer .ai-mode-card');
+      cards.forEach(function(card) {
+        card.classList.remove('active');
+        var icon = card.querySelector('.mode-check-icon');
+        if (icon) icon.classList.add('d-none');
+      });
+
+      if (el) {
+        el.classList.add('active');
+        var checkIcon = el.querySelector('.mode-check-icon');
+        if (checkIcon) checkIcon.classList.remove('d-none');
+      }
+
+      var qBox = document.getElementById('aiCustomQuestionBox');
+      if (qBox) {
+        if (mode === 'qa') {
+          qBox.classList.remove('d-none');
+          var qInput = document.getElementById('aiCustomQuestionInput');
+          if (qInput) qInput.focus();
+        } else {
+          qBox.classList.add('d-none');
+        }
+      }
+
+      var btnText = document.getElementById('btnGenerateAiExplanationText');
+      if (btnText) {
+        if (mode === 'syarah') btnText.innerText = 'Mulai Analisis & Syarah Ilmiah';
+        else if (mode === 'takhrij') btnText.innerText = 'Mulai Takhrij Dalil & Referensi';
+        else if (mode === 'summary') btnText.innerText = 'Mulai Susun Intisari & Poin';
+        else if (mode === 'qa') btnText.innerText = 'Mulai Tanya Jawab Ilmiah';
+      }
+    };
+
+    window.openGeminiApiKeyModalFromExplainer = function() {
+      if (bsAiExplainerModal) {
+        bsAiExplainerModal.hide();
+      }
+      openSettingsModal();
+      setTimeout(function() {
+        var keyInput = document.getElementById('geminiApiKeyInput');
+        if (keyInput) keyInput.focus();
+      }, 500);
+    };
+
+    function renderMarkdownToScholarlyHtml(md) {
+      if (!md) return '';
+      var html = md;
+
+      // Escape HTML tags to prevent XSS except formatting
+      html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      // Headers ### ## #
+      html = html.replace(/^### (.*$)/gim, '<h5 class="fw-bold text-dark mt-3 mb-2">$1</h5>');
+      html = html.replace(/^## (.*$)/gim, '<h4 class="fw-bold text-dark mt-3 mb-2">$1</h4>');
+      html = html.replace(/^# (.*$)/gim, '<h3 class="fw-bold text-dark mt-3 mb-2">$1</h3>');
+
+      // Blockquotes > text
+      html = html.replace(/^\> (.*$)/gim, '<blockquote class="border-start border-4 border-primary bg-light p-2 px-3 rounded-end my-2 fst-italic text-secondary">$1</blockquote>');
+
+      // Bold **text**
+      html = html.replace(/\*\*(.*?)\*\*/gim, '<strong class="text-dark fw-bold">$1</strong>');
+      // Italic *text*
+      html = html.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+
+      // Markdown links: [Title](URL)
+      html = html.replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/gim, '<a href="$2" target="_blank" rel="noopener noreferrer" class="scholarly-link">$1</a>');
+
+      // Bullet lists - item or * item
+      html = html.replace(/^\s*[\-\*]\s+(.*$)/gim, '<li class="mb-1">$1</li>');
+
+      // Wrap adjacent <li> in <ul>
+      html = html.replace(/(<li class="mb-1">[\s\S]*?<\/li>)/gim, '<ul class="ps-3 my-2">$1</ul>');
+      // Clean up multiple wrapped <ul>
+      html = html.replace(/<\/ul>\s*<ul class="ps-3 my-2">/gim, '');
+
+      // Numbered list 1. item
+      html = html.replace(/^\s*(\d+)\.\s+(.*$)/gim, '<li class="mb-1"><b>$1.</b> $2</li>');
+      html = html.replace(/(<li class="mb-1"><b>\d+\.<\/b>[\s\S]*?<\/li>)/gim, '<ol class="ps-3 my-2">$1</ol>');
+      html = html.replace(/<\/ol>\s*<ol class="ps-3 my-2">/gim, '');
+
+      // Paragraphs (double newlines)
+      html = html.replace(/\n\n+/g, '<br><br>');
+      html = html.replace(/\n/g, '<br>');
+
+      return html;
+    }
+
+    window.runScholarlyAiAnalysis = function() {
+      var textarea = document.getElementById('aiContextTextInput');
+      var contextText = textarea ? textarea.value.trim() : '';
+
+      if (!contextText) {
+        Swal.fire('Teks Catatan Kosong', 'Silakan ketik atau pilih materi catatan yang ingin dijelaskan terlebih dahulu.', 'warning');
+        return;
+      }
+
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (!apiKey) {
+        Swal.fire({
+          title: 'Kunci API Gemini Diperlukan',
+          html: 'Untuk menggunakan Asisten AI Ilmiah, masukkan Kunci API Google Gemini (Gratis) Anda. Kunci ini tersimpan aman di browser Anda.',
+          icon: 'info',
+          confirmButtonText: 'Masukkan Kunci API',
+          showCancelButton: true,
+          cancelButtonText: 'Batal'
+        }).then(function(result) {
+          if (result.isConfirmed) {
+            openGeminiApiKeyModalFromExplainer();
+          }
+        });
+        return;
+      }
+
+      // UI Loading State
+      var placeholderEl = document.getElementById('aiOutputPlaceholder');
+      var loadingEl = document.getElementById('aiOutputLoading');
+      var renderedEl = document.getElementById('aiOutputRendered');
+      var btnGenerate = document.getElementById('btnGenerateAiExplanation');
+      var btnCopy = document.getElementById('btnCopyAiResult');
+      var btnInsert = document.getElementById('btnInsertAiResult');
+
+      if (placeholderEl) placeholderEl.classList.add('d-none');
+      if (renderedEl) renderedEl.classList.add('d-none');
+      if (loadingEl) loadingEl.classList.remove('d-none');
+      if (btnGenerate) btnGenerate.disabled = true;
+      if (btnCopy) btnCopy.disabled = true;
+      if (btnInsert) btnInsert.disabled = true;
+
+      // Loading step message updates
+      var loadingTitle = document.getElementById('aiLoadingTitle');
+      var loadingSubtitle = document.getElementById('aiLoadingSubtitle');
+
+      var stepInterval = setInterval(function() {
+        if (!loadingSubtitle) return;
+        var steps = [
+          'Menelaah teks catatan & konteks materi...',
+          'Menelusuri rujukan Al-Qur\'an & Hadits Shahih...',
+          'Mencocokkan takhrij & pendapat ulama mu\'tamad...',
+          'Menyusun syarah sistematis & tautan referensi valid...'
+        ];
+        var rnd = steps[Math.floor(Math.random() * steps.length)];
+        loadingSubtitle.innerText = rnd;
+      }, 2500);
+
+      // Construct Scholarly System Instruction
+      var systemInstruction = `Anda adalah "Asisten AI Ilmiah Kit-Naf", seorang pakar keilmuan Islam dan akademisi yang berpegang teguh pada metodologi ilmiah yang shahih, objektif, dan terpercaya (manhaj Ahlus Sunnah wal Jama'ah untuk ilmu syar'i, serta konsensus akademik untuk ilmu manajemen/pendidikan).
+
+ATURAN WAJIB & STRICT GUARDRAILS:
+1. SUMBER ILMIAH & RUJUKAN TERPERCAYA:
+   - Wajib merujuk pada: Al-Qur'an (nama surat & nomor ayat), Hadits-hadits Shahih/Hasan (sebutkan nama kitab hadits misal Shahih Bukhari, Shahih Muslim, Sunan Abu Dawud, dll beserta nomor/perawinya), dan penjelasan ulama mu'tamad (misal Imam An-Nawawi, Al-Hafizh Ibnu Hajar, Ibnu Katsir, Ibnu Taimiyyah, Ibnul Qayyim, Imam Asy-Syafi'i, Imam Ahmad, dll) atau rujukan ilmiah akademik bereputasi.
+   - DILARANG KERAS berhalusinasi, menyebut hadits palsu/tanpa sanad, atau mencantumkan informasi tanpa dasar ilmiah.
+2. TAUTAN & LINK VALID WAJIB:
+   - Setiap kali mengutip ayat Al-Qur'an, sertakan link valid: [QS. NamaSurat: Ayat](https://quran.com/nomor_surat/nomor_ayat) contoh [QS. Al-Baqarah: 286](https://quran.com/2/286)
+   - Setiap kali mengutip hadits, sertakan link rujukan valid: [Hadits Riwayat ...](https://sunnah.com/...) atau [Takhrij Dorar](https://dorar.net/hadith/...)
+   - Untuk kitab ulama atau fatwa, gunakan rujukan valid seperti: [Kitab Shamela](https://shamela.ws/...) atau [IslamQA](https://islamqa.info/id)
+3. FORMAT PENYAJIAN SISTEMATIS & MUDAH DIPAHAMI:
+   Gunakan bahasa Indonesia yang santun, runtut, jelas, dan berstruktur Markdown yang rapi:
+   - 📌 **Intisari & Pokok Bahasan**: Uraian ringkas yang mudah dipahami.
+   - 📖 **Landasan Dalil & Rujukan Ilmiah**: Teks ayat/hadits lengkap takhrij dan tautan sumber valid.
+   - 💡 **Syarah & Penjelasan Terperinci**: Uraian hikmah, pemaknaan mendalam, dan kaidah fiqih/ushul.
+   - 🎯 **Faidah Praktis & Implementasi**: Panduan aksi konkret dalam kehidupan nyata.`;
+
+      var userPrompt = '';
+      var customQuestion = (document.getElementById('aiCustomQuestionInput') ? document.getElementById('aiCustomQuestionInput').value.trim() : '');
+
+      if (currentAiMode === 'syarah') {
+        userPrompt = `Mohon berikan SYARAH DAN PENJELASAN ILMIAH yang komprehensif, sistematis, dan mudah dipahami atas teks catatan berikut. Sertakan dalil shahih Al-Qur'an, Hadits, kutipan kitab ulama mu'tamad, dan tautan rujukan aktif yang valid:\n\n=== TEKS CATATAN ===\n${contextText}`;
+      } else if (currentAiMode === 'takhrij') {
+        userPrompt = `Mohon lakukan TAKHRIJ DALIL & PENELUSURAN REFERENSI ILMIAH atas teks catatan berikut. Temukan ayat Al-Qur'an terkait, Hadits-hadits shahih pendukung beserta nomor/kitab perawi dan derajatnya, serta perkataan ulama mu'tamad dengan menyertakan tautan rujukan link aktif yang valid:\n\n=== TEKS CATATAN ===\n${contextText}`;
+      } else if (currentAiMode === 'summary') {
+        userPrompt = `Mohon susun INTISARI SISTEMATIS, BAGAN POIN POKOK, dan FAIDAH PRAKTIS dari teks catatan berikut secara runtut, elegan, dan mudah dipahami, disertai dalil penguat dan link rujukan valid:\n\n=== TEKS CATATAN ===\n${contextText}`;
+      } else if (currentAiMode === 'qa') {
+        userPrompt = `Berdasarkan teks catatan berikut, mohon jawab pertanyaan/permintaan khusus ini secara ilmiah, sistematis, dan sertakan dalil serta link rujukan valid:\n\nPertanyaan Khusus: ${customQuestion || 'Jelaskan poin penting catatan ini'}\n\n=== TEKS CATATAN ===\n${contextText}`;
+      }
+
+      var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+
+      var payload = {
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        },
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: userPrompt }]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2500
+        }
+      };
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        clearInterval(stepInterval);
+        if (loadingEl) loadingEl.classList.add('d-none');
+        if (btnGenerate) btnGenerate.disabled = false;
+
+        if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+          var aiMarkdown = data.candidates[0].content.parts[0].text.trim();
+          latestAiExplanationMarkdown = aiMarkdown;
+          latestAiExplanationHtml = renderMarkdownToScholarlyHtml(aiMarkdown);
+
+          if (renderedEl) {
+            renderedEl.innerHTML = latestAiExplanationHtml;
+            renderedEl.classList.remove('d-none');
+          }
+
+          if (btnCopy) btnCopy.disabled = false;
+          if (btnInsert) btnInsert.disabled = false;
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Penjelasan Ilmiah Selesai!',
+            text: 'Rujukan dan syarah berhasil disusun dengan tautan valid.',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2500
+          });
+        } else if (data.error) {
+          if (placeholderEl) placeholderEl.classList.remove('d-none');
+          Swal.fire('Gagal Memproses AI', 'Error: ' + (data.error.message || 'Kunci API tidak valid atau kuota habis.'), 'error');
+        } else {
+          if (placeholderEl) placeholderEl.classList.remove('d-none');
+          Swal.fire('Gagal', 'AI tidak menghasilkan respons.', 'warning');
+        }
+      })
+      .catch(function(err) {
+        clearInterval(stepInterval);
+        if (loadingEl) loadingEl.classList.add('d-none');
+        if (placeholderEl) placeholderEl.classList.remove('d-none');
+        if (btnGenerate) btnGenerate.disabled = false;
+        Swal.fire('Koneksi Gagal', 'Tidak dapat menghubungi server AI Gemini. Pastikan internet Anda aktif.', 'error');
+      });
+    };
+
+    window.copyAiResultText = function() {
+      if (!latestAiExplanationMarkdown) return;
+      navigator.clipboard.writeText(latestAiExplanationMarkdown).then(function() {
+        Swal.fire({
+          icon: 'success',
+          title: 'Tersalin!',
+          text: 'Teks penjelasan ilmiah berhasil disalin ke clipboard.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 2000
+        });
+      }).catch(function() {
+        Swal.fire('Info', 'Gagal menyalin otomatis, silakan blok dan salin secara manual.', 'info');
+      });
+    };
+
+    window.insertAiResultToEditor = function() {
+      if (!quillEditor || !latestAiExplanationHtml) return;
+
+      var formattedInsertHtml = '<br><div class="ai-scholarly-box" style="border-left: 4px solid #4f46e5; background: #f8fafc; padding: 14px 18px; margin: 16px 0; border-radius: 6px;">' +
+        '<div style="font-weight: bold; color: #4338ca; margin-bottom: 8px; font-size: 1.05rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Penjelasan & Rujukan Ilmiah AI</div>' +
+        latestAiExplanationHtml +
+        '</div><br>';
+
+      var range = quillEditor.getSelection();
+      var insertIndex = range ? range.index : quillEditor.getLength();
+
+      quillEditor.clipboard.dangerouslyPasteHTML(insertIndex, formattedInsertHtml, 'user');
+      quillEditor.setSelection(insertIndex + formattedInsertHtml.length, 0);
+
+      if (bsAiExplainerModal) {
+        bsAiExplainerModal.hide();
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil Disisipkan!',
+        text: 'Penjelasan ilmiah AI telah dimasukkan ke lembar catatan editor.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 2500
+      });
     };
 
     // Load Data
