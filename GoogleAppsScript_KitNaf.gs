@@ -53,7 +53,18 @@ function doPost(e) {
     var existingList = getExistingData(ss);
     
     // SMART ITEM-LEVEL MERGE (LAST-WRITE-WINS PER MATERI)
-    // Mencegah data perangkat yang sedang mengetik terhapus/tertimpa
+    // Perlindungan Anti-Kosong: Jika incomingData kosong dan server ada data (tanpa permintaan hapus), pertahankan server
+    if (incomingData.length === 0 && existingList.length > 0 && deletedIds.length === 0) {
+      return createJsonResponse({
+        status: 'success',
+        message: 'Data server dipertahankan (perangkat kosong mengunduh data server).',
+        data: existingList,
+        totalItems: existingList.length,
+        timestamp: new Date().toISOString(),
+        lastSync: PropertiesService.getScriptProperties().getProperty('LAST_SYNC_TIME') || ''
+      });
+    }
+
     var map = {};
     for (var i = 0; i < existingList.length; i++) {
       var itm = existingList[i];
@@ -73,11 +84,21 @@ function doPost(e) {
       if (!inc || !inc.id) continue;
       if (deletedSet[inc.id]) continue;
       
-      // Selalu terima dan simpan data terkini yang dikirim oleh perangkat yang sedang menyimpan
       if (!inc.updatedAt) {
         inc.updatedAt = new Date().toISOString();
       }
-      map[inc.id] = inc;
+
+      if (!map[inc.id]) {
+        // Catatan baru dari perangkat ini
+        map[inc.id] = inc;
+      } else {
+        // Bandingkan timestamp: Hanya perbarui jika versi masuk lebih baru atau sama
+        var incTime = new Date(inc.updatedAt).getTime() || 0;
+        var exTime = map[inc.id].updatedAt ? (new Date(map[inc.id].updatedAt).getTime() || 0) : 0;
+        if (incTime >= exTime) {
+          map[inc.id] = inc;
+        }
+      }
     }
     
     // Hapus catatan yang ada di daftar deletedIds
@@ -85,14 +106,21 @@ function doPost(e) {
       delete map[delId];
     }
     
-    // Susun kembali data gabungan yang telah dimerge
+    // Susun kembali data gabungan yang telah dimerge (pertahankan urutan hierarki sheet)
     var mergedData = [];
     var processedIds = {};
-    for (var k = 0; k < incomingData.length; k++) {
-      var id = incomingData[k].id;
-      if (map[id] && !processedIds[id]) {
-        mergedData.push(map[id]);
-        processedIds[id] = true;
+    for (var k = 0; k < existingList.length; k++) {
+      var exId = existingList[k].id;
+      if (map[exId] && !processedIds[exId]) {
+        mergedData.push(map[exId]);
+        processedIds[exId] = true;
+      }
+    }
+    for (var incK = 0; incK < incomingData.length; incK++) {
+      var incKId = incomingData[incK].id;
+      if (map[incKId] && !processedIds[incKId]) {
+        mergedData.push(map[incKId]);
+        processedIds[incKId] = true;
       }
     }
     for (var remId in map) {
