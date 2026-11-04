@@ -2046,14 +2046,14 @@
           <input type="file" id="bgFileInput" style="display: none;" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="handleLocalBgUpload(event)">
         </div>
 
-        <div class="text-center">
+        <div class="text-center mb-3">
           <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none py-0" style="font-size: 0.75rem;" onclick="resetCustomBg()">
             <i class="fa-solid fa-rotate-left me-1"></i> Pulihkan Gambar Latar Bawaan
           </button>
         </div>
         
-        <hr class="my-4 text-muted opacity-25">
-        
+        <hr class="my-3 text-muted opacity-25">
+
         <!-- Backup & Restore Data -->
         <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-database me-1 text-primary"></i> BACKUP & RESTORE DATA</h6>
         <p class="small text-muted mb-2">Simpan data catatan Anda ke file atau muat kembali jika pindah perangkat.</p>
@@ -2071,7 +2071,7 @@
           <i class="fa-solid fa-book-quran me-1"></i> Muat Ulang Contoh Kitab Kajian
         </button>
 
-        <hr class="my-4 text-muted opacity-25">
+        <hr class="my-3 text-muted opacity-25">
 
         <!-- Firebase Cloud Realtime Database -->
         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -2103,17 +2103,17 @@
             </div>
             <div class="col-6">
               <label class="form-label small fw-semibold text-secondary mb-1">Project ID:</label>
-              <input type="text" id="firebaseProjectIdInput" class="form-control form-control-sm" placeholder="kitnaf-app" oninput="saveFirebaseConfigInputs()">
+              <input type="text" id="firebaseProjectIdInput" class="form-control form-control-sm" placeholder="iftah-dev" oninput="saveFirebaseConfigInputs()">
             </div>
           </div>
           <div class="accordion accordion-flush mb-2" id="accordionFbAdvanced">
             <div class="accordion-item bg-transparent">
               <h2 class="accordion-header">
                 <button class="accordion-button collapsed px-0 py-1 small text-primary bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#fbAdvancedCollapse">
-                  <i class="fa-solid fa-code me-1"></i> Tempel Objek firebaseConfig Lengkap (JSON)
+                  <i class="fa-solid fa-gear me-1"></i> Konfigurasi Lengkap JSON (Opsional)
                 </button>
               </h2>
-              <div id="fbAdvancedCollapse" class="accordion-collapse collapse" data-bs-parent="#accordionFbAdvanced">
+              <div id="fbAdvancedCollapse" class="accordion-collapse collapse">
                 <div class="accordion-body px-0 pt-2 pb-0">
                   <textarea id="firebaseConfigJsonBox" class="form-control form-control-sm font-monospace" rows="4" placeholder='{ "apiKey": "...", "databaseURL": "...", "projectId": "..." }'></textarea>
                   <button type="button" class="btn btn-sm btn-dark w-100 mt-2" onclick="applyFirebaseConfigFromJson()">
@@ -2141,44 +2141,13 @@
           </button>
         </div>
 
-        <hr class="my-4 text-muted opacity-25">
-
-        <!-- Google Spreadsheet Cloud Database -->
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <h6 class="small fw-bold text-muted mb-0"><i class="fa-solid fa-table text-success me-1"></i> DATABASE GOOGLE SPREADSHEET</h6>
-          <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none fw-bold" onclick="openGasGuideModal()">
-            <i class="fa-solid fa-circle-question me-1"></i>Panduan
-          </button>
-        </div>
-        <p class="small text-muted mb-2">Sinkronkan dan simpan semua catatan kajian Anda ke Google Spreadsheet di cloud.</p>
-        
-        <div class="mb-2">
-          <label class="form-label small fw-semibold text-secondary mb-1">URL Web App Google Apps Script:</label>
-          <div class="input-group input-group-sm">
-            <input type="url" id="gasEndpointUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" oninput="localStorage.setItem('kitnaf_gas_url', this.value.trim())">
-            <button class="btn btn-outline-secondary" type="button" onclick="testSpreadsheetConnection()" title="Uji Koneksi">
-              <i class="fa-solid fa-plug me-1"></i> Tes
-            </button>
-          </div>
+        <!-- Hidden Compatibility Inputs (Google Spreadsheet completely removed) -->
+        <div style="display:none !important;" aria-hidden="true">
+          <input type="hidden" id="gasEndpointUrl" value="">
+          <input type="checkbox" id="gasAutoSyncSwitch" style="display:none;">
         </div>
 
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="gasAutoSyncSwitch" onchange="toggleGasAutoSync(event)">
-          <label class="form-check-label small fw-semibold text-dark" for="gasAutoSyncSwitch" style="cursor: pointer;">
-            Otomatis simpan ke Spreadsheet saat mengedit materi
-          </label>
-        </div>
-
-        <div class="d-flex gap-2 mb-3">
-          <button type="button" class="btn btn-outline-primary btn-sm flex-fill fw-semibold" onclick="syncToSpreadsheet(false)">
-            <i class="fa-solid fa-cloud-arrow-up me-1"></i> Unggah ke Sheet
-          </button>
-          <button type="button" class="btn btn-outline-info btn-sm flex-fill fw-semibold" onclick="fetchFromSpreadsheet(true)">
-            <i class="fa-solid fa-cloud-arrow-down me-1"></i> Tarik dari Sheet
-          </button>
-        </div>
-
-        <hr class="my-4 text-muted opacity-25">
+        <hr class="my-3 text-muted opacity-25">
 
         <!-- Pembersihan Cache & Segarkan Versi -->
         <h6 class="small fw-bold text-muted mb-2"><i class="fa-solid fa-broom text-warning me-1"></i> PEMBARUAN & CACHE APLIKASI</h6>
@@ -2187,58 +2156,6 @@
           <i class="fa-solid fa-arrows-rotate me-1 text-warning"></i> Bersihkan Cache & Muat Ulang Versi Terbaru
         </button>
 
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Panduan Google Spreadsheet Database -->
-<div class="modal fade" id="gasGuideModal" aria-hidden="true" data-bs-focus="false" style="z-index: 1070;">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg rounded-4">
-      <div class="modal-header border-bottom pb-3">
-        <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-table text-success me-2"></i>Panduan Menghubungkan Google Spreadsheet</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
-        <p class="text-muted small">Ikuti langkah mudah di bawah ini untuk menjadikan Google Spreadsheet pribadi Anda sebagai database cloud Kit-Naf:</p>
-        
-        <ol class="small text-secondary ps-3 mb-3 d-flex flex-column gap-2">
-          <li>
-            <b>Buat Google Spreadsheet baru:</b> Buka <a href="https://sheets.new" target="_blank" class="fw-bold text-primary">sheets.new</a> di browser Anda dan beri judul misalnya <code>Database Kit-Naf</code>.
-          </li>
-          <li>
-            <b>Buka Apps Script:</b> Pada menu spreadsheet di atas, klik <b>Ekstensi (Extensions) &gt; Apps Script</b>.
-          </li>
-          <li>
-            <b>Tempel Kode Skrip:</b> Hapus kode bawaan yang ada di editor Apps Script, lalu salin dan tempel kode skrip di bawah ini:
-            <div class="mt-2 position-relative">
-              <button class="btn btn-sm btn-primary position-absolute top-0 end-0 m-2 shadow-sm" onclick="copyGasScriptCode()">
-                <i class="fa-solid fa-copy me-1"></i> Salin Kode Skrip
-              </button>
-              <textarea id="gasScriptCodeBox" class="form-control font-monospace small bg-light text-dark p-3" rows="8" readonly style="font-size: 0.75rem;"></textarea>
-            </div>
-          </li>
-          <li>
-            <b>Deploy (Terapkan) sebagai Web App:</b>
-            <ul class="ps-3 mt-1">
-              <li>Klik tombol biru <b>Deploy (Terapkan) &gt; New deployment (Penerapan baru)</b> di kanan atas.</li>
-              <li>Klik ikon gerigi (Select type) &gt; pilih <b>Web app (Aplikasi web)</b>.</li>
-              <li>Atur <i>Who has access (Siapa yang memiliki akses)</i> menjadi <b>Anyone (Siapa saja)</b>.</li>
-              <li>Klik <b>Deploy</b>, lalu beri izin akun Google Anda (klik <i>Advanced &gt; Go to ... (unsafe)</i>).</li>
-            </ul>
-          </li>
-          <li>
-            <b>Salin URL Web App:</b> Salin URL yang berakhiran <code>/exec</code>, lalu tempelkan ke kolom <b>URL Web App Google Apps Script</b> di Pengaturan Kit-Naf.
-          </li>
-        </ol>
-        <div class="alert alert-success d-flex align-items-center small py-2 mb-0">
-          <i class="fa-solid fa-circle-check fa-lg me-2"></i>
-          <div>Setelah terhubung, seluruh data materi Anda akan tersimpan rapi per baris di Google Spreadsheet dan dapat diakses dari mana saja!</div>
-        </div>
-      </div>
-      <div class="modal-footer border-top pt-3">
-        <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Saya Mengerti</button>
       </div>
     </div>
   </div>
@@ -4102,18 +4019,18 @@ var initialMockDB = [
       statusEl.className = "text-muted small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border";
       statusEl.title = "Tersimpan di perangkat ini";
     } else if (state === 'syncing_gas') {
-      statusEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-bounce text-primary"></i> <span class="d-none d-sm-inline text-primary">Ke Spreadsheet...</span>';
+      statusEl.innerHTML = '<i class="fa-solid fa-cloud-arrow-up fa-bounce text-warning"></i> <span class="d-none d-sm-inline text-warning">Ke Firebase...</span>';
       statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-primary-subtle";
-      statusEl.title = "Sedang menyinkronkan ke Google Spreadsheet...";
+      statusEl.title = "Sedang menyinkronkan ke Firebase Realtime Database...";
     } else if (state === 'saved_gas') {
       var timeStr = extra || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       statusEl.innerHTML = '<i class="fa-solid fa-table text-success"></i> <span class="text-success fw-bold">✓ Tersimpan di Sheet</span>';
       statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-success";
-      statusEl.title = "Data tersimpan di Google Spreadsheet (" + timeStr + ")";
+      statusEl.title = "Data tersimpan di Firebase (" + timeStr + ")";
     } else if (state === 'gas_offline') {
       statusEl.innerHTML = '<i class="fa-solid fa-cloud-slash text-warning"></i> <span class="d-none d-sm-inline text-secondary">Tersimpan (Offline)</span>';
       statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-warning-subtle";
-      statusEl.title = "Tersimpan lokal. Akan diunggah ke Spreadsheet saat online.";
+      statusEl.title = "Tersimpan lokal. Akan diunggah ke Firebase saat online.";
     } else if (state === 'syncing_firebase') {
       statusEl.innerHTML = '<i class="fa-solid fa-fire fa-bounce text-warning"></i> <span class="d-none d-sm-inline text-warning">Ke Firebase...</span>';
       statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-warning-subtle";
@@ -4349,7 +4266,7 @@ var initialMockDB = [
             Swal.fire({
               icon: 'info',
               title: 'Data Diperbarui',
-              text: 'Materi terbaru dari Google Spreadsheet berhasil disinkronkan secara aman.',
+              text: 'Materi terbaru berhasil disinkronkan secara aman.',
               toast: true,
               position: 'bottom-end',
               showConfirmButton: false,
@@ -4370,59 +4287,6 @@ var initialMockDB = [
 
   // --- MANUAL SYNC CEPAT (SMART BI-DIRECTIONAL 2-ARAH OTOMATIS) ---
   window.manualSyncNow = function(btnEl) {
-    if (!firebaseRef) initFirebase();
-    var isFbActive = !!firebaseRef;
-    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
-
-    if (!isFbActive && !gasUrl) {
-      Swal.fire({
-        title: 'Database Belum Terhubung',
-        text: 'Silakan atur konfigurasi Firebase Realtime Database atau URL Google Spreadsheet di menu Pengaturan.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Buka Pengaturan',
-        cancelButtonText: 'Batal'
-      }).then(function(r) {
-        if (r.isConfirmed) openSettingsModal();
-      });
-      return;
-    }
-
-    if (isFbActive) {
-      uploadAllToFirebase(false);
-      return;
-    }
-    var _skip_fb = false;
-    if (_skip_fb) {
-      uploadAllToFirebase(false);
-      return;
-    }
-
-    if (isFbActive) {
-      uploadAllToFirebase(true);
-    }
-    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
-    if (!gasUrl) {
-      Swal.fire({
-        title: 'URL Belum Disetel',
-        text: 'URL Web App Google Spreadsheet belum diisi. Silakan masukkan URL Web App di menu Pengaturan.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Buka Pengaturan',
-        cancelButtonText: 'Batal'
-      }).then(function(r) {
-        if (r.isConfirmed) openSettingsModal();
-      });
-      return;
-    }
-
-    // 1. SNAPSHOT KEAMANAN (AUTO PRE-SYNC BACKUP LOKAL)
-    try {
-      if (Array.isArray(dbMateri) && dbMateri.length > 0) {
-        localStorage.setItem('kitnaf_backup_presync', JSON.stringify(dbMateri));
-      }
-    } catch(e) {}
-
     var allSyncBtns = document.querySelectorAll('.btn-manual-sync');
     allSyncBtns.forEach(function(b) {
       b.disabled = true;
@@ -4444,585 +4308,125 @@ var initialMockDB = [
       });
     }
 
-    var nowIso = new Date().toISOString();
-
-    // 2. Simpan ketikan aktif di perangkat ini dengan timestamp terbaru agar terlindungi saat diunggah
+    // 1. Simpan ketikan aktif
     if (activeNodeId && quillEditor && quillEditor.root) {
       var htmlContent = quillEditor.root.innerHTML;
       var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
       if (item) {
         item.content = htmlContent;
-        item.updatedAt = nowIso;
+        item.updatedAt = new Date().toISOString();
       }
     }
-
     ensureAllTimestamps();
-    lastLocalEditTime = Date.now();
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
 
-    updateSaveStatus('syncing_gas');
+    if (!firebaseRef) initFirebase();
 
-    var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
-
-    // KASUS KHUSUS: Jika data lokal kosong/0 item di perangkat ini, lakukan PULL AMAN (Fetch GET)
-    if (!Array.isArray(dbMateri) || dbMateri.length === 0) {
-      var getEndpoint = gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now();
-      fetchGasApi(getEndpoint, 'GET', null, 30000)
-        .then(function(res) {
-          resetSyncButtons(true);
-          if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-            dbMateri = res.data;
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-            if (currentView === 'desktop') showDesktop();
-            else { renderTree(); if (activeNodeId) selectNode(activeNodeId); }
-
-            Swal.fire({
-              icon: 'success',
-              title: 'Sinkronisasi Berhasil!',
-              text: 'Memuat ' + res.data.length + ' materi dari Google Spreadsheet.',
-              toast: true,
-              position: 'bottom-end',
-              showConfirmButton: false,
-              timer: 2500
-            });
-          } else {
-            Swal.fire({
-              icon: 'info',
-              title: 'Server Kosong',
-              text: 'Belum ada data materi di Google Spreadsheet.',
-              toast: true,
-              position: 'bottom-end',
-              showConfirmButton: false,
-              timer: 2500
-            });
-          }
-        })
-        .catch(function(err) {
-          resetSyncButtons(false);
-          updateSaveStatus('gas_offline');
-          Swal.fire({
-            icon: 'warning',
-            title: 'Kendala Sinkronisasi',
-            html: '<p class="small text-muted mb-2">' + err.message + '</p>',
-            showCancelButton: true,
-            confirmButtonText: 'Buka Pengaturan URL',
-            cancelButtonText: 'Tutup'
-          }).then(function(r) {
-            if (r.isConfirmed) openSettingsModal();
-          });
-        });
+    if (!firebaseRef) {
+      resetSyncButtons(false);
+      Swal.fire({
+        title: 'Firebase Belum Terhubung',
+        text: 'Silakan periksa konfigurasi Firebase di menu Pengaturan.',
+        icon: 'warning',
+        confirmButtonText: 'Buka Pengaturan',
+        confirmButtonColor: '#4F46E5',
+        showCancelButton: true,
+        cancelButtonText: 'Batal'
+      }).then(function(r) {
+        if (r.isConfirmed) openSettingsModal();
+      });
       return;
     }
 
-    // PENGIRIMAN & PENGGABUNGAN DATA 2-ARAH (TWO-WAY SMART SYNC)
-    var payload = {
-      action: 'save',
-      data: dbMateri,
-      deletedIds: delIds,
-      timestamp: nowIso
-    };
+    // 2. Cerdas: Ambil snapshot cloud dan merge 2-arah
+    firebaseRef.once('value').then(function(snap) {
+      var cloudVal = snap.val();
+      var cloudList = [];
+      if (cloudVal) {
+        cloudList = Array.isArray(cloudVal) ? cloudVal : Object.values(cloudVal);
+        cloudList = cloudList.filter(function(x) { return x && x.id; });
+      }
 
-    fetchGasApi(gasUrl, 'POST', payload, 30000)
-      .then(function(res) {
-        localStorage.removeItem('kitnaf_deleted_ids');
-
-        if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-          mergeIncomingCloudData(res.data, true);
-        } else {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-        }
-        
-        var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        updateSaveStatus('saved_gas', timeStr);
+      if ((!dbMateri || dbMateri.length === 0) && cloudList.length > 0) {
+        dbMateri = cloudList;
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+        if (currentView === 'desktop') showDesktop();
+        else { renderTree(); if (activeNodeId) selectNode(activeNodeId); }
         resetSyncButtons(true);
-
-        // Refresh tampilan UI
-        if (currentView === 'desktop') {
-          renderDesktop();
-        } else {
-          renderTree();
-          if (activeNodeId && (!quillEditor || !quillEditor.hasFocus || !quillEditor.hasFocus())) {
-            var currItem = dbMateri.find(function(x) { return x.id == activeNodeId; });
-            if (currItem && quillEditor && quillEditor.root) {
-              quillEditor.root.innerHTML = currItem.content || '';
-            }
-          }
-        }
-
-        var totalCount = dbMateri.length;
         Swal.fire({
           icon: 'success',
-          title: 'Sinkronisasi 2-Arah Sukses!',
-          text: 'Data materi di perangkat ini dan Google Spreadsheet telah disinkronkan secara aman (Total: ' + totalCount + ' materi).',
+          title: 'Sinkronisasi Berhasil!',
+          text: 'Memuat ' + dbMateri.length + ' materi dari Firebase Cloud.',
           toast: true,
           position: 'bottom-end',
           showConfirmButton: false,
-          timer: 2500
+          timer: 3000
         });
-      })
-      .catch(function(err) {
-        resetSyncButtons(false);
-        updateSaveStatus('gas_offline');
-        Swal.fire({
-          icon: 'warning',
-          title: 'Kendala Sinkronisasi',
-          html: '<p class="small text-muted mb-2">' + err.message + '</p>',
-          showCancelButton: true,
-          confirmButtonText: 'Buka Pengaturan URL',
-          cancelButtonText: 'Tutup'
-        }).then(function(r) {
-          if (r.isConfirmed) openSettingsModal();
-        });
-      });
-  };
-
-  function startRealtimeCloudSync() {
-    if (realtimePollInterval) {
-      clearInterval(realtimePollInterval);
-      realtimePollInterval = null;
-    }
-  }
-
-  // --- AUTO SAVE & AUTO SYNC UNIFIED HELPER ---
-  window.triggerCloudAutoSave = function(immediate) {
-    var isFbAutoSync = (localStorage.getItem(FIREBASE_AUTOSYNC_KEY) !== 'false');
-    var isGasAutoSync = (localStorage.getItem(GAS_AUTOSYNC_KEY) !== 'false');
-    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
-    var hasCloud = false;
-
-    if (isFbAutoSync && firebaseRef) {
-      hasCloud = true;
-      updateSaveStatus('syncing_firebase');
-      clearTimeout(fbSaveDebounceTimer);
-      if (immediate) {
-        uploadAllToFirebase(true);
-      } else {
-        fbSaveDebounceTimer = setTimeout(function() {
-          uploadAllToFirebase(true);
-        }, 750);
+        return;
       }
-    }
 
-    if (isGasAutoSync && gasUrl) {
-      hasCloud = true;
-      if (!isFbAutoSync || !firebaseRef) updateSaveStatus('syncing_gas');
-      clearTimeout(gasSaveTimeout);
-      if (immediate) {
-        syncToSpreadsheet(true);
-      } else {
-        gasSaveTimeout = setTimeout(function() {
-          syncToSpreadsheet(true);
-        }, 900);
-      }
-    }
+      var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
+      var localMap = {};
+      dbMateri.forEach(function(m) { if (m && m.id) localMap[m.id] = m; });
 
-    if (!hasCloud) {
-      updateSaveStatus('saved_local');
-    }
-    return;
-  };
-
-  var _legacy_triggerCloudAutoSave = function(immediate) {
-    var isAutoSync = (localStorage.getItem(GAS_AUTOSYNC_KEY) !== 'false');
-    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
-
-    if (isAutoSync && gasUrl) {
-      updateSaveStatus('syncing_gas');
-      clearTimeout(gasSaveTimeout);
-      if (immediate) {
-        syncToSpreadsheet(true);
-      } else {
-        gasSaveTimeout = setTimeout(function() {
-          syncToSpreadsheet(true);
-        }, 900);
-      }
-    } else {
-      updateSaveStatus('saved_local');
-    }
-  };
-
-  window.performAutoSave = function() {
-    if (!activeNodeId) return;
-    
-    var htmlContent = (quillEditor && quillEditor.root) ? quillEditor.root.innerHTML : '';
-    var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
-    if (!item) return;
-
-    item.content = htmlContent;
-    item.updatedAt = new Date().toISOString();
-    lastLocalEditTime = Date.now();
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-    
-    triggerCloudAutoSave(false);
-  };
-
-  // --- INIT DATA (LOCAL STORAGE & STARTER BACKUP) ---
-  window.loadDefaultKajianData = function(showToast) {
-    if (Array.isArray(initialMockDB) && initialMockDB.length > 0) {
-      dbMateri = JSON.parse(JSON.stringify(initialMockDB));
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-      showDesktop();
-      if (showToast) {
-        Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Seluruh 7 kitab kajian berhasil dimuat kembali!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
-      }
-      return;
-    }
-    fetch('./KitNaf-Backup-Latest.json')
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (Array.isArray(data) && data.length > 0) {
-          dbMateri = data;
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-          showDesktop();
-          if (showToast) {
-            Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Seluruh 7 kitab kajian berhasil dimuat!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+      var hasChanges = false;
+      cloudList.forEach(function(cItem) {
+        if (delIds.indexOf(cItem.id) !== -1) return;
+        var loc = localMap[cItem.id];
+        if (!loc) {
+          dbMateri.push(cItem);
+          localMap[cItem.id] = cItem;
+          hasChanges = true;
+        } else {
+          var cloudTime = new Date(cItem.updatedAt || 0).getTime();
+          var locTime = new Date(loc.updatedAt || 0).getTime();
+          if (cloudTime > locTime && (!activeNodeId || activeNodeId !== loc.id)) {
+            Object.assign(loc, cItem);
+            hasChanges = true;
           }
         }
       });
-  };
 
-  var DEFAULT_GAS_URL = '';
-
-  function fetchData() {
-    var savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (savedData) {
-      try { 
-        var parsed = JSON.parse(savedData);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          dbMateri = parsed;
-          ensureAllTimestamps();
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-          showDesktop();
-        } else {
-          loadDefaultKajianData(false);
-          ensureAllTimestamps();
-          showDesktop();
-        }
-      } catch (e) { 
-        loadDefaultKajianData(false);
-        ensureAllTimestamps();
-        showDesktop();
+      if (hasChanges) {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+        if (currentView === 'desktop') showDesktop();
+        else { renderTree(); if (activeNodeId) selectNode(activeNodeId); }
       }
-    } else {
-      // First visit: seed with starter study
-      loadDefaultKajianData(false);
-      ensureAllTimestamps();
-      showDesktop();
-    }
-  }
 
-  // --- BACKUP & RESTORE DATA ---
-  window.backupData = function() {
-    var data = localStorage.getItem(LOCAL_STORAGE_KEY) || '[]';
-    var blob = new Blob([data], { type: "application/json" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    var date = new Date().toISOString().split('T')[0];
-    a.href = url;
-    a.download = 'KitNaf-Backup-' + date + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    Swal.fire({ icon:'success', title:'Backup Berhasil', text:'File JSON telah diunduh.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2500 });
-  };
-
-  window.restoreData = function(event) {
-    var file = event.target.files[0];
-    if (!file) return;
-
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var contents = e.target.result;
-        var parsed = JSON.parse(contents);
-        if (Array.isArray(parsed)) {
-          Swal.fire({
-            title: 'Restore Data?',
-            text: 'Catatan saat ini akan ditimpa dengan data dari file backup.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#F59E0B',
-            cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Ya, Restore'
-          }).then(function(result) {
-            if (result.isConfirmed) {
-              dbMateri = parsed;
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-              updateActiveUI();
-              
-              var modalEl = document.getElementById('settingsModal');
-              var modal = bootstrap.Modal.getInstance(modalEl);
-              if (modal) modal.hide();
-              
-              Swal.fire('Berhasil!', 'Data catatan berhasil dikembalikan.', 'success');
-            }
-          });
-        } else {
-          Swal.fire('Gagal', 'Format file backup tidak valid!', 'error');
-        }
-      } catch(err) {
-        Swal.fire('Error', 'Gagal membaca isi file backup.', 'error');
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = ''; 
-  };
-
-  // --- GOOGLE SPREADSHEET DATABASE INTEGRATION ---
-  var GAS_URL_KEY = 'kitnaf_gas_url';
-  var GAS_AUTOSYNC_KEY = 'kitnaf_gas_autosync';
-
-  var gasAppsScriptCode = `/**
- * KIT-NAF (KITABAH-NAFIAH) - GOOGLE APPS SCRIPT DATABASE BACKEND
- */
-
-function doGet(e) {
-  try {
-    var lastSync = PropertiesService.getScriptProperties().getProperty('LAST_SYNC_TIME') || '';
-    if (e && e.parameter && e.parameter.action === 'check') {
-      return createJsonResponse({ status: 'success', lastSync: lastSync });
-    }
-
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var list = getExistingData(ss);
-    return createJsonResponse({ status: 'success', data: list, lastSync: lastSync });
-  } catch (error) {
-    return createJsonResponse({ status: 'error', message: error.toString() });
-  }
-}
-
-function doPost(e) {
-  try {
-    var contents = e.postData ? e.postData.contents : '';
-    if (!contents) return createJsonResponse({ status: 'error', message: 'Tidak ada data.' });
-    
-    var payload = JSON.parse(contents);
-    var incomingData = payload.data || payload;
-    if (!Array.isArray(incomingData)) return createJsonResponse({ status: 'error', message: 'Data bukan Array.' });
-    
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var existingList = getExistingData(ss);
-    
-    var deletedIds = payload.deletedIds || [];
-    var deletedSet = {};
-    for (var d = 0; d < deletedIds.length; d++) {
-      deletedSet[deletedIds[d]] = true;
-    }
-
-    // Perlindungan Anti-Kosong: Jika incomingData kosong dan server ada data (tanpa permintaan hapus), pertahankan server
-    if (incomingData.length === 0 && existingList.length > 0 && deletedIds.length === 0) {
-      return createJsonResponse({
-        status: 'success',
-        message: 'Data server dipertahankan.',
-        data: existingList,
-        totalItems: existingList.length,
-        timestamp: new Date().toISOString(),
-        lastSync: PropertiesService.getScriptProperties().getProperty('LAST_SYNC_TIME') || ''
+      // 3. Simpan state gabungan mutakhir ke Firebase Realtime Database
+      firebaseRef.set(dbMateri).then(function() {
+        resetSyncButtons(true);
+        var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        updateSaveStatus('saved_firebase', timeStr);
+        Swal.fire({
+          icon: 'success',
+          title: 'Sinkronisasi Cloud Sukses!',
+          text: 'Data materi di perangkat ini dan Firebase Cloud telah disinkronkan secara aman (Total: ' + dbMateri.length + ' materi).',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 3000
+        });
+      }).catch(function(err) {
+        resetSyncButtons(false);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Sinkronisasi Firebase',
+          text: err.message,
+          confirmButtonColor: '#4F46E5'
+        });
       });
-    }
-
-    var map = {};
-    for (var i = 0; i < existingList.length; i++) {
-      var itm = existingList[i];
-      if (itm && itm.id) map[itm.id] = itm;
-    }
-
-    for (var j = 0; j < incomingData.length; j++) {
-      var inc = incomingData[j];
-      if (!inc || !inc.id || deletedSet[inc.id]) continue;
-      
-      if (!inc.updatedAt) {
-        inc.updatedAt = new Date().toISOString();
-      }
-
-      if (!map[inc.id]) {
-        map[inc.id] = inc;
-      } else {
-        var incTime = new Date(inc.updatedAt).getTime() || 0;
-        var exTime = map[inc.id].updatedAt ? (new Date(map[inc.id].updatedAt).getTime() || 0) : 0;
-        if (incTime >= exTime) {
-          map[inc.id] = inc;
-        }
-      }
-    }
-    
-    for (var delId in deletedSet) {
-      delete map[delId];
-    }
-    
-    var mergedData = [];
-    var processedIds = {};
-    for (var k = 0; k < existingList.length; k++) {
-      var exId = existingList[k].id;
-      if (map[exId] && !processedIds[exId]) {
-        mergedData.push(map[exId]);
-        processedIds[exId] = true;
-      }
-    }
-    for (var incK = 0; incK < incomingData.length; incK++) {
-      var incKId = incomingData[incK].id;
-      if (map[incKId] && !processedIds[incKId]) {
-        mergedData.push(map[incKId]);
-        processedIds[incKId] = true;
-      }
-    }
-    for (var remId in map) {
-      if (!processedIds[remId]) {
-        mergedData.push(map[remId]);
-        processedIds[remId] = true;
-      }
-    }
-    
-    var rawSheet = ss.getSheetByName('Raw_JSON_Backup') || ss.insertSheet('Raw_JSON_Backup');
-    writeChunkedJson(rawSheet, JSON.stringify(mergedData));
-    
-    var sheet = ss.getSheetByName('Data_Materi') || ss.insertSheet('Data_Materi');
-    sheet.clearContents();
-    
-    var headers = ['ID', 'Parent_ID', 'Level', 'Judul', 'Ikon', 'Background', 'Terakhir_Diperbarui', 'Isi_Materi_HTML', 'Font_Family'];
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#4F46E5').setFontColor('#FFFFFF');
-    
-    if (mergedData.length > 0) {
-      var rows = [];
-      for (var m = 0; m < mergedData.length; m++) {
-        var item = mergedData[m];
-        var cellContent = (item.content || '').toString();
-        if (cellContent.length > 45000) cellContent = cellContent.substring(0, 45000);
-        
-        rows.push([
-          item.id || Utilities.getUuid(),
-          item.parentId || '',
-          typeof item.level === 'number' ? item.level : (parseInt(item.level) || 0),
-          item.title || '',
-          item.icon || 'fa-book-open',
-          item.bg || '',
-          item.updatedAt || new Date().toISOString(),
-          cellContent,
-          item.fontFamily || ''
-        ]);
-      }
-      sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
-      sheet.autoResizeColumns(1, 9);
-    }
-    
-    var syncTime = new Date().toISOString();
-    try {
-      PropertiesService.getScriptProperties().setProperty('LAST_SYNC_TIME', syncTime);
-    } catch(e) {}
-
-    return createJsonResponse({
-      status: 'success',
-      message: 'Berhasil menyimpan data!',
-      data: mergedData,
-      totalItems: mergedData.length,
-      timestamp: syncTime,
-      lastSync: syncTime
-    });
-  } catch (error) {
-    return createJsonResponse({ status: 'error', message: error.toString() });
-  }
-}
-
-function getExistingData(ss) {
-  var rawSheet = ss.getSheetByName('Raw_JSON_Backup');
-  if (rawSheet) {
-    var rawJsonStr = readChunkedJson(rawSheet);
-    if (rawJsonStr && rawJsonStr.trim() !== '') {
-      try {
-        var parsed = JSON.parse(rawJsonStr);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch(err) {}
-    }
-  }
-  var sheet = ss.getSheetByName('Data_Materi');
-  if (!sheet) return [];
-  var values = sheet.getDataRange().getValues();
-  if (values.length <= 1) return [];
-  var list = [];
-  for (var i = 1; i < values.length; i++) {
-    var row = values[i];
-    if (!row[0] && !row[3]) continue;
-    list.push({
-      id: row[0] ? row[0].toString() : Utilities.getUuid(),
-      parentId: row[1] ? row[1].toString() : '',
-      level: typeof row[2] === 'number' ? row[2] : (parseInt(row[2]) || 0),
-      title: row[3] ? row[3].toString() : 'Tanpa Judul',
-      icon: row[4] ? row[4].toString() : 'fa-book-open',
-      bg: row[5] ? row[5].toString() : '',
-      updatedAt: row[6] ? row[6].toString() : new Date().toISOString(),
-      content: row[7] ? row[7].toString() : '',
-      fontFamily: row[8] ? row[8].toString() : ''
-    });
-  }
-  return list;
-}
-
-function writeChunkedJson(sheet, jsonStr) {
-  sheet.clearContents();
-  var chunkSize = 45000;
-  var chunks = [];
-  for (var i = 0; i < jsonStr.length; i += chunkSize) {
-    chunks.push([jsonStr.substring(i, i + chunkSize)]);
-  }
-  if (chunks.length > 0) {
-    sheet.getRange(1, 1, chunks.length, 1).setValues(chunks);
-  }
-}
-
-function readChunkedJson(sheet) {
-  if (!sheet) return null;
-  var lastRow = sheet.getLastRow();
-  if (lastRow < 1) return null;
-  var values = sheet.getRange(1, 1, lastRow, 1).getValues();
-  var fullStr = '';
-  for (var i = 0; i < values.length; i++) {
-    fullStr += values[i][0].toString();
-  }
-  return fullStr;
-}
-
-function createJsonResponse(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-  function initGasConfig() {
-    var savedUrl = (localStorage.getItem(GAS_URL_KEY) || '').trim();
-    if (savedUrl && savedUrl.indexOf('AKfycbzaW4BYXGh8VXDC1BIhCoaPh-Q6mkox0eShx4vd59nR1x6RNXk9GgIVngJpCSLe60Z-') !== -1) {
-      localStorage.removeItem(GAS_URL_KEY);
-      savedUrl = '';
-    }
-    var savedAutoSyncVal = localStorage.getItem(GAS_AUTOSYNC_KEY);
-    var savedAutoSync = (savedAutoSyncVal === 'true');
-    var _legacy_initGas = false;
-    if (_legacy_initGas) {
-    var savedUrl = localStorage.getItem(GAS_URL_KEY);
-    if (!savedUrl) {
-      savedUrl = DEFAULT_GAS_URL;
-      localStorage.setItem(GAS_URL_KEY, DEFAULT_GAS_URL);
-    }
-    var savedAutoSyncVal = localStorage.getItem(GAS_AUTOSYNC_KEY);
-    var savedAutoSync = (savedAutoSyncVal === null) ? true : (savedAutoSyncVal === 'true');
-    if (savedAutoSyncVal === null) {
-      localStorage.setItem(GAS_AUTOSYNC_KEY, 'true');
-    }
-
-    var urlInput = document.getElementById('gasEndpointUrl');
-    var switchInput = document.getElementById('gasAutoSyncSwitch');
-    if (urlInput) {
-      urlInput.value = savedUrl;
-      urlInput.addEventListener('input', function() {
-        localStorage.setItem(GAS_URL_KEY, urlInput.value.trim());
+    }).catch(function(err) {
+      resetSyncButtons(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Koneksi Firebase Gagal',
+        text: err.message,
+        confirmButtonColor: '#4F46E5'
       });
-    }
-    if (switchInput) switchInput.checked = savedAutoSync;
+    });
+  };
 
-    var scriptBox = document.getElementById('gasScriptCodeBox');
-    if (scriptBox) scriptBox.value = gasAppsScriptCode;
-  }
-
-  var bsGasGuideModal = null;
   window.openGasGuideModal = function() {
     var modalEl = document.getElementById('gasGuideModal');
     if (!bsGasGuideModal) {
@@ -5049,173 +4453,19 @@ function createJsonResponse(obj) {
     });
   };
 
-  window.toggleGasAutoSync = function(e) {
-    var checked = e.target.checked;
-    localStorage.setItem(GAS_AUTOSYNC_KEY, checked ? 'true' : 'false');
-    if (checked) {
-      var url = localStorage.getItem(GAS_URL_KEY);
-      if (!url) {
-        Swal.fire('Info', 'Auto-Sync aktif, namun URL Spreadsheet belum diisi. Silakan masukkan URL Web App Google Apps Script.', 'info');
-      } else {
-        Swal.fire({ icon:'success', title:'Auto-Sync Aktif', text:'Perubahan materi akan otomatis tersimpan ke Google Spreadsheet.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2500 });
-      }
-    }
-  };
+  window.toggleGasAutoSync = function() {};
 
   window.testSpreadsheetConnection = function() {
-    var url = (document.getElementById('gasEndpointUrl') ? document.getElementById('gasEndpointUrl').value : localStorage.getItem(GAS_URL_KEY) || '').trim();
-    if (!url) {
-      Swal.fire('Perhatian', 'Silakan masukkan URL Web App Google Apps Script terlebih dahulu.', 'warning');
-      return;
-    }
-    localStorage.setItem(GAS_URL_KEY, url);
-
-    Swal.fire({
-      title: 'Menguji Koneksi...',
-      text: 'Menghubungi Google Spreadsheet...',
-      allowOutsideClick: false,
-      didOpen: function() { Swal.showLoading(); }
-    });
-
-    var testUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now();
-    fetchGasApi(testUrl, 'GET', null, 30000)
-      .then(function(res) {
-        if (res && res.status === 'success') {
-          var count = Array.isArray(res.data) ? res.data.length : 0;
-          Swal.fire({
-            icon: 'success',
-            title: 'Koneksi Berhasil!',
-            text: 'Google Spreadsheet terhubung dengan sukses. Total catatan di sheet: ' + count + ' materi.'
-          });
-        } else {
-          Swal.fire('Koneksi Terhubung', res.message || 'Respon diterima dari Google Apps Script.', 'info');
-        }
-      })
-      .catch(function(err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal Menghubungi Spreadsheet',
-          html: '<p class="small text-muted text-start mb-2">Pastikan pengaturan deployment Web App disetel ke <b>"Who has access: Anyone (Siapa saja)"</b>.</p><code class="small text-danger">' + err.message + '</code>'
-        });
-      });
+    if (typeof testFirebaseConnection === 'function') testFirebaseConnection();
   };
 
   var isGasSyncing = false;
   window.syncToSpreadsheet = function(silent) {
-    var url = (localStorage.getItem(GAS_URL_KEY) || (document.getElementById('gasEndpointUrl') ? document.getElementById('gasEndpointUrl').value : '') || '').trim();
-    if (!url) {
-      if (!silent) Swal.fire('Perhatian', 'URL Google Spreadsheet belum disetel. Masukkan URL Web App di menu Pengaturan.', 'warning');
-      return;
-    }
-
-    if (!silent) {
-      Swal.fire({
-        title: 'Menyimpan ke Spreadsheet...',
-        text: 'Mengunggah dan menyinkronkan data dengan Google Sheet...',
-        allowOutsideClick: false,
-        didOpen: function() { Swal.showLoading(); }
-      });
-    }
-
-    // Safety Snapshot
-    try {
-      if (Array.isArray(dbMateri) && dbMateri.length > 0) {
-        localStorage.setItem('kitnaf_backup_presync', JSON.stringify(dbMateri));
-      }
-    } catch(e) {}
-
-    isGasSyncing = true;
-    var nowIso = new Date().toISOString();
-    ensureAllTimestamps();
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-
-    var delIds = JSON.parse(localStorage.getItem('kitnaf_deleted_ids') || '[]');
-    var payload = {
-      action: 'save',
-      data: dbMateri,
-      deletedIds: delIds,
-      timestamp: nowIso
-    };
-
-    fetchGasApi(url, 'POST', payload, 30000)
-      .then(function(res) {
-        isGasSyncing = false;
-        localStorage.removeItem('kitnaf_deleted_ids');
-
-        if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-          mergeIncomingCloudData(res.data, true);
-        } else {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-        }
-
-        var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-        updateSaveStatus('saved_gas', timeStr);
-        if (!silent) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Tersimpan di Spreadsheet!',
-            text: 'Berhasil menyinkronkan ' + (res.totalItems || dbMateri.length) + ' materi ke Google Sheet.',
-            toast: true,
-            position: 'bottom-end',
-            showConfirmButton: false,
-            timer: 3000
-          });
-        }
-      })
-      .catch(function(err) {
-        isGasSyncing = false;
-        updateSaveStatus('gas_offline');
-        if (!silent) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Kendala Simpan',
-            text: err.message,
-            toast: true,
-            position: 'bottom-end',
-            showConfirmButton: false,
-            timer: 3500
-          });
-        }
-      });
+    if (typeof uploadAllToFirebase === 'function') uploadAllToFirebase(silent);
   };
 
   window.fetchFromSpreadsheet = function(showToast) {
-    var url = (localStorage.getItem(GAS_URL_KEY) || (document.getElementById('gasEndpointUrl') ? document.getElementById('gasEndpointUrl').value : '') || '').trim();
-    if (!url) {
-      Swal.fire('Perhatian', 'URL Google Spreadsheet belum disetel. Masukkan URL Web App di menu Pengaturan.', 'warning');
-      return;
-    }
-
-    Swal.fire({
-      title: 'Menarik Data...',
-      text: 'Mengambil data materi terbaru dari Google Spreadsheet...',
-      allowOutsideClick: false,
-      didOpen: function() { Swal.showLoading(); }
-    });
-
-    var getUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now();
-    fetchGasApi(getUrl, 'GET', null, 30000)
-      .then(function(res) {
-        if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
-          dbMateri = res.data;
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-          showDesktop();
-          Swal.fire({
-            icon: 'success',
-            title: 'Data Berhasil Dimuat!',
-            text: 'Berhasil menarik ' + res.data.length + ' materi dari Google Spreadsheet.'
-          });
-        } else {
-          Swal.fire('Info', 'Tidak ada data materi yang ditemukan di Google Spreadsheet ini.', 'info');
-        }
-      })
-      .catch(function(err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal Menarik Data',
-          text: err.message
-        });
-      });
+    if (typeof fetchFromFirebase === 'function') fetchFromFirebase(showToast);
   };
 
   // =======================================================================
@@ -5319,7 +4569,7 @@ function createJsonResponse(obj) {
       if (didChange) {
         var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         updateSaveStatus('saved_firebase', timeStr);
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
+      
         showRealtimeSyncToast();
       }
     }, function(error) {
@@ -5418,55 +4668,88 @@ function createJsonResponse(obj) {
     }
   };
 
-  window.testFirebaseConnection = function() {
+    window.testFirebaseConnection = function() {
     saveFirebaseConfigInputs();
     var cfg = getFirebaseConfig();
     if (!cfg || !cfg.apiKey || (!cfg.databaseURL && !cfg.projectId)) {
-      Swal.fire('Perhatian', 'Lengkapi Project ID, API Key, dan Database URL terlebih dahulu.', 'warning');
+      Swal.fire({
+        title: 'Perhatian',
+        text: 'Lengkapi Project ID, API Key, dan Database URL terlebih dahulu.',
+        icon: 'warning',
+        confirmButtonColor: '#4F46E5'
+      });
       return;
     }
 
     Swal.fire({
       title: 'Menguji Koneksi...',
-      text: 'Menghubungkan ke Firebase Realtime Database...',
-      allowOutsideClick: false,
-      didOpen: function() { Swal.showLoading(); }
+      html: '<div class="py-3 text-center"><div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;"></div><div class="mt-2 text-muted small fw-semibold">Menghubungkan ke Firebase Realtime Database...</div></div>',
+      showConfirmButton: false,
+      allowOutsideClick: false
     });
 
     initFirebase();
 
     if (!firebaseDb) {
-      Swal.fire('Gagal', 'Firebase SDK belum berhasil diinisialisasi. Periksa API Key dan Database URL Anda.', 'error');
+      Swal.close();
+      setTimeout(function() {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Firebase SDK belum berhasil diinisialisasi. Periksa API Key dan Database URL Anda.',
+          confirmButtonColor: '#4F46E5',
+          confirmButtonText: 'Tutup'
+        });
+      }, 80);
       return;
     }
 
-    firebaseDb.ref('.info/connected').once('value').then(function(snap) {
+    firebaseDb.ref('.info/connected').once('value').then(function() {
       firebaseRef.once('value').then(function(itemSnap) {
         var count = 0;
         var val = itemSnap.val();
-        if (Array.isArray(val)) count = val.length;
-        if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
-        else if (val && typeof val === 'object') count = Object.keys(val).length;
+        if (Array.isArray(val)) {
+          count = val.length;
+        } else if (val && typeof val === 'object') {
+          count = Object.keys(val).length;
+        }
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Koneksi Firebase Berhasil!',
-          showConfirmButton: true,
-          confirmButtonText: 'Tutup',
-          html: '<p class="small text-muted mb-0">Terhubung dengan sukses ke Realtime Database!<br>Total catatan di cloud: <b>' + count + ' materi</b>.</p>'
-        });
+        Swal.close();
+        setTimeout(function() {
+          Swal.fire({
+            icon: 'success',
+            title: 'Koneksi Firebase Berhasil!',
+            html: '<p class="small text-muted mb-0">Terhubung dengan sukses ke Realtime Database!<br>Total catatan di cloud: <b>' + count + ' materi</b>.</p>',
+            showConfirmButton: true,
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#4F46E5'
+          });
+        }, 80);
       }).catch(function(err) {
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
-        if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
-        Swal.fire({
-          icon: 'warning',
-          title: 'Terhubung, Namun Akses Ditolak (Rules)',
-          html: '<p class="small text-muted mb-2">Pastikan Security Rules di Firebase Console sudah mengizinkan read & write:</p><code class="small text-danger">' + err.message + '</code>'
-        });
+        Swal.close();
+        setTimeout(function() {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Terhubung, Namun Akses Ditolak (Rules)',
+            html: '<p class="small text-muted mb-2">Pastikan Security Rules di Firebase Console sudah mengizinkan read & write:</p><code class="small text-danger">' + err.message + '</code>',
+            showConfirmButton: true,
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#4F46E5'
+          });
+        }, 80);
       });
     }).catch(function(err) {
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
-      Swal.fire('Koneksi Gagal', err.message, 'error');
+      Swal.close();
+      setTimeout(function() {
+        Swal.fire({
+          icon: 'error',
+          title: 'Koneksi Gagal',
+          text: err.message,
+          showConfirmButton: true,
+          confirmButtonText: 'Tutup',
+          confirmButtonColor: '#4F46E5'
+        });
+      }, 80);
     });
   };
 
@@ -5476,10 +4759,7 @@ function createJsonResponse(obj) {
       return;
     }
 
-    if (!firebaseRef) {
-      initFirebase();
-    }
-
+    if (!firebaseRef) initFirebase();
     if (!firebaseRef) {
       if (!silent) Swal.fire('Perhatian', 'Firebase belum terkonfigurasi. Silakan isi konfigurasi Firebase terlebih dahulu.', 'warning');
       return;
@@ -5488,9 +4768,9 @@ function createJsonResponse(obj) {
     if (!silent) {
       Swal.fire({
         title: 'Menyinkronkan ke Firebase Cloud...',
-        text: 'Mengirim ' + dbMateri.length + ' materi ke Firebase Cloud...',
-        allowOutsideClick: false,
-        didOpen: function() { Swal.showLoading(); }
+        html: '<div class="py-3 text-center"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small">Mengirim ' + dbMateri.length + ' materi ke Firebase Cloud...</div></div>',
+        showConfirmButton: false,
+        allowOutsideClick: false
       });
     }
 
@@ -5502,27 +4782,33 @@ function createJsonResponse(obj) {
       isFirebaseSyncing = false;
       var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       updateSaveStatus('saved_firebase', timeStr);
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       if (!silent) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Sinkronisasi Firebase Sukses!',
-          text: 'Seluruh ' + dbMateri.length + ' materi berhasil disimpan di Firebase Realtime Database!',
-          toast: true,
-          position: 'bottom-end',
-          showConfirmButton: false,
-          timer: 3000
-        });
+        Swal.close();
+        setTimeout(function() {
+          Swal.fire({
+            icon: 'success',
+            title: 'Sinkronisasi Firebase Sukses!',
+            text: 'Seluruh ' + dbMateri.length + ' materi berhasil disimpan di Firebase Realtime Database!',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+        }, 60);
       }
     }).catch(function(err) {
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       isFirebaseSyncing = false;
       if (!silent) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal Mengunggah',
-          html: '<p class="small text-muted mb-1">Periksa izin database rules Anda di Firebase Console.</p><code class="small text-danger">' + err.message + '</code>'
-        });
+        Swal.close();
+        setTimeout(function() {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal Mengunggah',
+            html: '<p class="small text-muted mb-1">Periksa izin database rules Anda di Firebase Console.</p><code class="small text-danger">' + err.message + '</code>',
+            confirmButtonColor: '#4F46E5',
+            confirmButtonText: 'Tutup'
+          });
+        }, 60);
       }
     });
   };
@@ -5537,17 +4823,21 @@ function createJsonResponse(obj) {
     if (showAlert) {
       Swal.fire({
         title: 'Menarik Data...',
-        text: 'Mengambil catatan terbaru dari Firebase Realtime Database...',
-        allowOutsideClick: false,
-        didOpen: function() { Swal.showLoading(); }
+        html: '<div class="py-3 text-center"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted small">Mengambil catatan terbaru dari Firebase Realtime Database...</div></div>',
+        showConfirmButton: false,
+        allowOutsideClick: false
       });
     }
 
     firebaseRef.once('value').then(function(snap) {
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       var val = snap.val();
       if (!val) {
-        if (showAlert) Swal.fire('Kosong', 'Belum ada data materi di Firebase.', 'info');
+        if (showAlert) {
+          Swal.close();
+          setTimeout(function() {
+            Swal.fire('Kosong', 'Belum ada data materi di Firebase.', 'info');
+          }, 60);
+        }
         return;
       }
       var list = Array.isArray(val) ? val : Object.values(val);
@@ -5555,21 +4845,34 @@ function createJsonResponse(obj) {
       if (list.length > 0) {
         dbMateri = list;
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
-        showDesktop();
+        if (currentView === 'desktop') showDesktop();
+        else { renderTree(); if (activeNodeId) selectNode(activeNodeId); }
         if (showAlert) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Data Berhasil Dimuat!',
-            text: 'Berhasil memuat ' + list.length + ' materi dari Firebase Realtime Database!'
-          });
+          Swal.close();
+          setTimeout(function() {
+            Swal.fire({
+              icon: 'success',
+              title: 'Data Berhasil Dimuat!',
+              text: 'Berhasil memuat ' + list.length + ' materi dari Firebase Realtime Database!',
+              confirmButtonColor: '#4F46E5',
+              confirmButtonText: 'Tutup'
+            });
+          }, 60);
         }
       } else {
-        if (showAlert) Swal.fire('Info', 'Tidak ada data valid di Firebase.', 'info');
+        if (showAlert) {
+          Swal.close();
+          setTimeout(function() {
+            Swal.fire('Info', 'Tidak ada data valid di Firebase.', 'info');
+          }, 60);
+        }
       }
     }).catch(function(err) {
-      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       if (showAlert) {
-        Swal.fire('Gagal Menarik Data', err.message, 'error');
+        Swal.close();
+        setTimeout(function() {
+          Swal.fire('Gagal Menarik Data', err.message, 'error');
+        }, 60);
       }
     });
   };
