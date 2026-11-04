@@ -7086,14 +7086,8 @@ var initialMockDB = [
       renderFullscreenReader();
       updateFullscreenLiveBadge();
 
-      // Minta Fullscreen Browser jika didukung
-      try {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen().catch(function(){});
-        } else if (document.documentElement.webkitRequestFullscreen) {
-          document.documentElement.webkitRequestFullscreen().catch(function(){});
-        }
-      } catch (e) {}
+      // Fullscreen Reader menggunakan overlay fixed 100vw x 100vh tanpa requestFullscreen browser
+      // sehingga koneksi audio mikrofon Chrome TIDAK terputus (anti-aborted)
 
       // Listener tombol Esc dan shortcut +/-
       if (!fsKeydownListener) {
@@ -7119,15 +7113,7 @@ var initialMockDB = [
         window.removeEventListener('keydown', fsKeydownListener);
         fsKeydownListener = null;
       }
-      try {
-        if (document.fullscreenElement) {
-          if (document.exitFullscreen) {
-            document.exitFullscreen().catch(function(){});
-          } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen().catch(function(){});
-          }
-        }
-      } catch (e) {}
+      // Tutup overlay tanpa gangguan event exitFullscreen browser
     };
 
     window.setFullscreenReaderFilter = function(filterMode) {
@@ -8032,7 +8018,13 @@ var initialMockDB = [
       if (warningEl) warningEl.classList.add('d-none');
     }
 
-    // --- SPEECH RECOGNITION (MIC & HEADSET) ---
+    // --- STABLE TRANSCRIPT & CONTINUOUS SPEECH RECOGNITION ENGINE ---
+    var micAccumulatedFinalTranscript = ''; // Teks final akumulatif dari semua sesi (tidak akan pernah hilang/terhapus)
+    var micCurrentSessionFinal = '';        // Teks final dari sesi aktif saat ini
+    var micLastProcessedIndex = -1;         // Index kalimat yang sudah diproses agar tidak terulang/terlewat
+    var speechRestartTimer = null;          // Timer debounce restart otomatis
+    var speechWatchdogInterval = null;      // Watchdog monitor penjaga agar transkrip tidak pernah mati tiba-tiba
+
     function initSpeechRecognitionEngine() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return null;
@@ -8051,32 +8043,51 @@ var initialMockDB = [
 
       recognition.onresult = function(event) {
         var interimTranscript = '';
-        for (var i = event.resultIndex; i < event.results.length; i++) {
-          var transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            micFinalTranscript += (micFinalTranscript ? ' ' : '') + transcript.trim();
+        micCurrentSessionFinal = '';
+
+        for (var i = 0; i < event.results.length; i++) {
+          var resItem = event.results[i];
+          if (resItem.isFinal) {
+            var chunk = resItem[0].transcript.trim();
+            if (chunk) {
+              micCurrentSessionFinal += (micCurrentSessionFinal ? ' ' : '') + chunk;
+
+              // Deteksi kalimat baru yang selesai (final) untuk diterjemahkan
+              if (i > micLastProcessedIndex) {
+                micLastProcessedIndex = i;
+                processNewFinalSentence(chunk);
+              }
+            }
           } else {
-            interimTranscript += transcript;
+            interimTranscript += resItem[0].transcript;
           }
         }
 
+        // Teks stabil = Akumulasi sesi lalu + Sesi saat ini (TIDAK AKAN PERNAH TERHAPUS)
+        var combinedFinal = micAccumulatedFinalTranscript;
+        if (micCurrentSessionFinal) {
+          combinedFinal += (combinedFinal ? ' ' : '') + micCurrentSessionFinal;
+        }
+        micFinalTranscript = combinedFinal;
+
+        // Tampilkan ke kotak transkripsi
         var box = document.getElementById('micTranscriptBox');
         if (box) {
-          var displayHtml = escapeHTML(micFinalTranscript);
+          var displayHtml = escapeHTML(combinedFinal);
           if (interimTranscript) {
             displayHtml += (displayHtml ? ' ' : '') + '<span class="interim-text text-muted fst-italic">' + escapeHTML(interimTranscript) + '</span>';
           }
           box.innerHTML = displayHtml;
           box.scrollTop = box.scrollHeight;
 
-          // Auto-RTL bila bahasa Arab atau teks mengandung karakter Arab
-          if (isArabicLanguageSelected() || isArabicText(micFinalTranscript) || isArabicText(interimTranscript)) {
+          // Auto-RTL bila bahasa Arab
+          if (isArabicLanguageSelected() || isArabicText(combinedFinal) || isArabicText(interimTranscript)) {
             box.setAttribute('dir', 'rtl');
             box.classList.add('arabic-mode');
           }
         }
 
-        // Alirkan juga ke Kartu Live Real-Time di Layar Penuh Hasil
+        // Alirkan juga ke Kartu Live Real-Time di Layar Penuh Hasil jika sedang dibuka
         var fsOverlay = document.getElementById('transcribeResultFullscreenOverlay');
         if (fsOverlay && !fsOverlay.classList.contains('d-none')) {
           var interimContainer = document.getElementById('fsLiveInterimContainer');
@@ -8095,57 +8106,93 @@ var initialMockDB = [
           }
           updateFullscreenLiveBadge();
         }
-
-        // Deteksi Kalimat Selesai (Final) untuk Auto-Terjemah Per Kalimat
-        if (event.results[event.results.length - 1].isFinal) {
-          var finalChunk = event.results[event.results.length - 1][0].transcript.trim();
-          if (finalChunk) {
-            var autoTransToggle = document.getElementById('autoTranslateArabicToggle');
-            var isArab = isArabicLanguageSelected() || isArabicText(finalChunk);
-            if (autoTransToggle && autoTransToggle.checked && isArab) {
-              translateAndAddSentencePair('mic', finalChunk);
-            } else {
-              // Jika Auto-Terjemah tidak aktif, ketik biasa ke editor
-              var liveStreamToggle = document.getElementById('micLiveStreamToggle');
-              if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
-                var range = quillEditor.getSelection();
-                var insertIndex = range ? range.index : (quillEditor.getLength() - 1);
-                quillEditor.insertText(insertIndex, (insertIndex > 0 ? ' ' : '') + finalChunk, 'user');
-                if (isArab) {
-                  quillEditor.formatLine(insertIndex, finalChunk.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
-                }
-                quillEditor.setSelection(insertIndex + finalChunk.length + 1, 0, 'user');
-                lastLocalEditTime = Date.now();
-                window.performAutoSave();
-              }
-            }
-          }
-        }
       };
 
       recognition.onerror = function(event) {
-        if (event.error === 'no-speech') return;
+        console.warn('[SpeechRecognition] Event error:', event.error);
         if (event.error === 'not-allowed') {
-          Swal.fire('Izin Mikrofon Diperlukan', 'Harap izinkan akses mikrofon pada peramban (browser) Anda untuk menggunakan fitur transkripsi suara.', 'warning');
+          Swal.fire('Izin Mikrofon Diperlukan', 'Harap izinkan akses mikrofon pada peramban (browser) Anda.', 'warning');
           isRecordingUserIntent = false;
           stopLiveMicRecording();
+          return;
         }
+        // Non-fatal error: 'no-speech', 'aborted', 'audio-capture', 'network'.
+        // Jangan hentikan intent pengguna! onend akan terpanggil dan melakukan auto-restart otomatis.
       };
 
       recognition.onend = function() {
         isLiveRecording = false;
+
+        // Amankan hasil sesi yang baru saja selesai ke akumulasi utama agar tidak hilang
+        if (micCurrentSessionFinal) {
+          micAccumulatedFinalTranscript += (micAccumulatedFinalTranscript ? ' ' : '') + micCurrentSessionFinal.trim();
+          micCurrentSessionFinal = '';
+        }
+        micLastProcessedIndex = -1;
+
+        // Jika pengguna MASIH berniat merekam, hidupkan kembali secara instan tanpa jeda!
         if (isRecordingUserIntent) {
-          try {
-            recognition.start();
-          } catch(e) {
-            updateMicUIState('idle');
-          }
+          clearTimeout(speechRestartTimer);
+          speechRestartTimer = setTimeout(function() {
+            if (!isRecordingUserIntent) return;
+            restartSpeechEngineSafely();
+          }, 120);
         } else {
           updateMicUIState('idle');
+          stopLiveRecordingMeter();
         }
       };
 
       return recognition;
+    }
+
+    function processNewFinalSentence(finalChunk) {
+      if (!finalChunk) return;
+      var autoTransToggle = document.getElementById('autoTranslateArabicToggle');
+      var isArab = isArabicLanguageSelected() || isArabicText(finalChunk);
+
+      if (autoTransToggle && autoTransToggle.checked && isArab) {
+        translateAndAddSentencePair('mic', finalChunk);
+      } else {
+        var liveStreamToggle = document.getElementById('micLiveStreamToggle');
+        if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
+          var range = quillEditor.getSelection();
+          var insertIndex = range ? range.index : (quillEditor.getLength() - 1);
+          quillEditor.insertText(insertIndex, (insertIndex > 0 ? ' ' : '') + finalChunk, 'user');
+          if (isArab) {
+            quillEditor.formatLine(insertIndex, finalChunk.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+          }
+          quillEditor.setSelection(insertIndex + finalChunk.length + 1, 0, 'user');
+          lastLocalEditTime = Date.now();
+          window.performAutoSave();
+        }
+      }
+    }
+
+    function restartSpeechEngineSafely() {
+      if (!isRecordingUserIntent) return;
+      try {
+        var langSelect = document.getElementById('micLangSelect');
+        if (!liveSpeechRecognition) {
+          liveSpeechRecognition = initSpeechRecognitionEngine();
+        }
+        if (liveSpeechRecognition && langSelect) {
+          liveSpeechRecognition.lang = langSelect.value;
+        }
+        liveSpeechRecognition.start();
+      } catch(e) {
+        // Jika instance lama dalam status transisi, buat objek recognition baru
+        try {
+          liveSpeechRecognition = initSpeechRecognitionEngine();
+          if (liveSpeechRecognition) {
+            var langSel = document.getElementById('micLangSelect');
+            if (langSel) liveSpeechRecognition.lang = langSel.value;
+            liveSpeechRecognition.start();
+          }
+        } catch(err) {
+          console.warn('[SpeechEngine] Restart delayed:', err);
+        }
+      }
     }
 
     function updateMicUIState(state) {
@@ -8196,6 +8243,15 @@ var initialMockDB = [
       } else {
         stopMicTest();
         isRecordingUserIntent = true;
+
+        // Watchdog menjaga agar rekaman terus hidup jika Chrome mendadak drop
+        if (speechWatchdogInterval) clearInterval(speechWatchdogInterval);
+        speechWatchdogInterval = setInterval(function() {
+          if (isRecordingUserIntent && !isLiveRecording) {
+            restartSpeechEngineSafely();
+          }
+        }, 1000);
+
         try {
           var langSelect = document.getElementById('micLangSelect');
           if (liveSpeechRecognition && langSelect) {
@@ -8211,6 +8267,11 @@ var initialMockDB = [
 
     window.stopLiveMicRecording = function() {
       isRecordingUserIntent = false;
+      if (speechRestartTimer) clearTimeout(speechRestartTimer);
+      if (speechWatchdogInterval) {
+        clearInterval(speechWatchdogInterval);
+        speechWatchdogInterval = null;
+      }
       if (liveSpeechRecognition) {
         try { liveSpeechRecognition.stop(); } catch(e) {}
       }
@@ -8563,9 +8624,16 @@ var initialMockDB = [
 
     window.clearMicTranscript = function() {
       micFinalTranscript = '';
+      micAccumulatedFinalTranscript = '';
+      micCurrentSessionFinal = '';
+      micLastProcessedIndex = -1;
       var box = document.getElementById('micTranscriptBox');
       if (box) box.innerHTML = '';
       clearMicTranslation();
+      var overlay = document.getElementById('transcribeResultFullscreenOverlay');
+      if (overlay && !overlay.classList.contains('d-none')) {
+        renderFullscreenReader();
+      }
     };
 
     window.copyMicTranscript = function() {

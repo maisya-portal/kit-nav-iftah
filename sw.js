@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitnaf-v3.3-live-meter-guide';
+const CACHE_NAME = 'kitnaf-v3.4-unbreakable-speech-engine';
 
 const PRECACHE_ASSETS = [
   './',
