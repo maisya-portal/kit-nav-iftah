@@ -2597,10 +2597,15 @@
               <div id="cableOutputTip" class="alert alert-info py-2 px-3 small rounded-3 mt-2 mb-0 d-none">
                 <div class="d-flex align-items-start gap-2">
                   <i class="fa-solid fa-circle-info text-primary mt-1 flex-shrink-0"></i>
-                  <div style="font-size: 0.77rem; line-height: 1.5;">
-                    <b>Tips Agar Teks Transkripsi Muncul Lancar dari Suara Komputer:</b><br>
-                    1. <b>Bahasa Bicara:</b> Sesuaikan pilihan bahasa dengan bahasa di audio (pilih 🇮🇩 <i>Bahasa Indonesia</i> jika memutar kajian Indonesia, atau 🇸🇦 <i>Bahasa Arab</i> jika memutar kajian Arab).<br>
-                    2. <b>Default Device di Chrome/Windows:</b> Pengenal suara bawaan browser mendengarkan perangkat default. Pastikan <b>CABLE Output</b> dijadikan <i>Default Device</i> di Sound Windows (<a href="javascript:void(0)" onclick="showInternalAudioGuideModal()" class="fw-bold">lihat panduan</a>) atau di <code class="text-dark bg-white px-1 rounded">chrome://settings/content/microphone</code>.
+                  <div style="font-size: 0.77rem; line-height: 1.5; width: 100%;">
+                    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                      <b class="text-primary"><i class="fa-solid fa-route me-1"></i>3 Langkah Agar Suara Video Masuk ke CABLE Output:</b>
+                      <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none fw-bold" onclick="showInternalAudioGuideModal()"><i class="fa-solid fa-circle-question me-1"></i>Panduan Bergambar</button>
+                    </div>
+                    <div><b>1. Alirkan Suara Video:</b> Klik ikon Speaker di taskbar kanan bawah Windows (dekat jam) &rarr; ganti output ke <b>CABLE Input (VB-Audio)</b>.</div>
+                    <div><b>2. Agar Telinga Tetap Mendengar:</b> Tekan <kbd class="bg-white text-dark border px-1">Win+R</kbd> &rarr; ketik <code class="text-dark bg-white px-1 rounded">mmsys.cpl</code> &rarr; tab <i>Recording</i> &rarr; klik dua kali <i>CABLE Output</i> &rarr; tab <i>Listen</i> &rarr; centang <b>"Listen to this device"</b> ke Speakers Realtek.</div>
+                    <div><b>3. Default Mic di Chrome:</b> Buka <code class="text-dark bg-white px-1 rounded">chrome://settings/content/microphone</code> &rarr; pilih <b>CABLE Output</b>.</div>
+                    <div class="text-muted fst-italic mt-1"><i class="fa-solid fa-lightbulb text-warning me-1"></i><b>Opsi Tanpa Setting:</b> Atau beralih ke <b>Tab 2 (Rekam Tab / YouTube)</b> di atas untuk tangkap audio tab langsung!</div>
                   </div>
                 </div>
               </div>
@@ -2636,6 +2641,22 @@
                 </div>
                 <div class="audio-meter-wrap">
                   <div id="audioLiveMeterBar" class="progress-bar bg-success" style="width: 0%; height: 100%; transition: width 0.05s ease;"></div>
+                </div>
+
+                <!-- Peringatan Cerdas Jika Suara Masih 0% Saat Merekam dengan CABLE Output -->
+                <div id="cableZeroVolumeWarning" class="alert alert-warning py-2 px-3 small rounded-3 mt-2 mb-0 d-none">
+                  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="fa-solid fa-triangle-exclamation text-warning fs-5 flex-shrink-0"></i>
+                      <div style="font-size: 0.78rem;">
+                        <b class="text-dark">Suara Komputer Belum Mengalir (Indikator 0%):</b>
+                        <div class="text-secondary">Klik ikon Speaker di taskbar Windows (dekat jam) dan pilih <b>CABLE Input</b> agar suara video dialirkan ke sini.</div>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-warning rounded-pill px-3 py-1 fw-bold text-dark shadow-sm" onclick="showInternalAudioGuideModal()">
+                      <i class="fa-solid fa-circle-question me-1"></i> Buka Panduan
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -7921,6 +7942,96 @@ var initialMockDB = [
       }
     }
 
+    // --- METER SUARA AKTIF SAAT SEDANG MEREKAM / MENDENGARKAN ---
+    var liveAudioMeterStream = null;
+    var liveAudioMeterContext = null;
+    var liveAudioMeterAnalyser = null;
+    var liveAudioMeterAnim = null;
+    var zeroVolumeSeconds = 0;
+
+    function startLiveRecordingMeter() {
+      stopLiveRecordingMeter();
+      var selectedDeviceId = localStorage.getItem('kitnaf_selected_mic_device');
+      var constraints = { audio: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true };
+
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+        liveAudioMeterStream = stream;
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        liveAudioMeterContext = new AudioContext();
+        var source = liveAudioMeterContext.createMediaStreamSource(stream);
+        liveAudioMeterAnalyser = liveAudioMeterContext.createAnalyser();
+        liveAudioMeterAnalyser.fftSize = 256;
+        source.connect(liveAudioMeterAnalyser);
+
+        var dataArray = new Uint8Array(liveAudioMeterAnalyser.frequencyBinCount);
+        var meterBar = document.getElementById('audioLiveMeterBar');
+        var valText = document.getElementById('audioMeterVal');
+        var warningEl = document.getElementById('cableZeroVolumeWarning');
+
+        zeroVolumeSeconds = 0;
+
+        function updateMeter() {
+          if (!isLiveRecording && !isRecordingUserIntent && !isRecordingMicAudio) return;
+          liveAudioMeterAnalyser.getByteFrequencyData(dataArray);
+          var sum = 0;
+          for (var i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          var avg = sum / dataArray.length;
+          var percent = Math.min(100, Math.round((avg / 128) * 100 * 1.5));
+          if (meterBar) {
+            meterBar.style.width = percent + '%';
+            if (percent > 65) {
+              meterBar.className = 'progress-bar bg-danger';
+            } else if (percent > 30) {
+              meterBar.className = 'progress-bar bg-warning';
+            } else {
+              meterBar.className = 'progress-bar bg-success';
+            }
+          }
+          if (valText) valText.innerText = percent + '%';
+
+          // Jika volume 0% terus-menerus selama 3.5 detik saat menggunakan CABLE Output
+          if (percent === 0) {
+            zeroVolumeSeconds += 0.05;
+            if (zeroVolumeSeconds > 3.5 && warningEl) {
+              var select = document.getElementById('audioDeviceSelect');
+              var isCable = select && select.options[select.selectedIndex] && select.options[select.selectedIndex].text.toLowerCase().includes('cable');
+              if (isCable) {
+                warningEl.classList.remove('d-none');
+              }
+            }
+          } else {
+            zeroVolumeSeconds = 0;
+            if (warningEl) warningEl.classList.add('d-none');
+          }
+
+          liveAudioMeterAnim = requestAnimationFrame(updateMeter);
+        }
+        updateMeter();
+      }).catch(function(err) {
+        console.warn('[LiveMeter] Non-blocking warning:', err);
+      });
+    }
+
+    function stopLiveRecordingMeter() {
+      if (liveAudioMeterAnim) cancelAnimationFrame(liveAudioMeterAnim);
+      if (liveAudioMeterStream) {
+        liveAudioMeterStream.getTracks().forEach(function(t) { t.stop(); });
+        liveAudioMeterStream = null;
+      }
+      if (liveAudioMeterContext) {
+        try { liveAudioMeterContext.close(); } catch(e) {}
+        liveAudioMeterContext = null;
+      }
+      var meterBar = document.getElementById('audioLiveMeterBar');
+      if (meterBar) meterBar.style.width = '0%';
+      var valText = document.getElementById('audioMeterVal');
+      if (valText) valText.innerText = '0%';
+      var warningEl = document.getElementById('cableZeroVolumeWarning');
+      if (warningEl) warningEl.classList.add('d-none');
+    }
+
     // --- SPEECH RECOGNITION (MIC & HEADSET) ---
     function initSpeechRecognitionEngine() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -7935,6 +8046,7 @@ var initialMockDB = [
       recognition.onstart = function() {
         isLiveRecording = true;
         updateMicUIState('recording');
+        startLiveRecordingMeter();
       };
 
       recognition.onresult = function(event) {
@@ -8104,6 +8216,7 @@ var initialMockDB = [
       }
       isLiveRecording = false;
       updateMicUIState('idle');
+      stopLiveRecordingMeter();
 
       // Auto-Tashih bila Bahasa Arab aktif dan opsi Auto-Tashih tercentang
       var autoToggle = document.getElementById('autoTashihArabicToggle');
@@ -8167,6 +8280,7 @@ var initialMockDB = [
 
         micMediaRecorder.start(1000);
         updateMicUIState('recording');
+        startLiveRecordingMeter();
 
         var heading = document.getElementById('micStatusHeading');
         var desc = document.getElementById('micStatusDesc');
@@ -8197,6 +8311,7 @@ var initialMockDB = [
         micMediaRecorder.stop();
       }
       updateMicUIState('idle');
+      stopLiveRecordingMeter();
     }
 
     function processMicAudioWithGemini(audioBlob, mimeType) {
@@ -8738,33 +8853,55 @@ var initialMockDB = [
     // Panduan Suara Internal Komputer / Stereo Mix & Virtual Cable (Anti Suara Ruangan)
     window.showInternalAudioGuideModal = function() {
       Swal.fire({
-        title: '🎙️ Transkripsi Suara Video Komputer (Tanpa Bising Ruangan)',
+        title: '🎙️ Panduan 3 Langkah: Transkripsi Suara Video (Anti Suara Ruangan)',
         html: `
           <div class="text-start small" style="line-height: 1.6;">
             <p class="mb-2 text-dark">
-              Agar suara video/YouTube di komputer <b>langsung tertranskripsi live kata demi kata tanpa perlu direkam dulu, 100% bawaan browser tanpa API, dan suara ruangan sama sekali tidak ikut masuk</b>:
+              Agar suara video/YouTube di komputer <b>langsung tertranskripsi live kata demi kata tanpa ada gangguan bising suara ruangan sama sekali</b>, lakukan 3 langkah mudah ini:
             </p>
             
-            <div class="card border rounded-3 p-3 bg-light mb-3">
-              <h6 class="fw-bold text-danger mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Jika "Stereo Mix" Tidak Muncul di Laptop Anda:</h6>
-              <p class="text-muted mb-2" style="font-size: 0.8rem;">
-                Banyak laptop modern (HP, Lenovo, Dell, dll.) menonaktifkan Stereo Mix di driver bawaannya. Solusi resmi dan paling mudah adalah memasang <b>VB-CABLE Virtual Audio Device</b> (100% Gratis, aman, dan hanya 1 MB):
-              </p>
-              <ol class="ps-3 mb-2 d-flex flex-column gap-1">
-                <li>Unduh dari situs resminya: <a href="https://vb-audio.com/Cable/" target="_blank" class="fw-bold text-primary">vb-audio.com/Cable <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i></a></li>
-                <li>Ekstrak file zip, klik kanan <code class="bg-white px-1 border rounded text-dark">VBCABLE_Setup_x64.exe</code> &rarr; pilih <b>"Run as administrator"</b> &rarr; klik <b>"Install Driver"</b>.</li>
-                <li>Selesai! Di Kit-Naf klik tombol <b>"Pindai"</b>, lalu pilih <b>"CABLE Output (VB-Audio)"</b>.</li>
-              </ol>
+            <div class="d-flex flex-column gap-2 mb-3">
+              <div class="p-2 rounded-3 border bg-light">
+                <b class="text-primary"><i class="fa-solid fa-1 me-1"></i> Langkah 1: Alirkan Suara Video ke Virtual Cable</b>
+                <p class="mb-1 text-muted" style="font-size: 0.8rem;">
+                  Klik ikon <b>Speaker / Volume</b> di taskbar kanan bawah Windows (dekat jam) &rarr; klik tanda panah <b>^</b> &rarr; ganti pilihan dari <i>Speakers</i> ke:
+                </p>
+                <div class="badge bg-primary text-white p-2 w-100 text-start font-monospace" style="font-size: 0.78rem;">
+                  <i class="fa-solid fa-headphones me-1"></i> CABLE Input (VB-Audio Virtual Cable)
+                </div>
+              </div>
+
+              <div class="p-2 rounded-3 border bg-light">
+                <b class="text-success"><i class="fa-solid fa-2 me-1"></i> Langkah 2: Agar Telinga Anda Tetap Bisa Mendengar Suaranya</b>
+                <p class="mb-1 text-muted" style="font-size: 0.8rem;">
+                  Biar speaker laptop tetap bersuara saat video diputar:
+                </p>
+                <ol class="ps-3 mb-0 text-muted" style="font-size: 0.8rem;">
+                  <li>Tekan keyboard <kbd class="bg-white text-dark border px-1">Win + R</kbd>, ketik <code class="text-dark bg-white px-1 rounded">mmsys.cpl</code> lalu tekan Enter.</li>
+                  <li>Buka tab <b>Recording (Perekaman)</b> &rarr; klik 2x pada <b>CABLE Output</b>.</li>
+                  <li>Buka tab <b>Listen (Dengarkan)</b> &rarr; centang kotak <b>"Listen to this device"</b> (Dengarkan perangkat ini).</li>
+                  <li>Pilih <b>Speakers (Realtek Audio)</b> pada daftar di bawahnya, lalu klik <b>OK</b>.</li>
+                </ol>
+              </div>
+
+              <div class="p-2 rounded-3 border bg-light">
+                <b class="text-danger"><i class="fa-solid fa-3 me-1"></i> Langkah 3: Pilih CABLE Output di Chrome</b>
+                <p class="mb-1 text-muted" style="font-size: 0.8rem;">
+                  Buka tab baru di browser Google Chrome, ketik:<br>
+                  <code class="text-dark bg-white px-1 border rounded fw-bold">chrome://settings/content/microphone</code><br>
+                  Pada menu Mikrofon di bagian atas, pilih: <b>CABLE Output (VB-Audio Virtual Cable)</b>.
+                </p>
+              </div>
             </div>
 
-            <div class="p-2 bg-success bg-opacity-10 border border-success-subtle rounded-3 text-success">
-              <i class="fa-solid fa-circle-check me-1"></i>
-              <b>Keuntungan:</b> Suara YouTube atau video laptop disalurkan secara digital murni. Suara ruangan <b>0% (sama sekali tidak masuk)</b>, teks langsung terketik secara <b>live real-time</b> saat video diputar tanpa perlu direkam dulu, dan 100% gratis bawaan browser tanpa API!
+            <div class="p-2 bg-primary bg-opacity-10 border border-primary-subtle rounded-3 text-primary mb-2">
+              <i class="fa-solid fa-star me-1"></i>
+              <b>Tips Alternatif Praktis:</b> Jika tidak ingin merubah setelan Windows, cukup gunakan <b>Tab 2 (Rekam Tab / YouTube)</b> di atas. Klik tombol merah dan pilih tab YouTube dengan mencentang <i>"Bagikan audio tab"</i>!
             </div>
           </div>
         `,
-        width: '620px',
-        confirmButtonText: '<i class="fa-solid fa-check me-1"></i> Saya Mengerti',
+        width: '660px',
+        confirmButtonText: '<i class="fa-solid fa-check me-1"></i> Saya Paham & Siap Coba',
         confirmButtonColor: '#2563eb'
       });
     };

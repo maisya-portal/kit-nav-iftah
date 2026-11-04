@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitnaf-v3.2-fullscreen-reader';
+const CACHE_NAME = 'kitnaf-v3.3-live-meter-guide';
 
 const PRECACHE_ASSETS = [
   './',
