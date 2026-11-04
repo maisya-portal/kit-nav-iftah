@@ -1390,6 +1390,167 @@
       background: #f0fdf4;
       border-color: #86efac;
     }
+
+    /* Layar Penuh Modal Studio Transkripsi */
+    .audio-studio-modal .modal-dialog.modal-fullscreen {
+      width: 100vw;
+      max-width: 100vw;
+      height: 100vh;
+      margin: 0;
+    }
+    .audio-studio-modal .modal-dialog.modal-fullscreen .modal-content {
+      height: 100vh;
+      border-radius: 0 !important;
+      display: flex;
+      flex-direction: column;
+    }
+    .audio-studio-modal .modal-dialog.modal-fullscreen .modal-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      max-height: calc(100vh - 120px);
+    }
+
+    /* OVERLAY KHUSUS HASIL TRANSKRIPSI & TERJEMAHAN LAYAR PENUH (MODE FOKUS BACA) */
+    .transcribe-result-fullscreen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 105000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      --fs-arabic-size: 32px;
+      --fs-trans-size: 18px;
+    }
+
+    /* Tema Gelap (Default untuk Fokus & Bioskop) */
+    .transcribe-result-fullscreen-overlay.theme-dark {
+      background-color: #0b0f19;
+      color: #f1f5f9;
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-reader-header,
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-reader-footer {
+      background-color: #0f172a;
+      border-color: #1e293b !important;
+      color: #e2e8f0;
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-sentence-card {
+      background: linear-gradient(180deg, #131d31 0%, #0f172a 100%);
+      border: 1px solid #1e293b;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-sentence-card:hover {
+      border-color: #3b82f6;
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-arabic-text {
+      color: #f8fafc;
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-trans-text {
+      color: #94a3b8;
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-trans-badge {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .transcribe-result-fullscreen-overlay.theme-dark .fs-empty-state {
+      background: #111827;
+      border: 1px dashed #374151;
+      color: #9ca3af;
+    }
+
+    /* Tema Terang */
+    .transcribe-result-fullscreen-overlay.theme-light {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-reader-header,
+    .transcribe-result-fullscreen-overlay.theme-light .fs-reader-footer {
+      background-color: #ffffff;
+      border-color: #e2e8f0 !important;
+      color: #1e293b;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-sentence-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-sentence-card:hover {
+      border-color: #2563eb;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-arabic-text {
+      color: #0f172a;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-trans-text {
+      color: #475569;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-trans-badge {
+      background-color: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-empty-state {
+      background: #ffffff;
+      border: 1px dashed #cbd5e1;
+      color: #64748b;
+    }
+
+    /* Elemen Pembaca Layar Penuh */
+    .fs-arabic-text {
+      font-family: 'Amiri', 'Traditional Arabic', 'Scheherazade New', serif;
+      font-size: var(--fs-arabic-size);
+      line-height: 2.3;
+      text-align: right;
+      direction: rtl;
+      letter-spacing: 0.5px;
+      word-spacing: 2px;
+    }
+    .fs-trans-text {
+      font-size: var(--fs-trans-size);
+      line-height: 1.8;
+      font-style: italic;
+    }
+    .fs-filter-btn {
+      color: #94a3b8;
+      border: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .fs-filter-btn:hover {
+      color: #ffffff;
+    }
+    .fs-filter-btn.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.5);
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-filter-btn {
+      color: #64748b;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-filter-btn:hover {
+      color: #0f172a;
+    }
+    .transcribe-result-fullscreen-overlay.theme-light .fs-filter-btn.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+    }
+    .fs-rec-indicator-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #ef4444;
+      display: inline-block;
+      animation: fsDotPulse 1.2s infinite;
+    }
+    @keyframes fsDotPulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -2343,7 +2504,13 @@
             <small style="color: rgba(255, 255, 255, 0.9) !important; font-size: 0.82rem;">Ubah suara langsung dari Mic, Headset (Kabel/Bluetooth), Tab/YouTube, atau file video/audio menjadi catatan</small>
           </div>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="stopAllTranscribeRecordings()" title="Tutup Studio Transkripsi"></button>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2 py-1 shadow-sm d-flex align-items-center gap-1" id="btnToggleStudioFullscreen" onclick="toggleStudioModalFullscreen()" title="Beralih Layar Penuh Modal Studio">
+            <i class="fa-solid fa-expand" id="studioModalFullscreenIcon"></i>
+            <span class="d-none d-sm-inline" id="studioModalFullscreenLabel" style="font-size: 0.78rem;">Layar Penuh Modal</span>
+          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="stopAllTranscribeRecordings()" title="Tutup Studio Transkripsi"></button>
+        </div>
       </div>
 
       <!-- Nav Tabs (4 Tab Terpadu) -->
@@ -2504,7 +2671,11 @@
                   <i class="fa-solid fa-check me-1"></i>Mode Teks Arab (RTL)
                 </span>
               </div>
-              <div class="d-flex gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold shadow-sm d-flex align-items-center gap-1" onclick="openResultFullscreenReader('mic')" title="Tampilkan Hanya Hasil Teks Arab & Terjemahan di Layar Penuh (Mode Fokus / Baca)">
+                  <i class="fa-solid fa-maximize"></i>
+                  <span>Layar Penuh Hasil</span>
+                </button>
                 <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearMicTranscript()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
                 <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyMicTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
               </div>
@@ -2542,12 +2713,15 @@
 
             <!-- Kotak Hasil Terjemahan Per Kalimat (Otomatis Tampil di Bawah Teks Arab) -->
             <div id="micTranslationWrapper" class="card border rounded-3 p-3 mb-3 bg-white shadow-sm">
-              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom flex-wrap gap-2">
                 <span class="small fw-bold text-primary d-flex align-items-center gap-1">
                   <i class="fa-solid fa-language fa-lg text-primary"></i>
                   <span>Terjemahan Indonesia (Per Kalimat):</span>
                 </span>
                 <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 fw-semibold" onclick="openResultFullscreenReader('mic')" title="Buka Layar Penuh Teks Arab & Terjemahan Saja (Mode Baca)">
+                    <i class="fa-solid fa-maximize me-1"></i> Layar Penuh
+                  </button>
                   <span id="micTransStatusIndicator" class="small text-muted" style="font-size: 0.72rem;"></span>
                   <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearMicTranslation()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
                   <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyMicTranslation()"><i class="fa-solid fa-copy me-1"></i>Salin Terjemahan</button>
@@ -2568,6 +2742,9 @@
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold rounded-pill px-3" onclick="insertTranslationOnly('cursor')" title="Sisipkan teks terjemahan bahasa Indonesia saja">
                   <i class="fa-solid fa-language me-1"></i> Sisipkan Terjemahan Saja
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-semibold rounded-pill px-3" onclick="openResultFullscreenReader('mic')" title="Tampilkan hasil Arab & terjemahan di layar penuh (Mode Fokus Baca)">
+                  <i class="fa-solid fa-maximize me-1"></i> Layar Penuh Fokus Baca
                 </button>
               </div>
             </div>
@@ -2677,9 +2854,12 @@
             </div>
 
             <!-- System Audio Transcript Box -->
-            <div class="mb-2 d-flex justify-content-between align-items-center">
+            <div class="mb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
               <span class="small fw-bold text-muted"><i class="fa-solid fa-font me-1"></i>Hasil Transkripsi Audio YouTube / Komputer:</span>
-              <div class="d-flex gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 fw-bold shadow-sm d-flex align-items-center gap-1" onclick="openResultFullscreenReader('system')" title="Tampilkan Layar Penuh Hasil">
+                  <i class="fa-solid fa-maximize me-1"></i><span>Layar Penuh Hasil</span>
+                </button>
                 <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearSystemTranscript()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
                 <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copySystemTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
               </div>
@@ -2867,6 +3047,110 @@
 
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     OVERLAY LAYAR PENUH KHUSUS HASIL TEKS ARAB & TERJEMAHAN
+     (Mode Fokus Baca / Teleprompter / Presentasi)
+     ======================================================== -->
+<div id="transcribeResultFullscreenOverlay" class="transcribe-result-fullscreen-overlay d-none theme-dark" tabindex="-1">
+  <!-- Top Bar -->
+  <div class="fs-reader-header px-3 px-md-4 py-2 py-md-3 d-flex justify-content-between align-items-center shadow-sm flex-wrap gap-2">
+    <!-- Brand / Status -->
+    <div class="d-flex align-items-center gap-2 gap-md-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-book-open-reader fs-5 text-warning"></i>
+        <span class="fw-bold fs-6">Hasil Teks & Terjemahan</span>
+      </div>
+      <div id="fsLiveStatusBadge" class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 px-md-3 py-1 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+        <span class="fs-rec-indicator-dot" id="fsRecDot" style="display: none;"></span>
+        <span id="fsLiveStatusText">Siap</span>
+      </div>
+      <span id="fsSentenceCountBadge" class="badge bg-secondary-subtle text-secondary border px-2 py-1 small">0 Kalimat</span>
+    </div>
+
+    <!-- Filter Buttons (Dwi-Bahasa, Arab Saja, Terjemahan Saja) -->
+    <div class="d-flex align-items-center bg-black bg-opacity-25 p-1 rounded-pill border border-secondary border-opacity-25">
+      <button type="button" class="btn btn-sm rounded-pill px-2 px-md-3 py-1 fs-filter-btn active" id="fsFilterBothBtn" onclick="setFullscreenReaderFilter('both')">
+        <i class="fa-solid fa-layer-group me-1"></i> Dwi-Bahasa
+      </button>
+      <button type="button" class="btn btn-sm rounded-pill px-2 px-md-3 py-1 fs-filter-btn" id="fsFilterArabicBtn" onclick="setFullscreenReaderFilter('arabic')">
+        <i class="fa-solid fa-font me-1"></i> Arab Saja
+      </button>
+      <button type="button" class="btn btn-sm rounded-pill px-2 px-md-3 py-1 fs-filter-btn" id="fsFilterTransBtn" onclick="setFullscreenReaderFilter('translation')">
+        <i class="fa-solid fa-language me-1"></i> Terjemahan
+      </button>
+    </div>
+
+    <!-- Controls Toolbar -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <!-- Font Size Adjuster -->
+      <div class="btn-group btn-group-sm rounded-pill border border-secondary border-opacity-25 overflow-hidden" role="group">
+        <button type="button" class="btn btn-outline-light px-2" onclick="changeFullscreenFontSize(-2)" title="Perkecil Font"><i class="fa-solid fa-minus"></i> A</button>
+        <span class="btn btn-outline-light px-2 disabled fw-bold" id="fsFontSizeLabel" style="font-size: 0.78rem;">32px</span>
+        <button type="button" class="btn btn-outline-light px-2" onclick="changeFullscreenFontSize(2)" title="Perbesar Font"><i class="fa-solid fa-plus"></i> A</button>
+      </div>
+
+      <!-- Auto Scroll Toggle -->
+      <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2 px-md-3 py-1 d-flex align-items-center gap-1 active" id="fsAutoScrollBtn" onclick="toggleFullscreenAutoScroll()" title="Gulir Otomatis ke Kalimat Terakhir">
+        <i class="fa-solid fa-arrow-down-wide-short"></i>
+        <span class="d-none d-lg-inline" style="font-size: 0.78rem;">Auto-Scroll</span>
+      </button>
+
+      <!-- Theme Switch -->
+      <button type="button" class="btn btn-sm btn-outline-light rounded-circle d-flex align-items-center justify-content-center" id="fsThemeToggleBtn" onclick="toggleFullscreenTheme()" title="Ubah Tema Gelap/Terang" style="width: 32px; height: 32px;">
+        <i class="fa-solid fa-sun" id="fsThemeIcon"></i>
+      </button>
+
+      <!-- Copy All -->
+      <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2 px-md-3 py-1 d-flex align-items-center gap-1" onclick="copyFullscreenReaderContent()" title="Salin Semua">
+        <i class="fa-solid fa-copy"></i>
+        <span class="d-none d-sm-inline" style="font-size: 0.78rem;">Salin</span>
+      </button>
+
+      <!-- Insert to Quill Editor -->
+      <button type="button" class="btn btn-sm btn-success rounded-pill px-2 px-md-3 py-1 d-flex align-items-center gap-1 shadow-sm" onclick="insertFullscreenReaderToEditor()" title="Sisipkan ke Catatan">
+        <i class="fa-solid fa-file-import"></i>
+        <span class="d-none d-sm-inline" style="font-size: 0.78rem;">Sisipkan</span>
+      </button>
+
+      <!-- Exit Fullscreen Button -->
+      <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 py-1 d-flex align-items-center gap-1 ms-1 shadow-sm" onclick="closeResultFullscreenReader()" title="Keluar dari Layar Penuh (Tekan Esc)">
+        <i class="fa-solid fa-compress"></i>
+        <span style="font-size: 0.78rem;">Tutup (Esc)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Body -->
+  <div id="fsReaderScrollContainer" class="flex-grow-1 overflow-auto p-3 p-md-5">
+    <div class="mx-auto" style="max-width: 1050px;">
+      <!-- List of sentences rendered here -->
+      <div id="fsReaderSentenceList" class="d-flex flex-column gap-3">
+        <!-- Dynamic content -->
+      </div>
+      
+      <!-- Live interim card (when speaker is talking) -->
+      <div id="fsLiveInterimContainer" class="fs-sentence-card p-3 rounded-4 mt-3 border border-primary border-opacity-50 d-none" style="background: rgba(37, 99, 235, 0.08);">
+        <div class="d-flex align-items-center gap-2 mb-2 text-primary small fw-bold">
+          <i class="fa-solid fa-microphone fa-bounce"></i>
+          <span>Sedang Mengucapkan (Real-time)...</span>
+        </div>
+        <div id="fsLiveInterimText" class="fs-arabic-text text-primary fst-italic" dir="rtl"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Footer -->
+  <div class="fs-reader-footer px-3 px-md-4 py-2 border-top d-flex justify-content-between align-items-center small">
+    <div class="d-flex align-items-center gap-2">
+      <span id="fsReaderFooterStatus"><i class="fa-solid fa-circle-info text-primary me-1"></i>Teks Arab dan terjemahan akan otomatis mengalir di sini saat suara ditangkap.</span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="text-muted d-none d-md-inline">Tekan <b>Esc</b> untuk kembali</span>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Amiri Font • Arab & Terjemahan</span>
     </div>
   </div>
 </div>
@@ -6734,6 +7018,322 @@ var initialMockDB = [
     // --- STUDIO TRANSKRIPSI SUARA & AUDIO (MIC, HEADSET, TAB/YOUTUBE, & FILE) ---
     // ==========================================
     var audioTranscribeModalEl = null;
+
+    // --- FULLSCREEN MODAL STUDIO TRANSKRIPSI ---
+    window.toggleStudioModalFullscreen = function() {
+      var modalEl = document.getElementById('audioTranscribeModal');
+      if (!modalEl) return;
+      var dialog = modalEl.querySelector('.modal-dialog');
+      var icon = document.getElementById('studioModalFullscreenIcon');
+      var label = document.getElementById('studioModalFullscreenLabel');
+      if (!dialog) return;
+
+      if (dialog.classList.contains('modal-fullscreen')) {
+        dialog.classList.remove('modal-fullscreen');
+        dialog.classList.add('modal-dialog-centered', 'modal-lg');
+        if (icon) {
+          icon.classList.remove('fa-compress');
+          icon.classList.add('fa-expand');
+        }
+        if (label) label.textContent = 'Layar Penuh Modal';
+      } else {
+        dialog.classList.remove('modal-dialog-centered', 'modal-lg');
+        dialog.classList.add('modal-fullscreen');
+        if (icon) {
+          icon.classList.remove('fa-expand');
+          icon.classList.add('fa-compress');
+        }
+        if (label) label.textContent = 'Perkecil Modal';
+      }
+    };
+
+    // --- FULLSCREEN KHUSUS HASIL TEKS ARAB & TERJEMAHAN (MODE FOKUS BACA) ---
+    var fsActiveBoxType = 'mic';
+    var fsActiveFilter = 'both'; // 'both', 'arabic', 'translation'
+    var fsArabicFontSize = 32; // px
+    var fsAutoScrollEnabled = true;
+    var fsTheme = 'dark'; // 'dark' or 'light'
+    var fsKeydownListener = null;
+
+    window.openResultFullscreenReader = function(boxType) {
+      fsActiveBoxType = boxType || 'mic';
+      var overlay = document.getElementById('transcribeResultFullscreenOverlay');
+      if (!overlay) return;
+
+      overlay.classList.remove('d-none');
+      applyFullscreenFontSize();
+      renderFullscreenReader();
+      updateFullscreenLiveBadge();
+
+      // Minta Fullscreen Browser jika didukung
+      try {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(function(){});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen().catch(function(){});
+        }
+      } catch (e) {}
+
+      // Listener tombol Esc dan shortcut +/-
+      if (!fsKeydownListener) {
+        fsKeydownListener = function(e) {
+          if (e.key === 'Escape') {
+            closeResultFullscreenReader();
+          } else if (e.key === '+' || e.key === '=') {
+            changeFullscreenFontSize(2);
+          } else if (e.key === '-' || e.key === '_') {
+            changeFullscreenFontSize(-2);
+          }
+        };
+        window.addEventListener('keydown', fsKeydownListener);
+      }
+    };
+
+    window.closeResultFullscreenReader = function() {
+      var overlay = document.getElementById('transcribeResultFullscreenOverlay');
+      if (overlay) {
+        overlay.classList.add('d-none');
+      }
+      if (fsKeydownListener) {
+        window.removeEventListener('keydown', fsKeydownListener);
+        fsKeydownListener = null;
+      }
+      try {
+        if (document.fullscreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(function(){});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen().catch(function(){});
+          }
+        }
+      } catch (e) {}
+    };
+
+    window.setFullscreenReaderFilter = function(filterMode) {
+      fsActiveFilter = filterMode;
+      ['Both', 'Arabic', 'Trans'].forEach(function(btnKey) {
+        var btn = document.getElementById('fsFilter' + btnKey + 'Btn');
+        if (btn) btn.classList.remove('active');
+      });
+      if (filterMode === 'both') {
+        var b = document.getElementById('fsFilterBothBtn'); if (b) b.classList.add('active');
+      } else if (filterMode === 'arabic') {
+        var b = document.getElementById('fsFilterArabicBtn'); if (b) b.classList.add('active');
+      } else if (filterMode === 'translation') {
+        var b = document.getElementById('fsFilterTransBtn'); if (b) b.classList.add('active');
+      }
+      renderFullscreenReader();
+    };
+
+    window.changeFullscreenFontSize = function(delta) {
+      fsArabicFontSize += delta;
+      if (fsArabicFontSize < 18) fsArabicFontSize = 18;
+      if (fsArabicFontSize > 64) fsArabicFontSize = 64;
+      applyFullscreenFontSize();
+    };
+
+    function applyFullscreenFontSize() {
+      var overlay = document.getElementById('transcribeResultFullscreenOverlay');
+      var label = document.getElementById('fsFontSizeLabel');
+      if (overlay) {
+        overlay.style.setProperty('--fs-arabic-size', fsArabicFontSize + 'px');
+        var transSize = Math.max(14, Math.round(fsArabicFontSize * 0.56));
+        overlay.style.setProperty('--fs-trans-size', transSize + 'px');
+      }
+      if (label) {
+        label.textContent = fsArabicFontSize + 'px';
+      }
+    }
+
+    window.toggleFullscreenAutoScroll = function() {
+      fsAutoScrollEnabled = !fsAutoScrollEnabled;
+      var btn = document.getElementById('fsAutoScrollBtn');
+      if (btn) {
+        if (fsAutoScrollEnabled) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    };
+
+    window.toggleFullscreenTheme = function() {
+      var overlay = document.getElementById('transcribeResultFullscreenOverlay');
+      var icon = document.getElementById('fsThemeIcon');
+      if (!overlay) return;
+      if (overlay.classList.contains('theme-dark')) {
+        overlay.classList.remove('theme-dark');
+        overlay.classList.add('theme-light');
+        fsTheme = 'light';
+        if (icon) {
+          icon.classList.remove('fa-sun');
+          icon.classList.add('fa-moon');
+        }
+      } else {
+        overlay.classList.remove('theme-light');
+        overlay.classList.add('theme-dark');
+        fsTheme = 'dark';
+        if (icon) {
+          icon.classList.remove('fa-moon');
+          icon.classList.add('fa-sun');
+        }
+      }
+    };
+
+    function updateFullscreenLiveBadge() {
+      var dot = document.getElementById('fsRecDot');
+      var text = document.getElementById('fsLiveStatusText');
+      var badge = document.getElementById('fsLiveStatusBadge');
+      var isRec = isLiveRecording || isRecordingMicAudio || (typeof isRecordingSystemAudio !== 'undefined' && isRecordingSystemAudio);
+      if (text && dot && badge) {
+        if (isRec) {
+          dot.style.display = 'inline-block';
+          text.textContent = 'Live Transkripsi';
+          badge.className = 'badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-2 px-md-3 py-1 d-flex align-items-center gap-1';
+        } else {
+          dot.style.display = 'none';
+          text.textContent = 'Siap';
+          badge.className = 'badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 px-md-3 py-1 d-flex align-items-center gap-1';
+        }
+      }
+    }
+
+    window.renderFullscreenReader = function() {
+      var listEl = document.getElementById('fsReaderSentenceList');
+      var countBadge = document.getElementById('fsSentenceCountBadge');
+      if (!listEl) return;
+
+      var pairs = sentencePairs[fsActiveBoxType] || [];
+      var boxId = fsActiveBoxType === 'mic' ? 'micTranscriptBox' : (fsActiveBoxType === 'system' ? 'systemTranscriptBox' : 'fileTranscriptBox');
+      var boxEl = document.getElementById(boxId);
+      var rawText = boxEl ? boxEl.innerText.trim() : '';
+
+      if (countBadge) {
+        countBadge.textContent = pairs.length > 0 ? (pairs.length + ' Kalimat') : (rawText ? '1 Paragraf' : '0 Kalimat');
+      }
+
+      if (pairs.length > 0) {
+        var html = '';
+        pairs.forEach(function(pair, idx) {
+          var showArabic = (fsActiveFilter === 'both' || fsActiveFilter === 'arabic');
+          var showTrans = (fsActiveFilter === 'both' || fsActiveFilter === 'translation');
+
+          html += '<div class="fs-sentence-card p-3 p-md-4 rounded-4 position-relative">' +
+            '<div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-25">' +
+              '<span class="badge bg-primary-subtle text-primary border border-primary-subtle small">#' + (idx + 1) + '</span>' +
+              '<div class="d-flex gap-2">' +
+                '<button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0" onclick="copySingleFSSentence(' + idx + ')" title="Salin Kalimat Ini"><i class="fa-solid fa-copy me-1"></i>Salin</button>' +
+              '</div>' +
+            '</div>';
+
+          if (showArabic && pair.arabic) {
+            html += '<div class="fs-arabic-text mb-2" dir="rtl">' + escapeHTML(pair.arabic) + '</div>';
+          }
+
+          if (showTrans && pair.indonesian) {
+            html += '<div class="fs-trans-text d-flex align-items-start gap-2 pt-1 border-top border-secondary border-opacity-10">' +
+              '<span class="fs-trans-badge badge rounded-pill px-2 py-1 mt-1 small" style="font-size: 0.7rem;">Artinya</span>' +
+              '<span>' + escapeHTML(pair.indonesian) + '</span>' +
+            '</div>';
+          }
+
+          html += '</div>';
+        });
+
+        listEl.innerHTML = html;
+      } else if (rawText) {
+        var isArab = isArabicText(rawText);
+        var html = '<div class="fs-sentence-card p-4 rounded-4">' +
+          '<div class="d-flex justify-content-between align-items-center mb-2">' +
+            '<span class="badge bg-secondary-subtle text-secondary border">Teks Transkripsi</span>' +
+            '<button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" onclick="splitAndTranslateFullText(\'' + fsActiveBoxType + '\', document.getElementById(\'' + boxId + '\').innerText); renderFullscreenReader();">' +
+              '<i class="fa-solid fa-language me-1"></i> Terjemahkan Per Kalimat' +
+            '</button>' +
+          '</div>' +
+          '<div class="fs-arabic-text" dir="' + (isArab ? 'rtl' : 'ltr') + '" style="text-align:' + (isArab ? 'right' : 'left') + ';">' +
+            escapeHTML(rawText) +
+          '</div>' +
+        '</div>';
+        listEl.innerHTML = html;
+      } else {
+        listEl.innerHTML = '<div class="fs-empty-state text-center p-5 rounded-4 my-4">' +
+          '<i class="fa-solid fa-microphone-lines text-primary display-4 mb-3"></i>' +
+          '<h5 class="fw-bold mb-2">Belum Ada Teks Transkripsi</h5>' +
+          '<p class="mb-3 max-w-lg mx-auto" style="font-size: 0.95rem;">Mulai berbicara melalui mikrofon atau putar audio/video kajian. Kalimat bahasa Arab dan terjemahan bahasa Indonesianya akan otomatis mengalir dan bertambah di layar ini secara langsung!</p>' +
+          '<button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow" onclick="closeResultFullscreenReader()">' +
+            '<i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Kontrol Studio' +
+          '</button>' +
+        '</div>';
+      }
+
+      if (fsAutoScrollEnabled) {
+        var scrollContainer = document.getElementById('fsReaderScrollContainer');
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
+      }
+    };
+
+    window.copySingleFSSentence = function(idx) {
+      var pairs = sentencePairs[fsActiveBoxType] || [];
+      if (!pairs[idx]) return;
+      var text = (pairs[idx].arabic ? (pairs[idx].arabic + '\n') : '') + 'Artinya: ' + pairs[idx].indonesian;
+      navigator.clipboard.writeText(text).then(function() {
+        Swal.fire({ icon:'success', title:'Kalimat Tersalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:1500 });
+      });
+    };
+
+    window.copyFullscreenReaderContent = function() {
+      var pairs = sentencePairs[fsActiveBoxType] || [];
+      var boxId = fsActiveBoxType === 'mic' ? 'micTranscriptBox' : (fsActiveBoxType === 'system' ? 'systemTranscriptBox' : 'fileTranscriptBox');
+      var boxEl = document.getElementById(boxId);
+      var rawText = boxEl ? boxEl.innerText.trim() : '';
+
+      if (pairs.length === 0 && !rawText) {
+        return Swal.fire('Teks Kosong', 'Belum ada konten transkripsi untuk disalin.', 'info');
+      }
+
+      var formatted = '';
+      if (pairs.length > 0) {
+        formatted = pairs.map(function(p) {
+          if (fsActiveFilter === 'arabic') return p.arabic;
+          if (fsActiveFilter === 'translation') return p.indonesian;
+          return (p.arabic ? (p.arabic + '\n') : '') + 'Artinya: ' + p.indonesian;
+        }).join('\n\n');
+      } else {
+        formatted = rawText;
+      }
+
+      navigator.clipboard.writeText(formatted).then(function() {
+        Swal.fire({ icon:'success', title:'Seluruh Konten Tersalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:1800 });
+      });
+    };
+
+    window.insertFullscreenReaderToEditor = function() {
+      if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu.', 'warning');
+      var pairs = sentencePairs[fsActiveBoxType] || [];
+      if (pairs.length === 0) {
+        var boxId = fsActiveBoxType === 'mic' ? 'micTranscriptBox' : (fsActiveBoxType === 'system' ? 'systemTranscriptBox' : 'fileTranscriptBox');
+        var boxEl = document.getElementById(boxId);
+        var rawText = boxEl ? boxEl.innerText.trim() : '';
+        if (rawText) {
+          var range = quillEditor.getSelection();
+          var idx = range ? range.index : quillEditor.getLength();
+          quillEditor.insertText(idx, (idx > 0 ? '\n\n' : '') + rawText, 'user');
+          lastLocalEditTime = Date.now();
+          window.performAutoSave();
+          Swal.fire({ icon:'success', title:'Teks Disisipkan!', toast:true, position:'bottom-end', timer:2000 });
+          return;
+        }
+        return Swal.fire('Teks Kosong', 'Belum ada konten untuk disisipkan.', 'info');
+      }
+
+      if (fsActiveFilter === 'translation') {
+        insertTranslationOnly('cursor');
+      } else {
+        insertBothArabicAndTranslation('cursor');
+      }
+    };
     var bsAudioTranscribeModal = null;
     var liveSpeechRecognition = null;
     var isLiveRecording = false;
@@ -6811,6 +7411,12 @@ var initialMockDB = [
       });
       listEl.innerHTML = html;
       listEl.scrollTop = listEl.scrollHeight;
+
+      // Sinkronkan ke Layar Penuh Hasil jika sedang terbuka
+      var fsOverlay = document.getElementById('transcribeResultFullscreenOverlay');
+      if (fsOverlay && !fsOverlay.classList.contains('d-none') && fsActiveBoxType === boxType) {
+        renderFullscreenReader();
+      }
     }
 
     // Fungsi Menerjemahkan Kalimat Arab ke Bahasa Indonesia secara Instan (Per Kalimat)
@@ -7358,6 +7964,26 @@ var initialMockDB = [
           }
         }
 
+        // Alirkan juga ke Kartu Live Real-Time di Layar Penuh Hasil
+        var fsOverlay = document.getElementById('transcribeResultFullscreenOverlay');
+        if (fsOverlay && !fsOverlay.classList.contains('d-none')) {
+          var interimContainer = document.getElementById('fsLiveInterimContainer');
+          var interimTextEl = document.getElementById('fsLiveInterimText');
+          if (interimContainer && interimTextEl) {
+            if (interimTranscript) {
+              interimTextEl.innerText = interimTranscript;
+              interimContainer.classList.remove('d-none');
+              if (fsAutoScrollEnabled) {
+                var sc = document.getElementById('fsReaderScrollContainer');
+                if (sc) sc.scrollTop = sc.scrollHeight;
+              }
+            } else {
+              interimContainer.classList.add('d-none');
+            }
+          }
+          updateFullscreenLiveBadge();
+        }
+
         // Deteksi Kalimat Selesai (Final) untuk Auto-Terjemah Per Kalimat
         if (event.results[event.results.length - 1].isFinal) {
           var finalChunk = event.results[event.results.length - 1][0].transcript.trim();
@@ -7416,6 +8042,7 @@ var initialMockDB = [
       var wave = document.getElementById('micVoiceWave');
       var heading = document.getElementById('micStatusHeading');
       var desc = document.getElementById('micStatusDesc');
+      setTimeout(updateFullscreenLiveBadge, 50);
 
       if (!btn) return;
 
