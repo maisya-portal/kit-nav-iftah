@@ -1347,6 +1347,49 @@
       padding: 0 2px;
       border-radius: 3px;
     }
+
+    /* Modus Teks Arab & RTL untuk Kotak Transkripsi */
+    .transcript-output-box.arabic-mode,
+    .transcript-output-box[dir="rtl"] {
+      direction: rtl !important;
+      text-align: right !important;
+      font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif !important;
+      font-size: 1.25rem !important;
+      line-height: 2.1 !important;
+      letter-spacing: 0.3px;
+    }
+    .transcript-output-box.arabic-mode[placeholder]:empty:before,
+    .transcript-output-box[dir="rtl"][placeholder]:empty:before {
+      direction: rtl !important;
+      text-align: right !important;
+      float: right;
+    }
+    .arabic-ai-toolbar {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      transition: all 0.2s ease;
+    }
+    .arabic-ai-toolbar:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+    .sentence-pairs-container {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .sentence-pair-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    .sentence-pair-item:hover {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
   </style>
 </head>
 <body>
@@ -2339,9 +2382,14 @@
             <div class="card border rounded-3 p-3 bg-light mb-3">
               <div class="row g-2 align-items-center">
                 <div class="col-12 col-md-6">
-                  <label class="form-label small fw-bold text-dark mb-1">
-                    <i class="fa-solid fa-headset text-primary me-1"></i>Pilih Mikrofon / Headset:
-                  </label>
+                  <div class="d-flex align-items-center justify-content-between mb-1">
+                    <label class="form-label small fw-bold text-dark mb-0">
+                      <i class="fa-solid fa-headset text-primary me-1"></i>Pilih Mikrofon / Input Suara:
+                    </label>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-bold text-success" style="font-size: 0.74rem;" onclick="showInternalAudioGuideModal()" title="Panduan agar suara video/YouTube di komputer tidak tercampur suara ruangan">
+                      <i class="fa-solid fa-laptop me-1"></i>Suara Komputer (Stereo Mix)
+                    </button>
+                  </div>
                   <div class="input-group input-group-sm">
                     <select id="audioDeviceSelect" class="form-select" onchange="onAudioDeviceChanged()">
                       <option value="">🎙️ Bawaan Sistem (Default)</option>
@@ -2369,10 +2417,47 @@
                     </div>
                   </div>
                   <select id="micLangSelect" class="form-select form-select-sm shadow-sm" style="font-weight: 600;" onchange="changeMicLanguage()">
-                    <option value="id-ID" selected>🇮🇩 Bahasa Indonesia</option>
-                    <option value="ar-SA">🇸🇦 Bahasa Arab (العربية)</option>
+                    <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
+                    <option value="ar-SA" selected>🇸🇦 Bahasa Arab (العربية - الفصحى / السعودية)</option>
+                    <option value="ar-EG">🇪🇬 Bahasa Arab (العربية - مصر)</option>
+                    <option value="ar-AE">🇦🇪 Bahasa Arab (العربية - الإمارات / الخليج)</option>
                     <option value="en-US">🇬🇧 English</option>
                   </select>
+                </div>
+              </div>
+
+              <!-- Info & Tips CABLE Output / Suara Komputer -->
+              <div id="cableOutputTip" class="alert alert-info py-2 px-3 small rounded-3 mt-2 mb-0 d-none">
+                <div class="d-flex align-items-start gap-2">
+                  <i class="fa-solid fa-circle-info text-primary mt-1 flex-shrink-0"></i>
+                  <div style="font-size: 0.77rem; line-height: 1.5;">
+                    <b>Tips Agar Teks Transkripsi Muncul Lancar dari Suara Komputer:</b><br>
+                    1. <b>Bahasa Bicara:</b> Sesuaikan pilihan bahasa dengan bahasa di audio (pilih 🇮🇩 <i>Bahasa Indonesia</i> jika memutar kajian Indonesia, atau 🇸🇦 <i>Bahasa Arab</i> jika memutar kajian Arab).<br>
+                    2. <b>Default Device di Chrome/Windows:</b> Pengenal suara bawaan browser mendengarkan perangkat default. Pastikan <b>CABLE Output</b> dijadikan <i>Default Device</i> di Sound Windows (<a href="javascript:void(0)" onclick="showInternalAudioGuideModal()" class="fw-bold">lihat panduan</a>) atau di <code class="text-dark bg-white px-1 rounded">chrome://settings/content/microphone</code>.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pilihan Metode Transkripsi Tab 1: Dikte Langsung vs Rekam AI Gemini -->
+              <div class="mt-2 pt-2 border-top">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="small fw-bold text-dark"><i class="fa-solid fa-microchip text-primary me-1"></i>Metode:</span>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <input type="radio" class="btn-check" name="micEngineChoice" id="micEngineSpeech" value="speech" checked onchange="onMicEngineModeChanged()">
+                      <label class="btn btn-outline-primary fw-semibold" for="micEngineSpeech" title="Mendeteksi ucapan secara live kata per kata lewat browser">
+                        <i class="fa-solid fa-bolt me-1"></i>1. Dikte Langsung (Real-Time)
+                      </label>
+                      
+                      <input type="radio" class="btn-check" name="micEngineChoice" id="micEngineGemini" value="gemini" onchange="onMicEngineModeChanged()">
+                      <label class="btn btn-outline-success fw-bold" for="micEngineGemini" title="Rekam suara dari mic lalu transkripsi dengan AI Gemini Multimodal (Akurasi Tinggi untuk Bahasa Arab & Kajian)">
+                        <i class="fa-solid fa-wand-magic-sparkles me-1 text-success"></i>2. Rekam AI Gemini (Super Akurat Arab)
+                      </label>
+                    </div>
+                  </div>
+                  <span id="micEngineDescBadge" class="badge bg-light text-secondary border small">
+                    Dikte kata demi kata langsung tampil
+                  </span>
                 </div>
               </div>
 
@@ -2411,20 +2496,89 @@
               </div>
             </div>
 
-            <!-- Live Text Output Box -->
-            <div class="mb-2 d-flex justify-content-between align-items-center">
-              <span class="small fw-bold text-muted"><i class="fa-solid fa-font me-1"></i>Hasil Teks Transkripsi:</span>
+            <!-- Live Text Output Box & Header -->
+            <div class="mb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="small fw-bold text-muted"><i class="fa-solid fa-font me-1"></i>Hasil Teks Transkripsi:</span>
+                <span id="arabicBadgeIndicator" class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.72rem;">
+                  <i class="fa-solid fa-check me-1"></i>Mode Teks Arab (RTL)
+                </span>
+              </div>
               <div class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearMicTranscript()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
                 <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyMicTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
               </div>
             </div>
-            <div id="micTranscriptBox" class="transcript-output-box mb-3" contenteditable="true" placeholder="Teks hasil ucapan suara Anda akan otomatis muncul di sini..."></div>
+            <div id="micTranscriptBox" class="transcript-output-box arabic-mode mb-2" dir="rtl" contenteditable="true" placeholder="Teks hasil ucapan suara Anda akan otomatis muncul di sini..."></div>
+
+            <!-- Bilah Alat Tashih & AI Bahasa Arab (Tab 1) -->
+            <div id="arabicAiToolsBar" class="arabic-ai-toolbar mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-sm">
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <button type="button" id="btnTashihArabic" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1 shadow-sm px-3" onclick="enhanceArabicTranscriptWithAI('mic', 'tashih')" title="Koreksi kata-kata keliru (salah dengar), hamzah, ta marbutah, dan tanda baca Arab dengan AI">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  <span>Sempurnakan Ejaan Arab (Tashih AI)</span>
+                </button>
+                <button type="button" id="btnTashkeelArabic" class="btn btn-sm btn-outline-primary fw-semibold d-flex align-items-center gap-1" onclick="enhanceArabicTranscriptWithAI('mic', 'tashkeel')" title="Beri harakat/syakal lengkap pada teks Arab">
+                  <i class="fa-solid fa-feather-pointed"></i>
+                  <span>Beri Harakat</span>
+                </button>
+                <button type="button" id="btnTranslateArabic" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1" onclick="enhanceArabicTranscriptWithAI('mic', 'translate')" title="Terjemahkan teks Arab ke Bahasa Indonesia">
+                  <i class="fa-solid fa-language"></i>
+                  <span>Terjemah RI</span>
+                </button>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-light border py-1 px-2 text-secondary" onclick="toggleTranscriptRTL('mic')" title="Alihkan Arah Teks (RTL/LTR)">
+                  <i class="fa-solid fa-right-left me-1"></i>RTL/LTR
+                </button>
+                <div class="form-check form-switch mb-0" title="Secara otomatis menerjemahkan ucapan Arab per kalimat ke bahasa Indonesia secara langsung">
+                  <input class="form-check-input" type="checkbox" id="autoTranslateArabicToggle" checked onchange="toggleAutoTranslateMode()">
+                  <label class="form-check-label small text-primary fw-bold" for="autoTranslateArabicToggle" style="font-size: 0.72rem;">
+                    <i class="fa-solid fa-language me-1"></i>Auto-Terjemah Per Kalimat
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Kotak Hasil Terjemahan Per Kalimat (Otomatis Tampil di Bawah Teks Arab) -->
+            <div id="micTranslationWrapper" class="card border rounded-3 p-3 mb-3 bg-white shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                <span class="small fw-bold text-primary d-flex align-items-center gap-1">
+                  <i class="fa-solid fa-language fa-lg text-primary"></i>
+                  <span>Terjemahan Indonesia (Per Kalimat):</span>
+                </span>
+                <div class="d-flex align-items-center gap-2">
+                  <span id="micTransStatusIndicator" class="small text-muted" style="font-size: 0.72rem;"></span>
+                  <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none small" onclick="clearMicTranslation()"><i class="fa-solid fa-eraser me-1"></i>Bersihkan</button>
+                  <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyMicTranslation()"><i class="fa-solid fa-copy me-1"></i>Salin Terjemahan</button>
+                </div>
+              </div>
+
+              <!-- Daftar Pasangan Kalimat Arab + Terjemahan di bawahnya -->
+              <div id="micSentencePairsList" class="sentence-pairs-container mb-2" style="max-height: 220px; overflow-y: auto;">
+                <div class="text-muted small fst-italic p-2 text-center" id="emptyTransNotice">
+                  Terjemahan bahasa Indonesia per kalimat akan otomatis muncul di bawah setiap kalimat Arab di sini...
+                </div>
+              </div>
+
+              <!-- Tombol Cepat Sisipkan Terjemahan -->
+              <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                <button type="button" class="btn btn-sm btn-outline-success fw-semibold rounded-pill px-3" onclick="insertBothArabicAndTranslation('cursor')" title="Sisipkan teks Arab dan terjemahan di bawahnya sekaligus ke catatan">
+                  <i class="fa-solid fa-layer-group me-1"></i> Sisipkan Arab + Terjemahan (Dwi-Bahasa)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold rounded-pill px-3" onclick="insertTranslationOnly('cursor')" title="Sisipkan teks terjemahan bahasa Indonesia saja">
+                  <i class="fa-solid fa-language me-1"></i> Sisipkan Terjemahan Saja
+                </button>
+              </div>
+            </div>
 
             <!-- Action Buttons -->
             <div class="d-flex flex-wrap gap-2">
               <button type="button" class="btn btn-primary rounded-pill flex-grow-1 fw-semibold shadow-sm" onclick="insertMicTranscriptToEditor('cursor')">
-                <i class="fa-solid fa-file-import me-1"></i> Sisipkan di Posisi Kursor
+                <i class="fa-solid fa-file-import me-1"></i> Sisipkan Teks di Posisi Kursor
+              </button>
+              <button type="button" class="btn btn-success rounded-pill fw-semibold shadow-sm" onclick="insertBothArabicAndTranslation('cursor')" title="Sisipkan teks Arab dan terjemahan di bawahnya sekaligus">
+                <i class="fa-solid fa-layer-group me-1"></i> Sisipkan Arab + Terjemahan
               </button>
               <button type="button" class="btn btn-outline-primary rounded-pill fw-semibold" onclick="insertMicTranscriptToEditor('append')">
                 <i class="fa-solid fa-plus me-1"></i> Tambah di Akhir Catatan
@@ -2434,6 +2588,20 @@
 
           <!-- TAB 2: REKAM DARI TAB YOUTUBE / ONLINE / AUDIO SISTEM KOMPUTER (BARU) -->
           <div class="tab-pane fade" id="tab-system-pane" role="tabpanel">
+            <!-- Banner Rekomendasi Live Transkripsi Tanpa Rekam Dulu & Tanpa API -->
+            <div class="alert alert-success d-flex align-items-center justify-content-between py-2 px-3 small rounded-3 mb-3 border border-success-subtle shadow-sm">
+              <div class="d-flex align-items-start gap-2">
+                <i class="fa-solid fa-bolt text-success fa-lg mt-1 flex-shrink-0"></i>
+                <div>
+                  <b class="text-success">Ingin teks tertulis LANGSUNG secara live saat video diputar tanpa perlu direkam dulu dan tanpa API?</b>
+                  <div class="text-secondary" style="font-size: 0.77rem;">Gunakan bawaan browser di Tab 1 dengan memilih <b>Stereo Mix (Campuran Stereo)</b> agar suara ruangan sama sekali tidak ikut masuk!</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold text-nowrap ms-2" onclick="switchToLiveInternalAudio()">
+                <i class="fa-solid fa-arrow-right me-1"></i> Buka Mode Live
+              </button>
+            </div>
+
             <div class="alert alert-primary d-flex align-items-start gap-2 py-2 px-3 small rounded-3 mb-3">
               <i class="fa-solid fa-circle-info fa-lg text-primary mt-1 flex-shrink-0"></i>
               <div>
@@ -2472,8 +2640,28 @@
                 <span class="badge bg-light text-secondary border" id="systemAudioSizeBadge">0 MB</span>
               </div>
               <audio id="systemAudioPreviewElement" controls class="w-100 mb-2"></audio>
-              <button type="button" id="btnTranscribeSystemAudio" class="btn btn-success rounded-pill w-100 fw-bold shadow-sm" onclick="transcribeSystemAudioWithGeminiAI()">
-                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Transkripsikan Rekaman Ini dengan AI Gemini
+              
+              <!-- Pilihan Metode Transkripsi Tab 2 -->
+              <div class="p-2 bg-light rounded border mb-2">
+                <label class="small fw-bold text-muted mb-1"><i class="fa-solid fa-microchip me-1 text-primary"></i>Pilihan Metode Transkripsi:</label>
+                <div class="d-flex flex-column gap-1">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="systemTranscribeEngine" id="sysEngineBrowser" value="browser" checked>
+                    <label class="form-check-label small fw-semibold text-dark" for="sysEngineBrowser">
+                      🌐 <b>Bawaan Browser (100% Gratis Tanpa Kunci API, Pemutar Suara Lokal)</b>
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="systemTranscribeEngine" id="sysEngineGemini" value="gemini">
+                    <label class="form-check-label small fw-semibold text-secondary" for="sysEngineGemini">
+                      ⚡ <b>AI Multimodal Gemini (Akurasi Tinggi untuk Kajian & Bahasa Arab)</b>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <button type="button" id="btnTranscribeSystemAudio" class="btn btn-success rounded-pill w-100 fw-bold shadow-sm" onclick="startSystemAudioTranscription()">
+                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Mulai Transkripsikan Rekaman Ini
               </button>
             </div>
 
@@ -2496,7 +2684,28 @@
                 <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copySystemTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
               </div>
             </div>
-            <div id="systemTranscriptBox" class="transcript-output-box mb-3" contenteditable="true" placeholder="Hasil transkripsi dari video YouTube atau audio komputer akan muncul di sini..."></div>
+            <div id="systemTranscriptBox" class="transcript-output-box mb-2" contenteditable="true" placeholder="Hasil transkripsi dari video YouTube atau audio komputer akan muncul di sini..."></div>
+
+            <!-- Bilah Alat Tashih & AI Bahasa Arab (Tab 2) -->
+            <div class="arabic-ai-toolbar mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-sm">
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <button type="button" id="btnTashihArabic_system" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1 shadow-sm px-3" onclick="enhanceArabicTranscriptWithAI('system', 'tashih')" title="Sempurnakan ejaan Arab & istilah syar'i hasil rekaman">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  <span>Tashih Ejaan Arab (AI)</span>
+                </button>
+                <button type="button" id="btnTashkeelArabic_system" class="btn btn-sm btn-outline-primary fw-semibold d-flex align-items-center gap-1" onclick="enhanceArabicTranscriptWithAI('system', 'tashkeel')">
+                  <i class="fa-solid fa-feather-pointed"></i>
+                  <span>Beri Harakat</span>
+                </button>
+                <button type="button" id="btnTranslateArabic_system" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1" onclick="enhanceArabicTranscriptWithAI('system', 'translate')">
+                  <i class="fa-solid fa-language"></i>
+                  <span>Terjemah RI</span>
+                </button>
+              </div>
+              <button type="button" class="btn btn-sm btn-light border py-1 px-2 text-secondary" onclick="toggleTranscriptRTL('system')" title="Alihkan Arah Teks (RTL/LTR)">
+                <i class="fa-solid fa-right-left me-1"></i>RTL/LTR
+              </button>
+            </div>
 
             <!-- Action Buttons -->
             <div class="d-flex flex-wrap gap-2">
@@ -2586,7 +2795,28 @@
                 <button type="button" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small" onclick="copyFileTranscript()"><i class="fa-solid fa-copy me-1"></i>Salin Teks</button>
               </div>
             </div>
-            <div id="fileTranscriptBox" class="transcript-output-box mb-3" contenteditable="true" placeholder="Hasil transkripsi dari file video/audio akan muncul di sini..."></div>
+            <div id="fileTranscriptBox" class="transcript-output-box mb-2" contenteditable="true" placeholder="Hasil transkripsi dari file video/audio akan muncul di sini..."></div>
+
+            <!-- Bilah Alat Tashih & AI Bahasa Arab (Tab 3) -->
+            <div class="arabic-ai-toolbar mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2 shadow-sm">
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <button type="button" id="btnTashihArabic_file" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1 shadow-sm px-3" onclick="enhanceArabicTranscriptWithAI('file', 'tashih')" title="Sempurnakan ejaan Arab & istilah syar'i hasil file kajian">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  <span>Tashih Ejaan Arab (AI)</span>
+                </button>
+                <button type="button" id="btnTashkeelArabic_file" class="btn btn-sm btn-outline-primary fw-semibold d-flex align-items-center gap-1" onclick="enhanceArabicTranscriptWithAI('file', 'tashkeel')">
+                  <i class="fa-solid fa-feather-pointed"></i>
+                  <span>Beri Harakat</span>
+                </button>
+                <button type="button" id="btnTranslateArabic_file" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1" onclick="enhanceArabicTranscriptWithAI('file', 'translate')">
+                  <i class="fa-solid fa-language"></i>
+                  <span>Terjemah RI</span>
+                </button>
+              </div>
+              <button type="button" class="btn btn-sm btn-light border py-1 px-2 text-secondary" onclick="toggleTranscriptRTL('file')" title="Alihkan Arah Teks (RTL/LTR)">
+                <i class="fa-solid fa-right-left me-1"></i>RTL/LTR
+              </button>
+            </div>
 
             <!-- Insertion Buttons -->
             <div class="d-flex flex-wrap gap-2">
@@ -6512,6 +6742,286 @@ var initialMockDB = [
     var currentSelectedAudioFile = null;
     var isTranscribingFile = false;
 
+    // Mode Engine Mic: 'speech' (Dikte Langsung) vs 'gemini' (Rekam AI Gemini Super Akurat)
+    var micEngineMode = 'speech';
+    var micMediaRecorder = null;
+    var micAudioChunks = [];
+    var isRecordingMicAudio = false;
+    var micAudioTimerInterval = null;
+    var micAudioSeconds = 0;
+
+    // State Penyimpanan Pasangan Teks Arab & Terjemahan Per Kalimat
+    var sentencePairs = {
+      mic: [],
+      system: [],
+      file: []
+    };
+
+    // Toggle Tampilan Auto Terjemah
+    window.toggleAutoTranslateMode = function() {
+      var toggle = document.getElementById('autoTranslateArabicToggle');
+      var wrapper = document.getElementById('micTranslationWrapper');
+      if (wrapper && toggle) {
+        if (toggle.checked) {
+          wrapper.classList.remove('d-none');
+        }
+      }
+    };
+
+    // Bersihkan Daftar Terjemahan
+    window.clearMicTranslation = function() {
+      sentencePairs['mic'] = [];
+      renderSentencePairs('mic');
+    };
+
+    // Salin Seluruh Terjemahan
+    window.copyMicTranslation = function() {
+      var pairs = sentencePairs['mic'] || [];
+      if (pairs.length === 0) return Swal.fire('Teks Kosong', 'Belum ada hasil terjemahan untuk disalin.', 'info');
+      var formatted = pairs.map(function(p) {
+        return (p.arabic ? (p.arabic + '\n') : '') + 'Artinya: ' + p.indonesian;
+      }).join('\n\n');
+      navigator.clipboard.writeText(formatted).then(function() {
+        Swal.fire({ icon:'success', title:'Terjemahan Tersalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:1800 });
+      });
+    };
+
+    // Render Daftar Pasangan Kalimat Arab + Terjemahan di Bawahnya
+    function renderSentencePairs(boxType) {
+      var listEl = document.getElementById(boxType + 'SentencePairsList');
+      if (!listEl) return;
+
+      var pairs = sentencePairs[boxType] || [];
+      if (pairs.length === 0) {
+        listEl.innerHTML = '<div class="text-muted small fst-italic p-2 text-center" id="emptyTransNotice">Terjemahan bahasa Indonesia per kalimat akan otomatis muncul di bawah setiap kalimat Arab di sini...</div>';
+        return;
+      }
+
+      var html = '';
+      pairs.forEach(function(pair, idx) {
+        html += '<div class="sentence-pair-item p-2 mb-2 rounded bg-light border-start border-4 border-primary shadow-sm">' +
+          '<div class="arabic-sentence-text text-dark fw-bold text-end mb-1" dir="rtl" style="font-family: \'Amiri\', serif; font-size: 1.25rem; line-height: 2;">' +
+            escapeHTML(pair.arabic) +
+          '</div>' +
+          '<div class="translation-sentence-text text-secondary ps-2" style="font-size: 0.88rem; line-height: 1.6;">' +
+            '<span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1" style="font-size: 0.68rem;">Artinya</span>' +
+            '<span class="fst-italic">' + escapeHTML(pair.indonesian) + '</span>' +
+          '</div>' +
+        '</div>';
+      });
+      listEl.innerHTML = html;
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+
+    // Fungsi Menerjemahkan Kalimat Arab ke Bahasa Indonesia secara Instan (Per Kalimat)
+    window.translateAndAddSentencePair = function(boxType, arabicSentence) {
+      if (!arabicSentence || !arabicSentence.trim()) return;
+      var cleanSentence = arabicSentence.trim();
+
+      // Hindari duplikasi kalimat yang persis sama berurutan
+      var currentPairs = sentencePairs[boxType] || [];
+      if (currentPairs.length > 0 && currentPairs[currentPairs.length - 1].arabic === cleanSentence) {
+        return;
+      }
+
+      var statusEl = document.getElementById(boxType + 'TransStatusIndicator');
+      if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-primary me-1"></i> Menerjemahkan...';
+
+      var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=id&dt=t&q=' + encodeURIComponent(cleanSentence);
+
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (statusEl) statusEl.innerHTML = '<span class="text-success"><i class="fa-solid fa-check me-1"></i>Terjemahan aktif</span>';
+          var translatedText = '';
+          if (data && data[0]) {
+            translatedText = data[0].map(function(seg) { return seg[0]; }).filter(Boolean).join('');
+          }
+          if (!translatedText) translatedText = cleanSentence;
+
+          sentencePairs[boxType].push({
+            arabic: cleanSentence,
+            indonesian: translatedText
+          });
+
+          renderSentencePairs(boxType);
+
+          // Jika "Ketik Langsung ke Catatan" dicentang, sisipkan dwi-bahasa ke editor
+          var liveStreamToggle = document.getElementById('micLiveStreamToggle');
+          if (boxType === 'mic' && liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
+            insertSentencePairToQuill(cleanSentence, translatedText);
+          }
+        })
+        .catch(function(err) {
+          if (statusEl) statusEl.innerHTML = '';
+          console.warn('[AutoTranslate] Error:', err);
+        });
+    };
+
+    // Fungsi Memecah Teks Panjang Menjadi Per Kalimat lalu Menerjemahkannya
+    window.splitAndTranslateFullText = function(boxType, text) {
+      if (!text || !text.trim()) return;
+      sentencePairs[boxType] = [];
+      // Pisahkan berdasarkan tanda titik, tanda tanya, fashilah, seru, atau baris baru
+      var sentences = text.split(/(?<=[\.\u060C\u061B\u061F\?\!\n])\s+/).filter(Boolean);
+      if (sentences.length === 0) sentences = [text];
+      
+      sentences.forEach(function(s, idx) {
+        if (s.trim()) {
+          setTimeout(function() {
+            translateAndAddSentencePair(boxType, s.trim());
+          }, idx * 150);
+        }
+      });
+    };
+
+    // Format Sisip Pasangan Kalimat Arab + Artinya ke Editor Quill
+    function insertSentencePairToQuill(arabic, indonesian) {
+      if (!quillEditor) return;
+      var range = quillEditor.getSelection();
+      var idx = range ? range.index : quillEditor.getLength();
+
+      var arabText = (idx > 0 ? '\n' : '') + arabic + '\n';
+      quillEditor.insertText(idx, arabText, 'user');
+      quillEditor.formatLine(idx + (idx > 0 ? 1 : 0), arabic.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+
+      var nextIdx = idx + arabText.length;
+      var transText = 'Artinya: ' + indonesian + '\n\n';
+      quillEditor.insertText(nextIdx, transText, 'user');
+      quillEditor.formatLine(nextIdx, transText.length, { 'direction': 'ltr', 'align': 'left' }, 'user');
+
+      quillEditor.setSelection(nextIdx + transText.length, 0, 'user');
+      lastLocalEditTime = Date.now();
+      window.performAutoSave();
+    }
+
+    // Tombol Sisipkan Arab + Terjemahan (Dwi-Bahasa)
+    window.insertBothArabicAndTranslation = function(mode) {
+      var pairs = sentencePairs['mic'] || [];
+      if (pairs.length === 0) {
+        var rawText = document.getElementById('micTranscriptBox') ? document.getElementById('micTranscriptBox').innerText.trim() : '';
+        if (rawText) {
+          splitAndTranslateFullText('mic', rawText);
+          Swal.fire({
+            icon: 'info',
+            title: 'Menerjemahkan...',
+            text: 'Sedang menerjemahkan teks Arab per kalimat. Klik tombol sekali lagi setelah terjemahan selesai tampil.',
+            toast: true,
+            position: 'bottom-end',
+            timer: 3000
+          });
+          return;
+        }
+        return Swal.fire('Teks Kosong', 'Belum ada teks transkripsi Arab untuk disisipkan.', 'info');
+      }
+
+      if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu.', 'warning');
+
+      pairs.forEach(function(p) {
+        insertSentencePairToQuill(p.arabic, p.indonesian);
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil Disisipkan!',
+        text: 'Teks Arab bersanding dengan terjemahan per kalimat telah rapi di lembar catatan.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 2500
+      });
+    };
+
+    // Tombol Sisipkan Terjemahan Saja
+    window.insertTranslationOnly = function(mode) {
+      var pairs = sentencePairs['mic'] || [];
+      if (pairs.length === 0) return Swal.fire('Teks Kosong', 'Belum ada terjemahan.', 'info');
+      if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu.', 'warning');
+
+      var fullTranslation = pairs.map(function(p) { return p.indonesian; }).join('\n\n');
+      var range = quillEditor.getSelection();
+      var idx = range ? range.index : quillEditor.getLength();
+      quillEditor.insertText(idx, (idx > 0 ? '\n\n' : '') + fullTranslation, 'user');
+      quillEditor.setSelection(idx + fullTranslation.length + 2, 0, 'user');
+      lastLocalEditTime = Date.now();
+      window.performAutoSave();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Terjemahan Disisipkan!',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 2000
+      });
+    };
+
+    // Helper Fungsi Deteksi Karakter & Bahasa Arab
+    function isArabicText(str) {
+      return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(str || '');
+    }
+
+    function isArabicLanguageSelected() {
+      var s = document.getElementById('micLangSelect');
+      return s && s.value && s.value.startsWith('ar');
+    }
+
+    // Helper Prompt Masukkan API Key Gemini
+    function promptGeminiApiKeyForAction(actionDesc, onSuccess) {
+      Swal.fire({
+        title: 'Kunci API Gemini Diperlukan',
+        html: '<p class="small text-muted mb-2">Untuk ' + actionDesc + ', silakan masukkan Kunci Google Gemini API (Gratis) Anda:</p>',
+        input: 'password',
+        inputPlaceholder: 'AIzaSy...',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-save me-1"></i> Simpan & Lanjutkan',
+        cancelButtonText: 'Batal',
+        footer: '<a href="https://aistudio.google.com/app/apikey" target="_blank" class="small text-primary fw-semibold"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Dapatkan Kunci API Gratis di Google AI Studio</a>'
+      }).then(function(result) {
+        if (result.isConfirmed && result.value && result.value.trim()) {
+          var key = result.value.trim();
+          localStorage.setItem('kitnaf_gemini_api_key', key);
+          var geminiInput = document.getElementById('geminiApiKeyInput');
+          if (geminiInput) geminiInput.value = key;
+          if (typeof onSuccess === 'function') onSuccess(key);
+        }
+      });
+    }
+
+    // Toggle RTL / LTR Manual
+    window.toggleTranscriptRTL = function(boxType) {
+      var boxId = boxType === 'mic' ? 'micTranscriptBox' : (boxType === 'system' ? 'systemTranscriptBox' : 'fileTranscriptBox');
+      var box = document.getElementById(boxId);
+      if (!box) return;
+      var curDir = box.getAttribute('dir') || 'ltr';
+      if (curDir === 'rtl') {
+        box.setAttribute('dir', 'ltr');
+        box.classList.remove('arabic-mode');
+      } else {
+        box.setAttribute('dir', 'rtl');
+        box.classList.add('arabic-mode');
+      }
+    };
+
+    // Pergantian Pilihan Mode Mic (Dikte Langsung vs Rekam AI Gemini)
+    window.onMicEngineModeChanged = function() {
+      var selected = document.querySelector('input[name="micEngineChoice"]:checked');
+      micEngineMode = selected ? selected.value : 'speech';
+      var badge = document.getElementById('micEngineDescBadge');
+      var heading = document.getElementById('micStatusHeading');
+      var desc = document.getElementById('micStatusDesc');
+
+      if (micEngineMode === 'gemini') {
+        if (badge) badge.innerText = "Mode AI Gemini: Sangat Akurat untuk Bahasa Arab & Istilah Syar'i";
+        if (heading && !isRecordingMicAudio) heading.innerText = "Klik Mikrofon untuk Rekam Suara (AI Gemini)";
+        if (desc && !isRecordingMicAudio) desc.innerText = "Suara akan direkam dari mic/headset, lalu ditranskripsikan langsung oleh AI Gemini dengan akurasi tinggi untuk Bahasa Arab & Kajian.";
+      } else {
+        if (badge) badge.innerText = "Dikte kata demi kata langsung tampil";
+        if (heading && !isLiveRecording) heading.innerText = "Klik Mikrofon untuk Mulai Bicara";
+        if (desc && !isLiveRecording) desc.innerText = "Peramban akan mendengarkan melalui mic/headset pilihan Anda dan mentranskripsikannya secara langsung.";
+      }
+    };
+
     // Headset & Audio Device State
     var audioMeterContext = null;
     var audioMeterAnalyser = null;
@@ -6547,6 +7057,9 @@ var initialMockDB = [
 
       // Deteksi perangkat mikrofon & headset bluetooth/kabel secara otomatis
       detectAudioDevices(false);
+
+      // Sinkronisasikan mode bahasa & tampilan RTL
+      changeMicLanguage();
 
       if (bsAudioTranscribeModal) {
         bsAudioTranscribeModal.show();
@@ -6621,6 +7134,7 @@ var initialMockDB = [
 
       var bluetoothCount = 0;
       var headsetCount = 0;
+      var stereoMixCount = 0;
 
       devices.forEach(function(d, index) {
         var opt = document.createElement('option');
@@ -6628,7 +7142,10 @@ var initialMockDB = [
         var label = d.label || ('Perangkat Audio ' + (index + 1));
         var lower = label.toLowerCase();
         
-        if (lower.includes('bluetooth') || lower.includes('bt ') || lower.includes('buds') || lower.includes('airpod') || lower.includes('wireless')) {
+        if (lower.includes('stereo mix') || lower.includes('campuran stereo') || lower.includes('what u hear') || lower.includes('wave out') || lower.includes('cable') || lower.includes('virtual')) {
+          opt.text = '💻 [Audio Komputer / Anti Suara Ruangan] ' + label;
+          stereoMixCount++;
+        } else if (lower.includes('bluetooth') || lower.includes('bt ') || lower.includes('buds') || lower.includes('airpod') || lower.includes('wireless')) {
           opt.text = '🎧 [Bluetooth] ' + label;
           bluetoothCount++;
         } else if (lower.includes('headset') || lower.includes('headphone') || lower.includes('earphone')) {
@@ -6646,13 +7163,25 @@ var initialMockDB = [
         select.appendChild(opt);
       });
 
+      var selText = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text.toLowerCase() : '';
+      var tip = document.getElementById('cableOutputTip');
+      if (tip) {
+        if (selText.includes('cable') || selText.includes('stereo mix') || selText.includes('virtual')) {
+          tip.classList.remove('d-none');
+        } else {
+          tip.classList.add('d-none');
+        }
+      }
+
       if (infoSpan) {
-        if (bluetoothCount > 0) {
+        if (stereoMixCount > 0) {
+          infoSpan.innerHTML = '<span class="text-success fw-bold"><i class="fa-solid fa-circle-check me-1"></i>Stereo Mix / Audio Internal Komputer Terdeteksi! Pilih untuk suara YouTube tanpa bising ruangan.</span>';
+        } else if (bluetoothCount > 0) {
           infoSpan.innerHTML = '<span class="text-primary fw-semibold"><i class="fa-brands fa-bluetooth-b me-1"></i>Headset Bluetooth terdeteksi</span>';
         } else if (headsetCount > 0) {
           infoSpan.innerHTML = '<span class="text-success fw-semibold"><i class="fa-solid fa-headset me-1"></i>Headset kabel terdeteksi</span>';
         } else {
-          infoSpan.innerHTML = '<span class="text-muted">Mikrofon internal siap digunakan</span>';
+          infoSpan.innerHTML = '<span class="text-muted">Mikrofon internal siap. </span><a href="javascript:void(0)" onclick="showInternalAudioGuideModal()" class="text-primary fw-semibold" style="text-decoration:none;"><i class="fa-solid fa-circle-question me-1"></i>Mau rekam video komputer tanpa suara ruangan? Aktifkan Stereo Mix</a>';
         }
       }
     }
@@ -6661,6 +7190,17 @@ var initialMockDB = [
       var select = document.getElementById('audioDeviceSelect');
       if (select) {
         localStorage.setItem('kitnaf_selected_mic_device', select.value);
+        
+        var selText = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text.toLowerCase() : '';
+        var tip = document.getElementById('cableOutputTip');
+        if (tip) {
+          if (selText.includes('cable') || selText.includes('stereo mix') || selText.includes('virtual')) {
+            tip.classList.remove('d-none');
+          } else {
+            tip.classList.add('d-none');
+          }
+        }
+
         if (isTestingMic) {
           stopMicTest();
           startMicTest();
@@ -6681,6 +7221,18 @@ var initialMockDB = [
 
     // --- LIVE AUDIO LEVEL METER (TES SENSITIVITAS SUARA MIC / HEADSET) ---
     window.toggleMicTest = function() {
+      if (isLiveRecording || isRecordingMicAudio) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Transkripsi Sedang Aktif',
+          text: 'Hentikan transkripsi terlebih dahulu untuk menjalankan tes suara masuk.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 2500
+        });
+        return;
+      }
       if (isTestingMic) {
         stopMicTest();
       } else {
@@ -6798,20 +7350,36 @@ var initialMockDB = [
           }
           box.innerHTML = displayHtml;
           box.scrollTop = box.scrollHeight;
+
+          // Auto-RTL bila bahasa Arab atau teks mengandung karakter Arab
+          if (isArabicLanguageSelected() || isArabicText(micFinalTranscript) || isArabicText(interimTranscript)) {
+            box.setAttribute('dir', 'rtl');
+            box.classList.add('arabic-mode');
+          }
         }
 
-        // Mode Live Typing langsung ke editor
-        var liveStreamToggle = document.getElementById('micLiveStreamToggle');
-        if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
-          if (event.results[event.results.length - 1].isFinal) {
-            var finalChunk = event.results[event.results.length - 1][0].transcript.trim();
-            if (finalChunk) {
-              var range = quillEditor.getSelection();
-              var insertIndex = range ? range.index : (quillEditor.getLength() - 1);
-              quillEditor.insertText(insertIndex, (insertIndex > 0 ? ' ' : '') + finalChunk, 'user');
-              quillEditor.setSelection(insertIndex + finalChunk.length + 1, 0, 'user');
-              lastLocalEditTime = Date.now();
-              window.performAutoSave();
+        // Deteksi Kalimat Selesai (Final) untuk Auto-Terjemah Per Kalimat
+        if (event.results[event.results.length - 1].isFinal) {
+          var finalChunk = event.results[event.results.length - 1][0].transcript.trim();
+          if (finalChunk) {
+            var autoTransToggle = document.getElementById('autoTranslateArabicToggle');
+            var isArab = isArabicLanguageSelected() || isArabicText(finalChunk);
+            if (autoTransToggle && autoTransToggle.checked && isArab) {
+              translateAndAddSentencePair('mic', finalChunk);
+            } else {
+              // Jika Auto-Terjemah tidak aktif, ketik biasa ke editor
+              var liveStreamToggle = document.getElementById('micLiveStreamToggle');
+              if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
+                var range = quillEditor.getSelection();
+                var insertIndex = range ? range.index : (quillEditor.getLength() - 1);
+                quillEditor.insertText(insertIndex, (insertIndex > 0 ? ' ' : '') + finalChunk, 'user');
+                if (isArab) {
+                  quillEditor.formatLine(insertIndex, finalChunk.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+                }
+                quillEditor.setSelection(insertIndex + finalChunk.length + 1, 0, 'user');
+                lastLocalEditTime = Date.now();
+                window.performAutoSave();
+              }
             }
           }
         }
@@ -6867,6 +7435,13 @@ var initialMockDB = [
     }
 
     window.toggleLiveMicRecording = function() {
+      // Jika pengguna memilih mode 2: AI Gemini Multimodal (Akurasi Tinggi untuk Arab & Kajian)
+      if (micEngineMode === 'gemini') {
+        toggleGeminiMicRecording();
+        return;
+      }
+
+      // Mode 1: Dikte Langsung (Speech Recognition)
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung Web Speech Recognition. Disarankan menggunakan Google Chrome, Edge, atau Safari versi terbaru.', 'info');
@@ -6902,10 +7477,219 @@ var initialMockDB = [
       }
       isLiveRecording = false;
       updateMicUIState('idle');
+
+      // Auto-Tashih bila Bahasa Arab aktif dan opsi Auto-Tashih tercentang
+      var autoToggle = document.getElementById('autoTashihArabicToggle');
+      if (autoToggle && autoToggle.checked && isArabicLanguageSelected() && micFinalTranscript.trim().length > 0) {
+        setTimeout(function() {
+          enhanceArabicTranscriptWithAI('mic', 'tashih', true);
+        }, 500);
+      }
     };
 
+    // Mode 2: Merekam Suara Langsung untuk AI Gemini (Super Akurat Arab)
+    function toggleGeminiMicRecording() {
+      if (isRecordingMicAudio) {
+        stopGeminiMicRecording();
+      } else {
+        startGeminiMicRecording();
+      }
+    }
+
+    function startGeminiMicRecording() {
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (!apiKey) {
+        promptGeminiApiKeyForAction('mentranskripsikan rekaman suara dengan AI Gemini', function() {
+          startGeminiMicRecording();
+        });
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        Swal.fire('Error', 'Browser tidak mendukung akses mikrofon rekaman.', 'error');
+        return;
+      }
+
+      var selectedDeviceId = localStorage.getItem('kitnaf_selected_mic_device');
+      var constraints = {
+        audio: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+        micAudioChunks = [];
+        isRecordingMicAudio = true;
+        stopMicTest();
+
+        var mimeType = 'audio/webm';
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        }
+
+        micMediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+        micMediaRecorder.ondataavailable = function(e) {
+          if (e.data && e.data.size > 0) {
+            micAudioChunks.push(e.data);
+          }
+        };
+
+        micMediaRecorder.onstop = function() {
+          stream.getTracks().forEach(function(t) { t.stop(); });
+          var audioBlob = new Blob(micAudioChunks, { type: mimeType });
+          processMicAudioWithGemini(audioBlob, mimeType);
+        };
+
+        micMediaRecorder.start(1000);
+        updateMicUIState('recording');
+
+        var heading = document.getElementById('micStatusHeading');
+        var desc = document.getElementById('micStatusDesc');
+        if (heading) heading.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle fa-xs me-1 fa-fade"></i> Sedang Merekam Suara (AI Gemini)...</span>';
+        if (desc) desc.innerText = 'Bicaralah dalam Bahasa Arab atau materi kajian. Klik tombol lagi setelah selesai untuk mentranskripsi.';
+
+        micAudioSeconds = 0;
+        micAudioTimerInterval = setInterval(function() {
+          micAudioSeconds++;
+          var mins = Math.floor(micAudioSeconds / 60);
+          var secs = micAudioSeconds % 60;
+          var timeStr = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+          if (desc) desc.innerText = 'Merekam [' + timeStr + ']... Bicaralah sekarang, lalu klik tombol merah untuk mentranskripsikan.';
+        }, 1000);
+
+      }).catch(function(err) {
+        Swal.fire('Izin Mikrofon Gagal', 'Akses mikrofon tidak diizinkan: ' + err.message, 'warning');
+      });
+    }
+
+    function stopGeminiMicRecording() {
+      isRecordingMicAudio = false;
+      if (micAudioTimerInterval) {
+        clearInterval(micAudioTimerInterval);
+        micAudioTimerInterval = null;
+      }
+      if (micMediaRecorder && micMediaRecorder.state !== 'inactive') {
+        micMediaRecorder.stop();
+      }
+      updateMicUIState('idle');
+    }
+
+    function processMicAudioWithGemini(audioBlob, mimeType) {
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (!apiKey) return;
+
+      var box = document.getElementById('micTranscriptBox');
+      if (box) {
+        box.innerHTML = '<div class="text-center p-3 text-primary"><i class="fa-solid fa-brain fa-bounce fa-2x mb-2 text-primary"></i><div class="fw-bold">AI Gemini sedang mentranskripsikan suara Bahasa Arab Anda...</div><small class="text-muted">Menganalisis audio, tajwid, istilah syar\'i, dan kaidah nahwu/sharaf...</small></div>';
+      }
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var base64Data = e.target.result.split(',')[1];
+        var langSelect = document.getElementById('micLangSelect');
+        var lang = langSelect ? langSelect.value : 'ar-SA';
+        var isArabic = lang.startsWith('ar');
+
+        var prompt = isArabic
+          ? "أنت خبير لغوي ومفرغ صوتي محترف للمحاضرات والدروس الإسلامية باللغة العربية الفصحى. قم بتفريغ هذا التسجيل الصوتي بدقة متناهية كلمة بكلمة:\n" +
+            "1. اكتب بالرسم الإملائي الصحيح المعتمد (الهمزات: أ/إ/ء/ئ/ؤ، التاء المربوطة ة، والهاء ه).\n" +
+            "2. اكتب الآيات القرآنية والأحاديث النبوية الشريفة والمصطلحات الشرعية بدقة تامة وضبط سليم.\n" +
+            "3. ضع علامات الترقيم العربية المناسبة (، . : ؟ !\") ونظّم النص في فقرات مريحة للقراءة.\n" +
+            "4. أخرج فقط نص التفريغ بدون أي مقدمات أو اعتذارات أو هوامش إضافية."
+          : "Transkripsikan seluruh isi rekaman audio/suara ini secara lengkap, kata demi kata, akurat dengan ejaan baku (EYD), tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. " +
+            "PENTING: Tuliskan istilah bahasa Arab/Islam, ayat Al-Qur'an, dan kutipan Hadits dalam bahasa Arab yang benar dan mutqin (imla' shahih, hamzah tepat, ta marbuthah benar). Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
+
+        var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+        var payload = {
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: base64Data } },
+              { text: prompt }
+            ]
+          }]
+        };
+
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            var transcriptResult = data.candidates[0].content.parts[0].text.trim();
+            micFinalTranscript = transcriptResult;
+            if (box) {
+              box.innerText = transcriptResult;
+              if (isArabic || isArabicText(transcriptResult)) {
+                box.setAttribute('dir', 'rtl');
+                box.classList.add('arabic-mode');
+              }
+            }
+
+            // Jalankan pemecahan kalimat dan terjemahan otomatis
+            var autoTransToggle = document.getElementById('autoTranslateArabicToggle');
+            if (autoTransToggle && autoTransToggle.checked && (isArabic || isArabicText(transcriptResult))) {
+              splitAndTranslateFullText('mic', transcriptResult);
+            } else {
+              // Ketik langsung ke editor jika toggle aktif
+              var liveStreamToggle = document.getElementById('micLiveStreamToggle');
+              if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
+                var isArab = isArabic || isArabicText(transcriptResult);
+                var range = quillEditor.getSelection();
+                var insertIndex = range ? range.index : quillEditor.getLength();
+                quillEditor.insertText(insertIndex, (insertIndex > 0 ? '\n\n' : '') + transcriptResult, 'user');
+                if (isArab) {
+                  quillEditor.formatLine(insertIndex + 2, transcriptResult.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+                }
+                quillEditor.setSelection(insertIndex + transcriptResult.length + 2, 0, 'user');
+                lastLocalEditTime = Date.now();
+                window.performAutoSave();
+              }
+            }
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Transkripsi AI Selesai!',
+              text: 'Suara berhasil ditranskripsikan dengan akurasi tinggi oleh AI Gemini.',
+              toast: true,
+              position: 'bottom-end',
+              showConfirmButton: false,
+              timer: 3000
+            });
+          } else if (data && data.error) {
+            if (box) box.innerText = micFinalTranscript || '';
+            Swal.fire('Error AI Gemini', data.error.message || 'Gagal memproses audio.', 'error');
+          }
+        }).catch(function(err) {
+          if (box) box.innerText = micFinalTranscript || '';
+          Swal.fire('Gagal Koneksi', 'Tidak dapat menghubungi server AI Gemini: ' + err.message, 'error');
+        });
+      };
+      reader.readAsDataURL(audioBlob);
+    }
+
+    // Pergantian Bahasa Bicara Mikrofon
     window.changeMicLanguage = function() {
       var langSelect = document.getElementById('micLangSelect');
+      var isArabic = langSelect && langSelect.value.startsWith('ar');
+      var box = document.getElementById('micTranscriptBox');
+      var badge = document.getElementById('arabicBadgeIndicator');
+
+      if (isArabic) {
+        if (box) {
+          box.setAttribute('dir', 'rtl');
+          box.classList.add('arabic-mode');
+        }
+        if (badge) badge.classList.remove('d-none');
+      } else {
+        var text = box ? box.innerText : '';
+        if (!isArabicText(text)) {
+          if (box) {
+            box.setAttribute('dir', 'ltr');
+            box.classList.remove('arabic-mode');
+          }
+          if (badge) badge.classList.add('d-none');
+        }
+      }
+
       if (liveSpeechRecognition && langSelect) {
         liveSpeechRecognition.lang = langSelect.value;
         if (isLiveRecording) {
@@ -6915,10 +7699,131 @@ var initialMockDB = [
       }
     };
 
+    // Fungsi Tashih & Penyempurnaan Teks Bahasa Arab dengan AI Gemini
+    window.enhanceArabicTranscriptWithAI = function(boxType, action, isAuto) {
+      var boxId = boxType === 'mic' ? 'micTranscriptBox' : (boxType === 'system' ? 'systemTranscriptBox' : 'fileTranscriptBox');
+      var box = document.getElementById(boxId);
+      if (!box) return;
+
+      var currentText = box.innerText.trim();
+      if (!currentText) {
+        if (!isAuto) Swal.fire('Teks Masih Kosong', 'Belum ada teks transkripsi untuk disempurnakan.', 'info');
+        return;
+      }
+
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (!apiKey) {
+        if (!isAuto) {
+          promptGeminiApiKeyForAction('melakukan Tashih Ejaan Arab dengan AI', function() {
+            enhanceArabicTranscriptWithAI(boxType, action, isAuto);
+          });
+        }
+        return;
+      }
+
+      var btnTashih = document.getElementById('btnTashihArabic' + (boxType === 'mic' ? '' : ('_' + boxType)));
+      var originalBtnHtml = btnTashih ? btnTashih.innerHTML : '';
+      if (btnTashih) {
+        btnTashih.disabled = true;
+        btnTashih.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Menyempurnakan...';
+      }
+
+      var sysInstruction = "";
+      var userPrompt = currentText;
+
+      if (action === 'tashkeel') {
+        sysInstruction = "أنت خبير في علم النحو والصرف وتشكيل النصوص العربية الفصحى. قم بضبط النص التالي بالشكل التام (التشكيل والحركات الكاملة مع مراعاة القواعد النحوية والإعرابية السليمة). أخرج فقط النص المشكول دون أي مقدمات أو شروحات إضافية.";
+      } else if (action === 'translate') {
+        // Panggil fungsi terjemah per kalimat instan
+        splitAndTranslateFullText(boxType, currentText);
+        if (btnTashih) {
+          btnTashih.disabled = false;
+          btnTashih.innerHTML = originalBtnHtml;
+        }
+        Swal.fire({
+          icon: 'success',
+          title: 'Menerjemahkan Per Kalimat!',
+          text: 'Teks Arab sedang diterjemahkan per kalimat ke kotak di bawahnya.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 2500
+        });
+        return;
+      } else {
+        sysInstruction = "أنت عالم لغوي ومحقق متخصص في اللغة العربية الفصحى والعلوم الشرعية الإسلامية (التفسير والحديث والفقه والعقيدة). مهمتك تصحيح وتصويب نصوص التفريغ الصوتي المأخوذة من المحاضرات والدروس الإسلامية والتي تحتوي على أخطاء سمعية وإملائية.\n" +
+          "قواعد العمل الصارمة:\n" +
+          "1. تصحيح الكلمات غير الدقيقة سياقياً ولغوياً الناتجة عن التقارب الصوتي لمخارج الحروف (مثال: تصحيح 'تعليق ما خلقنا من اجله' إلى 'تحقيق ما خُلقنا من أجله وهو عبادة الله تعالى').\n" +
+          "2. كتابة الهمزات بشكل صحيح ومتقن (الهمزة المتوسطة والمتطرفة وهمزات القطع والوصل: أ، إ، آ، ء، ئ، ؤ).\n" +
+          "3. التفريق الدقيق بين التاء المربوطة (ة) والهاء (ه) (مثال: عباده -> عبادة).\n" +
+          "4. كتابة الآيات القرآنية بالرسم العثماني المعتمد والأحاديث النبوية بلفظها الصحيح التام.\n" +
+          "5. وضع علامات الترقيم العربية الملائمة (، . : \" ؟).\n" +
+          "6. أخرج فقط النص العربي المصحح النهائي دون أي كلمة إضافية أو مقدمة أو اعتذار أو خاتمة.";
+      }
+
+      var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+      var payload = {
+        systemInstruction: { parts: [{ text: sysInstruction }] },
+        contents: [{ parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          temperature: 0.1,
+          maxOutputTokens: 3000
+        }
+      };
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (btnTashih) {
+          btnTashih.disabled = false;
+          btnTashih.innerHTML = originalBtnHtml;
+        }
+
+        if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+          var enhancedText = data.candidates[0].content.parts[0].text.trim();
+          box.innerText = enhancedText;
+          if (action !== 'translate') {
+            box.setAttribute('dir', 'rtl');
+            box.classList.add('arabic-mode');
+          } else {
+            box.setAttribute('dir', 'ltr');
+            box.classList.remove('arabic-mode');
+          }
+
+          if (boxType === 'mic') {
+            micFinalTranscript = enhancedText;
+          }
+
+          var actionTitle = (action === 'tashkeel' ? 'Harakat Berhasil Diberikan!' : (action === 'translate' ? 'Terjemahan Berhasil!' : 'Tashih Ejaan Arab Berhasil!'));
+          Swal.fire({
+            icon: 'success',
+            title: actionTitle,
+            text: 'Teks telah disempurnakan dengan akurasi AI Gemini.',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2500
+          });
+        } else if (data && data.error) {
+          if (!isAuto) Swal.fire('Error AI Gemini', data.error.message || 'Gagal menyempurnakan teks.', 'error');
+        }
+      }).catch(function(err) {
+        if (btnTashih) {
+          btnTashih.disabled = false;
+          btnTashih.innerHTML = originalBtnHtml;
+        }
+        if (!isAuto) Swal.fire('Gagal Koneksi', err.message, 'error');
+      });
+    };
+
     window.clearMicTranscript = function() {
       micFinalTranscript = '';
       var box = document.getElementById('micTranscriptBox');
       if (box) box.innerHTML = '';
+      clearMicTranslation();
     };
 
     window.copyMicTranscript = function() {
@@ -6936,14 +7841,22 @@ var initialMockDB = [
       if (!text) return Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
       if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu sebelum menyisipkan teks.', 'warning');
 
+      var isArab = isArabicText(text) || isArabicLanguageSelected();
+
       if (mode === 'cursor') {
         var range = quillEditor.getSelection();
         var index = range ? range.index : quillEditor.getLength();
         quillEditor.insertText(index, (index > 0 ? ' ' : '') + text, 'user');
+        if (isArab) {
+          quillEditor.formatLine(index, text.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+        }
         quillEditor.setSelection(index + text.length + 1, 0, 'user');
       } else {
         var endIdx = quillEditor.getLength();
         quillEditor.insertText(endIdx, '\n\n' + text, 'user');
+        if (isArab) {
+          quillEditor.formatLine(endIdx + 2, text.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+        }
         quillEditor.setSelection(endIdx + text.length + 2, 0, 'user');
       }
       lastLocalEditTime = Date.now();
@@ -7102,11 +8015,174 @@ var initialMockDB = [
         sizeBadge.innerText = sizeMb + ' MB';
       }
 
-      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
-      if (apiKey) {
+      // Berikan konfirmasi bahwa audio siap ditranskripsi
+      Swal.fire({
+        icon: 'success',
+        title: 'Audio Tab Berhasil Ditangkap!',
+        text: 'Silakan pilih metode transkripsi: Bawaan Browser (Gratis tanpa API) atau AI Gemini.',
+        toast: true,
+        position: 'bottom-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }
+
+    // Eksekusi Pilihan Transkripsi Tab 2
+    window.startSystemAudioTranscription = function() {
+      if (!capturedSystemAudioBlob) {
+        Swal.fire('Data Kosong', 'Rekam audio YouTube atau video terlebih dahulu.', 'info');
+        return;
+      }
+
+      var engine = document.querySelector('input[name="systemTranscribeEngine"]:checked');
+      var engineVal = engine ? engine.value : 'browser';
+
+      if (engineVal === 'browser') {
+        transcribeSystemAudioWithBrowserStream();
+      } else {
         transcribeSystemAudioWithGeminiAI();
       }
+    };
+
+    // Transkripsi Rekaman Tab Menggunakan Bawaan Browser (Gratis Tanpa API)
+    function transcribeSystemAudioWithBrowserStream() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung Speech Recognition lokal.', 'info');
+        return;
+      }
+      var audioEl = document.getElementById('systemAudioPreviewElement');
+      if (!audioEl) return;
+
+      var progressBox = document.getElementById('systemAudioTranscribeProgress');
+      var progressText = document.getElementById('systemProgressText');
+      var actionBtn = document.getElementById('btnTranscribeSystemAudio');
+
+      if (progressBox) progressBox.classList.remove('d-none');
+      if (actionBtn) actionBtn.disabled = true;
+      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-headphones me-1"></i> Memutar audio & mendengarkan dengan pengenal suara browser bawaan...';
+
+      audioEl.currentTime = 0;
+      audioEl.play();
+
+      var recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      var langSelect = document.getElementById('micLangSelect');
+      var selectedLang = (langSelect && langSelect.value) ? langSelect.value : 'id-ID';
+      recognition.lang = selectedLang;
+
+      var collectedTranscript = '';
+      recognition.onresult = function(event) {
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            collectedTranscript += (collectedTranscript ? ' ' : '') + event.results[i][0].transcript.trim();
+          }
+        }
+        var box = document.getElementById('systemTranscriptBox');
+        if (box) {
+          box.innerText = collectedTranscript;
+          if (isArabicText(collectedTranscript) || selectedLang.startsWith('ar')) {
+            box.setAttribute('dir', 'rtl');
+            box.classList.add('arabic-mode');
+          }
+        }
+      };
+
+      audioEl.onended = function() {
+        recognition.stop();
+        if (progressBox) progressBox.classList.add('d-none');
+        if (actionBtn) actionBtn.disabled = false;
+        systemTranscriptResult = collectedTranscript;
+        Swal.fire({
+          icon: 'success',
+          title: 'Selesai!',
+          text: 'Pemutaran rekaman selesai dan teks berhasil ditranskripsikan dengan mesin browser lokal.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 2500
+        });
+      };
+
+      recognition.start();
     }
+
+    // Panduan Suara Internal Komputer / Stereo Mix & Virtual Cable (Anti Suara Ruangan)
+    window.showInternalAudioGuideModal = function() {
+      Swal.fire({
+        title: '🎙️ Transkripsi Suara Video Komputer (Tanpa Bising Ruangan)',
+        html: `
+          <div class="text-start small" style="line-height: 1.6;">
+            <p class="mb-2 text-dark">
+              Agar suara video/YouTube di komputer <b>langsung tertranskripsi live kata demi kata tanpa perlu direkam dulu, 100% bawaan browser tanpa API, dan suara ruangan sama sekali tidak ikut masuk</b>:
+            </p>
+            
+            <div class="card border rounded-3 p-3 bg-light mb-3">
+              <h6 class="fw-bold text-danger mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>Jika "Stereo Mix" Tidak Muncul di Laptop Anda:</h6>
+              <p class="text-muted mb-2" style="font-size: 0.8rem;">
+                Banyak laptop modern (HP, Lenovo, Dell, dll.) menonaktifkan Stereo Mix di driver bawaannya. Solusi resmi dan paling mudah adalah memasang <b>VB-CABLE Virtual Audio Device</b> (100% Gratis, aman, dan hanya 1 MB):
+              </p>
+              <ol class="ps-3 mb-2 d-flex flex-column gap-1">
+                <li>Unduh dari situs resminya: <a href="https://vb-audio.com/Cable/" target="_blank" class="fw-bold text-primary">vb-audio.com/Cable <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i></a></li>
+                <li>Ekstrak file zip, klik kanan <code class="bg-white px-1 border rounded text-dark">VBCABLE_Setup_x64.exe</code> &rarr; pilih <b>"Run as administrator"</b> &rarr; klik <b>"Install Driver"</b>.</li>
+                <li>Selesai! Di Kit-Naf klik tombol <b>"Pindai"</b>, lalu pilih <b>"CABLE Output (VB-Audio)"</b>.</li>
+              </ol>
+            </div>
+
+            <div class="p-2 bg-success bg-opacity-10 border border-success-subtle rounded-3 text-success">
+              <i class="fa-solid fa-circle-check me-1"></i>
+              <b>Keuntungan:</b> Suara YouTube atau video laptop disalurkan secara digital murni. Suara ruangan <b>0% (sama sekali tidak masuk)</b>, teks langsung terketik secara <b>live real-time</b> saat video diputar tanpa perlu direkam dulu, dan 100% gratis bawaan browser tanpa API!
+            </div>
+          </div>
+        `,
+        width: '620px',
+        confirmButtonText: '<i class="fa-solid fa-check me-1"></i> Saya Mengerti',
+        confirmButtonColor: '#2563eb'
+      });
+    };
+
+    // Beralih Cepat ke Mode Live Audio Internal
+    window.switchToLiveInternalAudio = function() {
+      var tab1Btn = document.getElementById('tab-mic-btn');
+      if (tab1Btn) tab1Btn.click();
+
+      var speechRadio = document.getElementById('micEngineSpeech');
+      if (speechRadio) {
+        speechRadio.checked = true;
+        onMicEngineModeChanged();
+      }
+
+      // Deteksi apakah Stereo Mix sudah ada di daftar
+      var select = document.getElementById('audioDeviceSelect');
+      var hasStereoMix = false;
+      if (select) {
+        for (var i = 0; i < select.options.length; i++) {
+          if (select.options[i].text.toLowerCase().includes('stereo mix') || select.options[i].text.toLowerCase().includes('campuran stereo')) {
+            select.selectedIndex = i;
+            onAudioDeviceChanged();
+            hasStereoMix = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasStereoMix) {
+        setTimeout(function() {
+          showInternalAudioGuideModal();
+        }, 400);
+      } else {
+        Swal.fire({
+          icon: 'success',
+          title: 'Mode Live Aktif!',
+          text: 'Stereo Mix terpilih. Putar video YouTube Anda dan klik tombol Mikrofon untuk mulai transkripsi live tanpa suara ruangan.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 3500
+        });
+      }
+    };
 
     window.transcribeSystemAudioWithGeminiAI = function() {
       if (!capturedSystemAudioBlob) {
@@ -7151,7 +8227,17 @@ var initialMockDB = [
         if (progressBar) progressBar.style.width = '60%';
 
         var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
-        var prompt = "Transkripsikan seluruh isi rekaman audio/kajian YouTube ini secara lengkap, kata demi kata, akurat dengan ejaan, tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. Tuliskan istilah bahasa Arab/Islam dengan benar. Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
+        var langSelect = document.getElementById('micLangSelect');
+        var isArabicSelected = langSelect && langSelect.value.startsWith('ar');
+
+        var prompt = isArabicSelected
+          ? "أنت خبير لغوي ومفرغ صوتي محترف للمحاضرات والدروس الإسلامية باللغة العربية الفصحى. قم بتفريغ هذا التسجيل الصوتي بدقة متناهية كلمة بكلمة:\n" +
+            "1. اكتب بالرسم الإملائي الصحيح المعتمد (الهمزات: أ/إ/ء/ئ/ؤ، التاء المربوطة ة، والهاء ه).\n" +
+            "2. اكتب الآيات القرآنية والأحاديث النبوية الشريفة والمصطلحات الشرعية بدقة تامة وضبط سليم.\n" +
+            "3. ضع علامات الترقيم العربية المناسبة (، . : ؟ !\") ونظّم النص في فقرات مريحة للقراءة.\n" +
+            "4. أخرج فقط نص التفريغ بدون أي مقدمات أو اعتذارات أو هوامش إضافية."
+          : "Transkripsikan seluruh isi rekaman audio/kajian YouTube ini secara lengkap, kata demi kata, akurat dengan ejaan baku (EYD), tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. " +
+            "PENTING: Tuliskan istilah bahasa Arab/Islam, ayat Al-Qur'an, dan kutipan Hadits dalam bahasa Arab yang benar dan mutqin (imla' shahih, hamzah tepat, ta marbuthah benar). Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
 
         var payload = {
           contents: [{
@@ -7176,7 +8262,13 @@ var initialMockDB = [
           if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
             systemTranscriptResult = data.candidates[0].content.parts[0].text.trim();
             var resultBox = document.getElementById('systemTranscriptBox');
-            if (resultBox) resultBox.innerText = systemTranscriptResult;
+            if (resultBox) {
+              resultBox.innerText = systemTranscriptResult;
+              if (isArabicText(systemTranscriptResult) || isArabicSelected) {
+                resultBox.setAttribute('dir', 'rtl');
+                resultBox.classList.add('arabic-mode');
+              }
+            }
             Swal.fire({ icon:'success', title:'Transkripsi Selesai!', text:'Audio YouTube berhasil ditranskripsikan dengan akurasi AI Gemini.', toast:true, position:'bottom-end', showConfirmButton:false, timer:3000 });
           } else if (data && data.error) {
             Swal.fire('Error AI Gemini', data.error.message || 'Gagal memproses audio.', 'error');
@@ -7211,14 +8303,22 @@ var initialMockDB = [
       if (!text) return Swal.fire('Teks Kosong', 'Tidak ada teks transkripsi untuk disisipkan.', 'info');
       if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu.', 'warning');
 
+      var isArab = isArabicText(text);
+
       if (mode === 'cursor') {
         var range = quillEditor.getSelection();
         var index = range ? range.index : quillEditor.getLength();
         quillEditor.insertText(index, (index > 0 ? ' ' : '') + text, 'user');
+        if (isArab) {
+          quillEditor.formatLine(index, text.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+        }
         quillEditor.setSelection(index + text.length + 1, 0, 'user');
       } else {
         var endIdx = quillEditor.getLength();
         quillEditor.insertText(endIdx, '\n\n' + text, 'user');
+        if (isArab) {
+          quillEditor.formatLine(endIdx + 2, text.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+        }
         quillEditor.setSelection(endIdx + text.length + 2, 0, 'user');
       }
       lastLocalEditTime = Date.now();
@@ -7354,7 +8454,17 @@ var initialMockDB = [
         if (progressBar) progressBar.style.width = '55%';
 
         var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
-        var prompt = "Transkripsikan seluruh isi rekaman suara/kajian ini secara lengkap, kata demi kata, akurat dengan ejaan, tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. Tuliskan istilah bahasa Arab/Islam dengan tepat. Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
+        var langSelect = document.getElementById('micLangSelect');
+        var isArabicSelected = langSelect && langSelect.value.startsWith('ar');
+
+        var prompt = isArabicSelected
+          ? "أنت خبير لغوي ومفرغ صوتي محترف للمحاضرات والدروس الإسلامية باللغة العربية الفصحى. قم بتفريغ هذا الملف بدقة متناهية كلمة بكلمة:\n" +
+            "1. اكتب بالرسم الإملائي الصحيح المعتمد (الهمزات: أ/إ/ء/ئ/ؤ، التاء المربوطة ة، والهاء ه).\n" +
+            "2. اكتب الآيات القرآنية والأحاديث النبوية الشريفة والمصطلحات الشرعية بدقة تامة وضبط سليم.\n" +
+            "3. ضع علامات الترقيم العربية المناسبة (، . : ؟ !\") ونظّم النص في فقرات مريحة للقراءة.\n" +
+            "4. أخرج فقط نص التفريغ بدون أي مقدمات أو اعتذارات أو هوامش إضافية."
+          : "Transkripsikan seluruh isi rekaman suara/kajian ini secara lengkap, kata demi kata, akurat dengan ejaan baku (EYD), tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. " +
+            "PENTING: Tuliskan istilah bahasa Arab/Islam, ayat Al-Qur'an, dan kutipan Hadits dalam bahasa Arab yang benar dan mutqin (imla' shahih, hamzah tepat, ta marbuthah benar). Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
 
         var payload = {
           contents: [{
@@ -7379,7 +8489,13 @@ var initialMockDB = [
           if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
             var transcriptResult = data.candidates[0].content.parts[0].text.trim();
             var resultBox = document.getElementById('fileTranscriptBox');
-            if (resultBox) resultBox.innerText = transcriptResult;
+            if (resultBox) {
+              resultBox.innerText = transcriptResult;
+              if (isArabicText(transcriptResult) || isArabicSelected) {
+                resultBox.setAttribute('dir', 'rtl');
+                resultBox.classList.add('arabic-mode');
+              }
+            }
             Swal.fire({ icon:'success', title:'Transkripsi Selesai!', text:'Media kajian berhasil ditranskripsikan dengan akurasi AI Gemini.', toast:true, position:'bottom-end', showConfirmButton:false, timer:3000 });
           } else if (data && data.error) {
             Swal.fire('Error AI Gemini', data.error.message || 'Gagal memproses media.', 'error');
@@ -7416,7 +8532,8 @@ var initialMockDB = [
       var recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'id-ID';
+      var langSelect = document.getElementById('micLangSelect');
+      recognition.lang = (langSelect && langSelect.value) ? langSelect.value : 'id-ID';
 
       var collectedTranscript = '';
       recognition.onresult = function(event) {
@@ -7459,14 +8576,22 @@ var initialMockDB = [
       if (!text) return Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
       if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu sebelum menyisipkan teks.', 'warning');
 
+      var isArab = isArabicText(text);
+
       if (mode === 'cursor') {
         var range = quillEditor.getSelection();
         var index = range ? range.index : quillEditor.getLength();
         quillEditor.insertText(index, (index > 0 ? ' ' : '') + text, 'user');
+        if (isArab) {
+          quillEditor.formatLine(index, text.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+        }
         quillEditor.setSelection(index + text.length + 1, 0, 'user');
       } else {
         var endIdx = quillEditor.getLength();
         quillEditor.insertText(endIdx, '\n\n' + text, 'user');
+        if (isArab) {
+          quillEditor.formatLine(endIdx + 2, text.length, { 'direction': 'rtl', 'align': 'right' }, 'user');
+        }
         quillEditor.setSelection(endIdx + text.length + 2, 0, 'user');
       }
       lastLocalEditTime = Date.now();
