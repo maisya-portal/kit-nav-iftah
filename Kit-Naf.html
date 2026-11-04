@@ -6342,7 +6342,7 @@ var initialMockDB = [
     });
 
     // ==========================================
-    // --- STUDIO TRANSKRIPSI SUARA & AUDIO (MIC & FILE AUDIO) ---
+    // --- STUDIO TRANSKRIPSI SUARA & AUDIO (MIC, HEADSET, TAB/YOUTUBE, & FILE) ---
     // ==========================================
     var audioTranscribeModalEl = null;
     var bsAudioTranscribeModal = null;
@@ -6353,15 +6353,30 @@ var initialMockDB = [
     var currentSelectedAudioFile = null;
     var isTranscribingFile = false;
 
+    // Headset & Audio Device State
+    var audioMeterContext = null;
+    var audioMeterAnalyser = null;
+    var audioMeterStream = null;
+    var audioMeterAnimFrame = null;
+    var isTestingMic = false;
+
+    // Tab / YouTube System Audio Capture State
+    var systemAudioStream = null;
+    var systemAudioRecorder = null;
+    var systemAudioChunks = [];
+    var isRecordingSystemAudio = false;
+    var systemAudioTimerInterval = null;
+    var systemAudioSeconds = 0;
+    var capturedSystemAudioBlob = null;
+    var systemTranscriptResult = '';
+
     window.openAudioTranscribeModal = function() {
       if (!audioTranscribeModalEl) {
         audioTranscribeModalEl = document.getElementById('audioTranscribeModal');
         if (audioTranscribeModalEl) {
           bsAudioTranscribeModal = new bootstrap.Modal(audioTranscribeModalEl);
           audioTranscribeModalEl.addEventListener('hidden.bs.modal', function() {
-            stopLiveMicRecording();
-            var audioEl = document.getElementById('audioPreviewElement');
-            if (audioEl) audioEl.pause();
+            stopAllTranscribeRecordings();
           });
         }
       }
@@ -6371,12 +6386,225 @@ var initialMockDB = [
       var geminiInput = document.getElementById('geminiApiKeyInput');
       if (geminiInput) geminiInput.value = savedGeminiKey;
 
+      // Deteksi perangkat mikrofon & headset bluetooth/kabel secara otomatis
+      detectAudioDevices(false);
+
       if (bsAudioTranscribeModal) {
         bsAudioTranscribeModal.show();
       }
     };
 
-    // Inisialisasi Speech Recognition
+    window.stopAllTranscribeRecordings = function() {
+      stopLiveMicRecording();
+      stopMicTest();
+      if (isRecordingSystemAudio) {
+        stopSystemAudioRecording();
+      }
+      var audioEl = document.getElementById('audioPreviewElement');
+      if (audioEl) audioEl.pause();
+      var videoEl = document.getElementById('videoPreviewElement');
+      if (videoEl) videoEl.pause();
+      var sysAudioEl = document.getElementById('systemAudioPreviewElement');
+      if (sysAudioEl) sysAudioEl.pause();
+    };
+
+    // --- ENUMERASI PERANGKAT AUDIO (MIC & HEADSET BLUETOOTH / KABEL) ---
+    window.detectAudioDevices = function(showFeedback) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        if (showFeedback) Swal.fire('Info', 'Peramban tidak mendukung enumerasi perangkat audio.', 'info');
+        return;
+      }
+
+      navigator.mediaDevices.enumerateDevices().then(function(devices) {
+        var audioInputs = devices.filter(function(d) { return d.kind === 'audioinput'; });
+        var hasLabels = audioInputs.some(function(d) { return d.label && d.label.length > 0; });
+        
+        // Jika label masih kosong karena izin mic belum terbuka, minta izin sejenak
+        if (!hasLabels && showFeedback) {
+          navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+            stream.getTracks().forEach(function(t) { t.stop(); });
+            detectAudioDevices(false);
+          }).catch(function() {
+            Swal.fire('Izin Mikrofon Diperlukan', 'Harap izinkan akses mikrofon agar Kit-Naf dapat mendeteksi headset dan mic Anda.', 'warning');
+          });
+          return;
+        }
+
+        populateAudioDeviceSelect(audioInputs);
+        if (showFeedback) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Perangkat Terdeteksi!',
+            text: 'Ditemukan ' + audioInputs.length + ' perangkat mikrofon / headset.',
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 2000
+          });
+        }
+      }).catch(function(err) {
+        console.warn('[Audio] Error enumerateDevices:', err);
+      });
+    };
+
+    function populateAudioDeviceSelect(devices) {
+      var select = document.getElementById('audioDeviceSelect');
+      var infoSpan = document.getElementById('detectedHeadsetInfo');
+      if (!select) return;
+
+      var savedDeviceId = localStorage.getItem('kitnaf_selected_mic_device') || '';
+      select.innerHTML = '';
+
+      var defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.text = '🎙️ Bawaan Sistem (Default)';
+      select.appendChild(defaultOpt);
+
+      var bluetoothCount = 0;
+      var headsetCount = 0;
+
+      devices.forEach(function(d, index) {
+        var opt = document.createElement('option');
+        opt.value = d.deviceId;
+        var label = d.label || ('Perangkat Audio ' + (index + 1));
+        var lower = label.toLowerCase();
+        
+        if (lower.includes('bluetooth') || lower.includes('bt ') || lower.includes('buds') || lower.includes('airpod') || lower.includes('wireless')) {
+          opt.text = '🎧 [Bluetooth] ' + label;
+          bluetoothCount++;
+        } else if (lower.includes('headset') || lower.includes('headphone') || lower.includes('earphone')) {
+          opt.text = '🎧 [Headset] ' + label;
+          headsetCount++;
+        } else if (lower.includes('usb') || lower.includes('external')) {
+          opt.text = '🎙️ [USB/Eksternal] ' + label;
+        } else {
+          opt.text = '🎙️ ' + label;
+        }
+        
+        if (d.deviceId === savedDeviceId) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+
+      if (infoSpan) {
+        if (bluetoothCount > 0) {
+          infoSpan.innerHTML = '<span class="text-primary fw-semibold"><i class="fa-brands fa-bluetooth-b me-1"></i>Headset Bluetooth terdeteksi</span>';
+        } else if (headsetCount > 0) {
+          infoSpan.innerHTML = '<span class="text-success fw-semibold"><i class="fa-solid fa-headset me-1"></i>Headset kabel terdeteksi</span>';
+        } else {
+          infoSpan.innerHTML = '<span class="text-muted">Mikrofon internal siap digunakan</span>';
+        }
+      }
+    }
+
+    window.onAudioDeviceChanged = function() {
+      var select = document.getElementById('audioDeviceSelect');
+      if (select) {
+        localStorage.setItem('kitnaf_selected_mic_device', select.value);
+        if (isTestingMic) {
+          stopMicTest();
+          startMicTest();
+        }
+        if (isLiveRecording) {
+          stopLiveMicRecording();
+          setTimeout(function() { toggleLiveMicRecording(); }, 300);
+        }
+      }
+    };
+
+    // Auto-listen to physical / bluetooth device plug & unplug
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', function() {
+        detectAudioDevices(false);
+      });
+    }
+
+    // --- LIVE AUDIO LEVEL METER (TES SENSITIVITAS SUARA MIC / HEADSET) ---
+    window.toggleMicTest = function() {
+      if (isTestingMic) {
+        stopMicTest();
+      } else {
+        startMicTest();
+      }
+    };
+
+    function startMicTest() {
+      var selectedDeviceId = localStorage.getItem('kitnaf_selected_mic_device');
+      var constraints = { audio: selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true };
+
+      navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+        audioMeterStream = stream;
+        isTestingMic = true;
+        
+        var testBtn = document.getElementById('btnTestMic');
+        if (testBtn) {
+          testBtn.className = 'btn btn-link btn-sm p-0 text-decoration-none fw-bold text-danger';
+          testBtn.innerHTML = '<i class="fa-solid fa-stop me-1"></i>Hentikan Tes';
+        }
+
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioMeterContext = new AudioContext();
+        var source = audioMeterContext.createMediaStreamSource(stream);
+        audioMeterAnalyser = audioMeterContext.createAnalyser();
+        audioMeterAnalyser.fftSize = 256;
+        source.connect(audioMeterAnalyser);
+
+        var dataArray = new Uint8Array(audioMeterAnalyser.frequencyBinCount);
+        var meterBar = document.getElementById('audioLiveMeterBar');
+        var valText = document.getElementById('audioMeterVal');
+
+        function updateMeter() {
+          if (!isTestingMic) return;
+          audioMeterAnalyser.getByteFrequencyData(dataArray);
+          var sum = 0;
+          for (var i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          var avg = sum / dataArray.length;
+          var percent = Math.min(100, Math.round((avg / 128) * 100 * 1.5));
+          if (meterBar) {
+            meterBar.style.width = percent + '%';
+            if (percent > 65) {
+              meterBar.className = 'progress-bar bg-danger';
+            } else if (percent > 30) {
+              meterBar.className = 'progress-bar bg-warning';
+            } else {
+              meterBar.className = 'progress-bar bg-success';
+            }
+          }
+          if (valText) valText.innerText = percent + '%';
+          audioMeterAnimFrame = requestAnimationFrame(updateMeter);
+        }
+        updateMeter();
+      }).catch(function(err) {
+        Swal.fire('Gagal Mengakses Perangkat', 'Pastikan izin mikrofon/headset diberikan: ' + err.message, 'error');
+      });
+    }
+
+    function stopMicTest() {
+      isTestingMic = false;
+      if (audioMeterAnimFrame) cancelAnimationFrame(audioMeterAnimFrame);
+      if (audioMeterStream) {
+        audioMeterStream.getTracks().forEach(function(t) { t.stop(); });
+        audioMeterStream = null;
+      }
+      if (audioMeterContext) {
+        try { audioMeterContext.close(); } catch(e) {}
+        audioMeterContext = null;
+      }
+      var meterBar = document.getElementById('audioLiveMeterBar');
+      if (meterBar) meterBar.style.width = '0%';
+      var valText = document.getElementById('audioMeterVal');
+      if (valText) valText.innerText = '0%';
+      var testBtn = document.getElementById('btnTestMic');
+      if (testBtn) {
+        testBtn.className = 'btn btn-link btn-sm p-0 text-decoration-none fw-bold text-primary';
+        testBtn.innerHTML = '<i class="fa-solid fa-volume-high me-1"></i>Tes Suara Masuk';
+      }
+    }
+
+    // --- SPEECH RECOGNITION (MIC & HEADSET) ---
     function initSpeechRecognitionEngine() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return null;
@@ -6407,13 +6635,13 @@ var initialMockDB = [
         if (box) {
           var displayHtml = escapeHTML(micFinalTranscript);
           if (interimTranscript) {
-            displayHtml += (displayHtml ? ' ' : '') + '<span class="interim-text">' + escapeHTML(interimTranscript) + '</span>';
+            displayHtml += (displayHtml ? ' ' : '') + '<span class="interim-text text-muted fst-italic">' + escapeHTML(interimTranscript) + '</span>';
           }
           box.innerHTML = displayHtml;
           box.scrollTop = box.scrollHeight;
         }
 
-        // Mode Live Typing ke lembar catatan langsung
+        // Mode Live Typing langsung ke editor
         var liveStreamToggle = document.getElementById('micLiveStreamToggle');
         if (liveStreamToggle && liveStreamToggle.checked && activeNodeId && quillEditor) {
           if (event.results[event.results.length - 1].isFinal) {
@@ -6431,10 +6659,7 @@ var initialMockDB = [
       };
 
       recognition.onerror = function(event) {
-        if (event.error === 'no-speech') {
-          // Abaikan jeda hening
-          return;
-        }
+        if (event.error === 'no-speech') return;
         if (event.error === 'not-allowed') {
           Swal.fire('Izin Mikrofon Diperlukan', 'Harap izinkan akses mikrofon pada peramban (browser) Anda untuk menggunakan fitur transkripsi suara.', 'warning');
           isRecordingUserIntent = false;
@@ -6445,7 +6670,6 @@ var initialMockDB = [
       recognition.onend = function() {
         isLiveRecording = false;
         if (isRecordingUserIntent) {
-          // Otomatis sambung ulang saat pengguna masih berniat merekam (mencegah putus di jeda nafas)
           try {
             recognition.start();
           } catch(e) {
@@ -6473,13 +6697,13 @@ var initialMockDB = [
         if (icon) icon.className = 'fa-solid fa-stop';
         if (wave) wave.classList.add('active');
         if (heading) heading.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle fa-xs me-1 fa-fade"></i> Sedang Mendengarkan...</span>';
-        if (desc) desc.innerText = 'Bicaralah sekarang. Suara Anda sedang ditranskripsikan secara langsung.';
+        if (desc) desc.innerText = 'Bicaralah sekarang. Suara dari mic/headset Anda sedang ditranskripsikan secara langsung.';
       } else {
         btn.classList.remove('recording');
         if (icon) icon.className = 'fa-solid fa-microphone';
         if (wave) wave.classList.remove('active');
         if (heading) heading.innerText = 'Klik Mikrofon untuk Mulai Bicara';
-        if (desc) desc.innerText = 'Peramban akan mendengarkan dan mentranskripsikan suara Anda secara langsung.';
+        if (desc) desc.innerText = 'Peramban akan mendengarkan melalui mic/headset pilihan Anda dan mentranskripsikannya.';
       }
     }
 
@@ -6497,6 +6721,7 @@ var initialMockDB = [
       if (isLiveRecording || isRecordingUserIntent) {
         stopLiveMicRecording();
       } else {
+        stopMicTest();
         isRecordingUserIntent = true;
         try {
           var langSelect = document.getElementById('micLangSelect');
@@ -6514,9 +6739,7 @@ var initialMockDB = [
     window.stopLiveMicRecording = function() {
       isRecordingUserIntent = false;
       if (liveSpeechRecognition) {
-        try {
-          liveSpeechRecognition.stop();
-        } catch(e) {}
+        try { liveSpeechRecognition.stop(); } catch(e) {}
       }
       isLiveRecording = false;
       updateMicUIState('idle');
@@ -6528,9 +6751,7 @@ var initialMockDB = [
         liveSpeechRecognition.lang = langSelect.value;
         if (isLiveRecording) {
           stopLiveMicRecording();
-          setTimeout(function() {
-            toggleLiveMicRecording();
-          }, 300);
+          setTimeout(function() { toggleLiveMicRecording(); }, 300);
         }
       }
     };
@@ -6543,129 +6764,377 @@ var initialMockDB = [
 
     window.copyMicTranscript = function() {
       var box = document.getElementById('micTranscriptBox');
-      var text = box ? (box.innerText || box.textContent || '').trim() : '';
-      if (!text) {
-        Swal.fire({ icon: 'info', title: 'Belum Ada Teks', text: 'Ketik atau ucapkan suara terlebih dahulu.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
-        return;
-      }
+      var text = box ? box.innerText.trim() : '';
+      if (!text) return Swal.fire('Teks Kosong', 'Belum ada hasil transkripsi untuk disalin.', 'info');
       navigator.clipboard.writeText(text).then(function() {
-        Swal.fire({ icon: 'success', title: 'Tersalin ke Clipboard!', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+        Swal.fire({ icon:'success', title:'Tersalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:1800 });
       });
     };
 
     window.insertMicTranscriptToEditor = function(mode) {
-      if (!activeNodeId || !quillEditor) {
-        Swal.fire('Pilih Materi', 'Silakan buka atau buat materi terlebih dahulu di lembar catatan sebelum menyisipkan teks.', 'warning');
-        return;
-      }
-
       var box = document.getElementById('micTranscriptBox');
-      var text = box ? (box.innerText || box.textContent || '').trim() : '';
-      if (!text) {
-        Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
-        return;
-      }
-
-      insertTextToQuill(text, mode);
-      stopLiveMicRecording();
-      if (bsAudioTranscribeModal) bsAudioTranscribeModal.hide();
-    };
-
-    function insertTextToQuill(text, mode) {
-      if (!quillEditor) return;
+      var text = box ? box.innerText.trim() : '';
+      if (!text) return Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
+      if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu sebelum menyisipkan teks.', 'warning');
 
       if (mode === 'cursor') {
         var range = quillEditor.getSelection();
-        var idx = range ? range.index : (quillEditor.getLength() - 1);
-        quillEditor.insertText(idx, '\n' + text + '\n', 'user');
-        quillEditor.setSelection(idx + text.length + 2, 0, 'user');
-      } else if (mode === 'append') {
-        var lastIdx = quillEditor.getLength() - 1;
-        quillEditor.insertText(lastIdx, '\n\n' + text, 'user');
-        quillEditor.setSelection(quillEditor.getLength() - 1, 0, 'user');
+        var index = range ? range.index : quillEditor.getLength();
+        quillEditor.insertText(index, (index > 0 ? ' ' : '') + text, 'user');
+        quillEditor.setSelection(index + text.length + 1, 0, 'user');
+      } else {
+        var endIdx = quillEditor.getLength();
+        quillEditor.insertText(endIdx, '\n\n' + text, 'user');
+        quillEditor.setSelection(endIdx + text.length + 2, 0, 'user');
       }
-
       lastLocalEditTime = Date.now();
       window.performAutoSave();
+      Swal.fire({ icon:'success', title:'Berhasil Disisipkan!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+    };
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Teks Berhasil Disisipkan!',
-        text: 'Transkripsi telah masuk ke lembar catatan materi aktif.',
-        toast: true,
-        position: 'bottom-end',
-        showConfirmButton: false,
-        timer: 2000
+    // ==========================================
+    // --- TAB 2: PEREKAMAN AUDIO TAB / YOUTUBE / KOMPUTER ---
+    // ==========================================
+    window.toggleSystemAudioRecording = function() {
+      if (isRecordingSystemAudio) {
+        stopSystemAudioRecording();
+      } else {
+        startSystemAudioRecording();
+      }
+    };
+
+    function startSystemAudioRecording() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung perekaman tab audio. Gunakan Google Chrome atau Microsoft Edge di PC/Laptop.', 'info');
+        return;
+      }
+
+      navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      }).then(function(stream) {
+        var audioTracks = stream.getAudioTracks();
+        if (audioTracks.length === 0) {
+          stream.getTracks().forEach(function(t) { t.stop(); });
+          Swal.fire({
+            icon: 'warning',
+            title: 'Audio Tab Tidak Tercentang',
+            html: '<p class="small text-muted mb-2">Saat jendela browser muncul, <b>pastikan Anda mencentang kotak "Bagikan audio tab" (Share tab audio)</b> di kiri bawah agar suara YouTube/video dapat ditangkap.</p>'
+          });
+          return;
+        }
+
+        systemAudioStream = stream;
+        systemAudioChunks = [];
+        isRecordingSystemAudio = true;
+
+        stream.getVideoTracks().forEach(function(vt) {
+          vt.onended = function() {
+            if (isRecordingSystemAudio) stopSystemAudioRecording();
+          };
+        });
+        audioTracks[0].onended = function() {
+          if (isRecordingSystemAudio) stopSystemAudioRecording();
+        };
+
+        var mimeType = 'audio/webm';
+        if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+          mimeType = 'audio/webm;codecs=opus';
+        }
+
+        var audioOnlyStream = new MediaStream(audioTracks);
+        systemAudioRecorder = new MediaRecorder(audioOnlyStream, { mimeType: mimeType });
+
+        systemAudioRecorder.ondataavailable = function(e) {
+          if (e.data && e.data.size > 0) {
+            systemAudioChunks.push(e.data);
+          }
+        };
+
+        systemAudioRecorder.onstop = function() {
+          capturedSystemAudioBlob = new Blob(systemAudioChunks, { type: mimeType });
+          onSystemAudioRecordingFinished();
+        };
+
+        systemAudioRecorder.start(1000);
+        updateSystemAudioUI('recording');
+
+        systemAudioSeconds = 0;
+        updateSystemAudioTimerDisplay();
+        systemAudioTimerInterval = setInterval(function() {
+          systemAudioSeconds++;
+          updateSystemAudioTimerDisplay();
+        }, 1000);
+
+      }).catch(function(err) {
+        if (err.name !== 'NotAllowedError') {
+          Swal.fire('Error', 'Gagal memulai perekaman audio: ' + err.message, 'error');
+        }
       });
     }
 
-    // --- AUDIO FILE UPLOAD & TRANSCRIPTION ---
-    window.handleAudioFileSelected = function(event) {
-      var file = event.target.files ? event.target.files[0] : null;
-      if (!file) return;
-      processAudioFile(file);
+    function stopSystemAudioRecording() {
+      isRecordingSystemAudio = false;
+      if (systemAudioTimerInterval) {
+        clearInterval(systemAudioTimerInterval);
+        systemAudioTimerInterval = null;
+      }
+      if (systemAudioRecorder && systemAudioRecorder.state !== 'inactive') {
+        systemAudioRecorder.stop();
+      }
+      if (systemAudioStream) {
+        systemAudioStream.getTracks().forEach(function(t) { t.stop(); });
+        systemAudioStream = null;
+      }
+      updateSystemAudioUI('idle');
+    }
+
+    function updateSystemAudioTimerDisplay() {
+      var display = document.getElementById('systemRecDuration');
+      if (!display) return;
+      var mins = Math.floor(systemAudioSeconds / 60);
+      var secs = systemAudioSeconds % 60;
+      display.innerText = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }
+
+    function updateSystemAudioUI(state) {
+      var btn = document.getElementById('systemAudioRecordBtn');
+      var icon = document.getElementById('systemAudioRecordIcon');
+      var text = document.getElementById('systemAudioRecordText');
+      var dot = document.getElementById('systemRecStatusDot');
+      var desc = document.getElementById('systemRecDesc');
+
+      if (!btn) return;
+
+      if (state === 'recording') {
+        btn.className = 'btn btn-outline-danger btn-lg rounded-pill px-4 py-3 fw-bold shadow mb-3 system-rec-pulse';
+        if (icon) icon.className = 'fa-solid fa-stop fa-lg';
+        if (text) text.innerText = 'Selesai & Transkripsikan Audio';
+        if (dot) dot.className = 'badge rounded-pill bg-danger px-3 py-2 fw-semibold';
+        if (dot) dot.innerHTML = '<i class="fa-solid fa-circle fa-fade me-1"></i> Sedang Merekam Suara YouTube...';
+        if (desc) desc.innerText = 'Audio sedang ditangkap. Putar video di YouTube sekarang.';
+      } else {
+        btn.className = 'btn btn-danger btn-lg rounded-pill px-4 py-3 fw-bold shadow mb-3 d-flex align-items-center gap-2';
+        if (icon) icon.className = 'fa-solid fa-circle-play fa-lg';
+        if (text) text.innerText = 'Mulai Tangkap Audio YouTube / Tab';
+        if (dot) dot.className = 'badge rounded-pill bg-secondary px-3 py-2 fw-semibold';
+        if (dot) dot.innerHTML = '<i class="fa-solid fa-stop me-1"></i> Siap Merekam';
+        if (desc) desc.innerText = 'Suara dari YouTube/Komputer akan ditangkap langsung tanpa gangguan bising ruangan.';
+      }
+    }
+
+    function onSystemAudioRecordingFinished() {
+      if (!capturedSystemAudioBlob) return;
+      var previewBox = document.getElementById('systemAudioPreviewContainer');
+      var previewEl = document.getElementById('systemAudioPreviewElement');
+      var sizeBadge = document.getElementById('systemAudioSizeBadge');
+
+      if (previewBox) previewBox.classList.remove('d-none');
+      if (previewEl) {
+        var blobUrl = URL.createObjectURL(capturedSystemAudioBlob);
+        previewEl.src = blobUrl;
+      }
+      if (sizeBadge) {
+        var sizeMb = (capturedSystemAudioBlob.size / (1024 * 1024)).toFixed(2);
+        sizeBadge.innerText = sizeMb + ' MB';
+      }
+
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (apiKey) {
+        transcribeSystemAudioWithGeminiAI();
+      }
+    }
+
+    window.transcribeSystemAudioWithGeminiAI = function() {
+      if (!capturedSystemAudioBlob) {
+        Swal.fire('Data Kosong', 'Rekam audio YouTube atau video terlebih dahulu.', 'info');
+        return;
+      }
+      var apiKey = (localStorage.getItem('kitnaf_gemini_api_key') || '').trim();
+      if (!apiKey) {
+        Swal.fire({
+          title: 'Kunci API Gemini Diperlukan',
+          html: 'Untuk mentranskripsikan rekaman audio YouTube secara otomatis, silakan masukkan Kunci API Gemini Gratis Anda pada <b>Tab 4. Pengaturan AI</b>.',
+          icon: 'info',
+          confirmButtonText: 'Buka Pengaturan AI',
+          showCancelButton: true,
+          cancelButtonText: 'Batal'
+        }).then(function(r) {
+          if (r.isConfirmed) {
+            var tabBtn = document.getElementById('tab-ai-btn');
+            if (tabBtn) tabBtn.click();
+          }
+        });
+        return;
+      }
+
+      var progressBox = document.getElementById('systemAudioTranscribeProgress');
+      var progressText = document.getElementById('systemProgressText');
+      var progressPercent = document.getElementById('systemProgressPercent');
+      var progressBar = document.getElementById('systemProgressBar');
+      var actionBtn = document.getElementById('btnTranscribeSystemAudio');
+
+      if (progressBox) progressBox.classList.remove('d-none');
+      if (actionBtn) actionBtn.disabled = true;
+      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Menyiapkan rekaman audio...';
+      if (progressPercent) progressPercent.innerText = '25%';
+      if (progressBar) progressBar.style.width = '25%';
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var base64Data = e.target.result.split(',')[1];
+        if (progressText) progressText.innerHTML = '<i class="fa-solid fa-brain fa-bounce me-1"></i> AI Gemini sedang mentranskripsikan suara kajian...';
+        if (progressPercent) progressPercent.innerText = '60%';
+        if (progressBar) progressBar.style.width = '60%';
+
+        var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
+        var prompt = "Transkripsikan seluruh isi rekaman audio/kajian YouTube ini secara lengkap, kata demi kata, akurat dengan ejaan, tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. Tuliskan istilah bahasa Arab/Islam dengan benar. Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
+
+        var payload = {
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: 'audio/webm', data: base64Data } },
+              { text: prompt }
+            ]
+          }]
+        };
+
+        fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (progressPercent) progressPercent.innerText = '100%';
+          if (progressBar) progressBar.style.width = '100%';
+          if (progressBox) progressBox.classList.add('d-none');
+          if (actionBtn) actionBtn.disabled = false;
+
+          if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+            systemTranscriptResult = data.candidates[0].content.parts[0].text.trim();
+            var resultBox = document.getElementById('systemTranscriptBox');
+            if (resultBox) resultBox.innerText = systemTranscriptResult;
+            Swal.fire({ icon:'success', title:'Transkripsi Selesai!', text:'Audio YouTube berhasil ditranskripsikan dengan akurasi AI Gemini.', toast:true, position:'bottom-end', showConfirmButton:false, timer:3000 });
+          } else if (data && data.error) {
+            Swal.fire('Error AI Gemini', data.error.message || 'Gagal memproses audio.', 'error');
+          }
+        }).catch(function(err) {
+          if (progressBox) progressBox.classList.add('d-none');
+          if (actionBtn) actionBtn.disabled = false;
+          Swal.fire('Gagal', err.message, 'error');
+        });
+      };
+      reader.readAsDataURL(capturedSystemAudioBlob);
     };
 
-    function processAudioFile(file) {
+    window.clearSystemTranscript = function() {
+      systemTranscriptResult = '';
+      var box = document.getElementById('systemTranscriptBox');
+      if (box) box.innerText = '';
+    };
+
+    window.copySystemTranscript = function() {
+      var box = document.getElementById('systemTranscriptBox');
+      var text = box ? box.innerText.trim() : '';
+      if (!text) return Swal.fire('Teks Kosong', 'Belum ada teks transkripsi.', 'info');
+      navigator.clipboard.writeText(text).then(function() {
+        Swal.fire({ icon:'success', title:'Tersalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:1800 });
+      });
+    };
+
+    window.insertSystemTranscriptToEditor = function(mode) {
+      var box = document.getElementById('systemTranscriptBox');
+      var text = box ? box.innerText.trim() : '';
+      if (!text) return Swal.fire('Teks Kosong', 'Tidak ada teks transkripsi untuk disisipkan.', 'info');
+      if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu.', 'warning');
+
+      if (mode === 'cursor') {
+        var range = quillEditor.getSelection();
+        var index = range ? range.index : quillEditor.getLength();
+        quillEditor.insertText(index, (index > 0 ? ' ' : '') + text, 'user');
+        quillEditor.setSelection(index + text.length + 1, 0, 'user');
+      } else {
+        var endIdx = quillEditor.getLength();
+        quillEditor.insertText(endIdx, '\n\n' + text, 'user');
+        quillEditor.setSelection(endIdx + text.length + 2, 0, 'user');
+      }
+      lastLocalEditTime = Date.now();
+      window.performAutoSave();
+      Swal.fire({ icon:'success', title:'Berhasil Disisipkan!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+    };
+
+    // ==========================================
+    // --- TAB 3: UNGGAH FILE (AUDIO & VIDEO) ---
+    // ==========================================
+    window.handleAudioFileSelected = function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
       currentSelectedAudioFile = file;
+      var isVideo = file.type.startsWith('video/') || /\.(mp4|mkv|webm|mov|avi|3gp)$/i.test(file.name);
 
       var dropzone = document.getElementById('audioDropzone');
       var playerContainer = document.getElementById('audioPlayerContainer');
-      var fileNameDisplay = document.getElementById('audioFileNameDisplay');
-      var fileSizeDisplay = document.getElementById('audioFileSizeDisplay');
+      var nameDisplay = document.getElementById('audioFileNameDisplay');
+      var sizeDisplay = document.getElementById('audioFileSizeDisplay');
       var audioEl = document.getElementById('audioPreviewElement');
+      var videoEl = document.getElementById('videoPreviewElement');
+      var mediaIcon = document.getElementById('mediaFileIcon');
 
-      if (fileNameDisplay) fileNameDisplay.innerText = file.name;
-      if (fileSizeDisplay) fileSizeDisplay.innerText = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-
-      if (audioEl) {
-        audioEl.src = URL.createObjectURL(file);
+      if (dropzone) dropzone.classList.add('d-none');
+      if (playerContainer) playerContainer.classList.remove('d-none');
+      if (nameDisplay) nameDisplay.innerText = file.name;
+      if (sizeDisplay) {
+        var mb = (file.size / (1024 * 1024)).toFixed(2);
+        sizeDisplay.innerText = mb + ' MB (' + (isVideo ? 'Video' : 'Audio') + ')';
       }
 
-      if (playerContainer) playerContainer.classList.remove('d-none');
-      if (dropzone) dropzone.classList.add('d-none');
-    }
+      var fileUrl = URL.createObjectURL(file);
+      if (isVideo) {
+        if (mediaIcon) mediaIcon.className = 'fa-solid fa-file-video text-danger fa-lg';
+        if (videoEl) {
+          videoEl.classList.remove('d-none');
+          videoEl.src = fileUrl;
+        }
+        if (audioEl) {
+          audioEl.classList.add('d-none');
+          audioEl.pause();
+        }
+      } else {
+        if (mediaIcon) mediaIcon.className = 'fa-solid fa-file-audio text-primary fa-lg';
+        if (videoEl) {
+          videoEl.classList.add('d-none');
+          videoEl.pause();
+        }
+        if (audioEl) {
+          audioEl.classList.remove('d-none');
+          audioEl.src = fileUrl;
+        }
+      }
+    };
 
     window.removeAudioFile = function() {
       currentSelectedAudioFile = null;
       var dropzone = document.getElementById('audioDropzone');
       var playerContainer = document.getElementById('audioPlayerContainer');
-      var audioFileInput = document.getElementById('audioFileInput');
+      var input = document.getElementById('audioFileInput');
       var audioEl = document.getElementById('audioPreviewElement');
+      var videoEl = document.getElementById('videoPreviewElement');
 
-      if (audioFileInput) audioFileInput.value = '';
+      if (input) input.value = '';
       if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+      if (videoEl) { videoEl.pause(); videoEl.src = ''; }
       if (playerContainer) playerContainer.classList.add('d-none');
       if (dropzone) dropzone.classList.remove('d-none');
     };
 
-    // Drag & drop support untuk dropzone audio
-    var dropzoneEl = document.getElementById('audioDropzone');
-    if (dropzoneEl) {
-      ['dragenter', 'dragover'].forEach(function(eventName) {
-        dropzoneEl.addEventListener(eventName, function(e) {
-          e.preventDefault(); e.stopPropagation();
-          dropzoneEl.classList.add('dragover');
-        }, false);
-      });
-      ['dragleave', 'drop'].forEach(function(eventName) {
-        dropzoneEl.addEventListener(eventName, function(e) {
-          e.preventDefault(); e.stopPropagation();
-          dropzoneEl.classList.remove('dragover');
-        }, false);
-      });
-      dropzoneEl.addEventListener('drop', function(e) {
-        var dt = e.dataTransfer;
-        var files = dt.files;
-        if (files && files[0]) {
-          processAudioFile(files[0]);
-        }
-      }, false);
-    }
-
     window.startAudioFileTranscription = function() {
       if (!currentSelectedAudioFile) {
-        Swal.fire('Pilih File', 'Silakan pilih file audio terlebih dahulu.', 'warning');
+        Swal.fire('Pilih File', 'Silakan pilih file audio atau video terlebih dahulu.', 'warning');
         return;
       }
 
@@ -6684,7 +7153,7 @@ var initialMockDB = [
       if (!apiKey) {
         Swal.fire({
           title: 'Kunci API Gemini Diperlukan',
-          html: 'Untuk mentranskripsikan file audio dengan AI berkecepatan tinggi, masukkan Kunci API Google Gemini (Gratis) Anda pada <b>Tab 3. Pengaturan AI</b>.',
+          html: 'Untuk mentranskripsikan file video/audio dengan AI berkecepatan tinggi, masukkan Kunci API Google Gemini (Gratis) Anda pada <b>Tab 4. Pengaturan AI</b>.',
           icon: 'info',
           confirmButtonText: 'Buka Pengaturan AI',
           showCancelButton: true,
@@ -6706,7 +7175,7 @@ var initialMockDB = [
 
       if (progressBox) progressBox.classList.remove('d-none');
       if (startBtn) startBtn.disabled = true;
-      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Membaca file audio...';
+      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Membaca data media...';
       if (progressPercent) progressPercent.innerText = '20%';
       if (progressBar) progressBar.style.width = '20%';
 
@@ -6714,38 +7183,34 @@ var initialMockDB = [
       reader.onload = function(e) {
         var base64Data = e.target.result.split(',')[1];
         var mimeType = currentSelectedAudioFile.type || 'audio/mp3';
+        if (!mimeType || mimeType === 'application/octet-stream') {
+          if (/\.mp4$/i.test(currentSelectedAudioFile.name)) mimeType = 'video/mp4';
+          else if (/\.webm$/i.test(currentSelectedAudioFile.name)) mimeType = 'video/webm';
+          else if (/\.wav$/i.test(currentSelectedAudioFile.name)) mimeType = 'audio/wav';
+          else mimeType = 'audio/mp3';
+        }
 
-        if (progressText) progressText.innerHTML = '<i class="fa-solid fa-brain fa-bounce me-1"></i> AI Gemini sedang mentranskripsikan audio kajian...';
+        if (progressText) progressText.innerHTML = '<i class="fa-solid fa-brain fa-bounce me-1"></i> AI Gemini sedang mentranskripsikan rekaman kajian...';
         if (progressPercent) progressPercent.innerText = '55%';
         if (progressBar) progressBar.style.width = '55%';
 
         var endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
-        var prompt = "Transkripsikan seluruh isi rekaman suara/kajian audio ini secara lengkap, kata demi kata, akurat dengan ejaan, tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. Tuliskan lafadz dan istilah Arab/Islam dengan benar. Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
+        var prompt = "Transkripsikan seluruh isi rekaman suara/kajian ini secara lengkap, kata demi kata, akurat dengan ejaan, tanda baca, serta pembagian paragraf yang rapi dan mudah dibaca. Tuliskan istilah bahasa Arab/Islam dengan tepat. Keluarkan HANYA teks hasil transkripsi tanpa pengantar tambahan apapun.";
 
         var payload = {
-          contents: [
-            {
-              parts: [
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: base64Data
-                  }
-                },
-                {
-                  text: prompt
-                }
-              ]
-            }
-          ]
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: base64Data } },
+              { text: prompt }
+            ]
+          }]
         };
 
         fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
-        })
-        .then(function(res) { return res.json(); })
+        }).then(function(res) { return res.json(); })
         .then(function(data) {
           if (progressPercent) progressPercent.innerText = '100%';
           if (progressBar) progressBar.style.width = '100%';
@@ -6755,177 +7220,142 @@ var initialMockDB = [
           if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
             var transcriptResult = data.candidates[0].content.parts[0].text.trim();
             var resultBox = document.getElementById('fileTranscriptBox');
-            if (resultBox) {
-              resultBox.innerText = transcriptResult;
-            }
-            Swal.fire({
-              icon: 'success',
-              title: 'Transkripsi Selesai!',
-              text: 'Audio berhasil ditranskripsikan dengan akurasi AI Gemini.',
-              toast: true,
-              position: 'bottom-end',
-              showConfirmButton: false,
-              timer: 2500
-            });
-          } else if (data.error) {
-            Swal.fire('Gagal Transkripsi', 'Error AI: ' + (data.error.message || 'Kunci API tidak valid atau kuota terlampaui.'), 'error');
-          } else {
-            Swal.fire('Gagal', 'Tidak dapat mengenali teks dalam audio tersebut.', 'warning');
+            if (resultBox) resultBox.innerText = transcriptResult;
+            Swal.fire({ icon:'success', title:'Transkripsi Selesai!', text:'Media kajian berhasil ditranskripsikan dengan akurasi AI Gemini.', toast:true, position:'bottom-end', showConfirmButton:false, timer:3000 });
+          } else if (data && data.error) {
+            Swal.fire('Error AI Gemini', data.error.message || 'Gagal memproses media.', 'error');
           }
-        })
-        .catch(function(err) {
+        }).catch(function(err) {
           if (progressBox) progressBox.classList.add('d-none');
           if (startBtn) startBtn.disabled = false;
-          Swal.fire('Gagal Menghubungi AI', 'Terjadi kesalahan jaringan atau ukuran audio terlalu besar. Pastikan koneksi internet aktif.', 'error');
+          Swal.fire('Koneksi Gagal', 'Gagal mengirim permintaan ke server AI Gemini: ' + err.message, 'error');
         });
       };
-
       reader.readAsDataURL(currentSelectedAudioFile);
     }
 
     function transcribeAudioWithBrowserStream() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung Web Speech Recognition.', 'info');
+        Swal.fire('Fitur Belum Didukung', 'Browser Anda belum mendukung Speech Recognition lokal.', 'info');
         return;
       }
-
       var audioEl = document.getElementById('audioPreviewElement');
       if (!audioEl) return;
+
+      var progressBox = document.getElementById('audioTranscribeProgress');
+      var progressText = document.getElementById('transcribeProgressText');
+      var startBtn = document.getElementById('btnStartFileTranscribe');
+
+      if (progressBox) progressBox.classList.remove('d-none');
+      if (startBtn) startBtn.disabled = true;
+      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-headphones me-1"></i> Memutar audio & mendengarkan transkripsi...';
+
+      audioEl.currentTime = 0;
+      audioEl.play();
 
       var recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      var langSelect = document.getElementById('micLangSelect');
-      recognition.lang = (langSelect && langSelect.value) ? langSelect.value : 'id-ID';
+      recognition.lang = 'id-ID';
 
-      var fileTransResult = '';
-      var resultBox = document.getElementById('fileTranscriptBox');
-      var progressBox = document.getElementById('audioTranscribeProgress');
-      var progressText = document.getElementById('transcribeProgressText');
-
-      if (progressBox) progressBox.classList.remove('d-none');
-      if (progressText) progressText.innerHTML = '<i class="fa-solid fa-headphones fa-bounce me-1"></i> Memutar audio dan menyimak suara secara langsung...';
-
+      var collectedTranscript = '';
       recognition.onresult = function(event) {
-        var interim = '';
         for (var i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
-            fileTransResult += (fileTransResult ? ' ' : '') + event.results[i][0].transcript.trim();
-          } else {
-            interim += event.results[i][0].transcript;
+            collectedTranscript += (collectedTranscript ? ' ' : '') + event.results[i][0].transcript.trim();
           }
         }
-        if (resultBox) {
-          resultBox.innerHTML = escapeHTML(fileTransResult) + (interim ? ' <span class="interim-text">' + escapeHTML(interim) + '</span>' : '');
-          resultBox.scrollTop = resultBox.scrollHeight;
-        }
+        var box = document.getElementById('fileTranscriptBox');
+        if (box) box.innerText = collectedTranscript;
       };
 
       audioEl.onended = function() {
         recognition.stop();
         if (progressBox) progressBox.classList.add('d-none');
-        Swal.fire({ icon: 'success', title: 'Pemutaran Selesai', text: 'Transkripsi audio telah selesai.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 2000 });
+        if (startBtn) startBtn.disabled = false;
+        Swal.fire({ icon:'success', title:'Selesai!', text:'Pemutaran selesai dan teks berhasil dikumpulkan.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
       };
 
-      audioEl.play();
-      try {
-        recognition.start();
-      } catch(e) {}
+      recognition.start();
     }
 
     window.clearFileTranscript = function() {
       var box = document.getElementById('fileTranscriptBox');
-      if (box) box.innerHTML = '';
+      if (box) box.innerText = '';
     };
 
     window.copyFileTranscript = function() {
       var box = document.getElementById('fileTranscriptBox');
-      var text = box ? (box.innerText || box.textContent || '').trim() : '';
-      if (!text) {
-        Swal.fire({ icon: 'info', title: 'Belum Ada Teks', text: 'Transkripsikan file audio terlebih dahulu.', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
-        return;
-      }
+      var text = box ? box.innerText.trim() : '';
+      if (!text) return Swal.fire('Teks Kosong', 'Belum ada hasil transkripsi untuk disalin.', 'info');
       navigator.clipboard.writeText(text).then(function() {
-        Swal.fire({ icon: 'success', title: 'Tersalin ke Clipboard!', toast: true, position: 'bottom-end', showConfirmButton: false, timer: 1500 });
+        Swal.fire({ icon:'success', title:'Tersalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:1800 });
       });
     };
 
     window.insertFileTranscriptToEditor = function(mode) {
-      if (!activeNodeId || !quillEditor) {
-        Swal.fire('Pilih Materi', 'Silakan buka atau buat materi terlebih dahulu di lembar catatan sebelum menyisipkan teks.', 'warning');
-        return;
-      }
-
       var box = document.getElementById('fileTranscriptBox');
-      var text = box ? (box.innerText || box.textContent || '').trim() : '';
-      if (!text) {
-        Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
-        return;
-      }
+      var text = box ? box.innerText.trim() : '';
+      if (!text) return Swal.fire('Teks Kosong', 'Tidak ada teks hasil transkripsi untuk disisipkan.', 'info');
+      if (!quillEditor) return Swal.fire('Perhatian', 'Buka lembar catatan terlebih dahulu sebelum menyisipkan teks.', 'warning');
 
-      insertTextToQuill(text, mode);
-      if (bsAudioTranscribeModal) bsAudioTranscribeModal.hide();
+      if (mode === 'cursor') {
+        var range = quillEditor.getSelection();
+        var index = range ? range.index : quillEditor.getLength();
+        quillEditor.insertText(index, (index > 0 ? ' ' : '') + text, 'user');
+        quillEditor.setSelection(index + text.length + 1, 0, 'user');
+      } else {
+        var endIdx = quillEditor.getLength();
+        quillEditor.insertText(endIdx, '\n\n' + text, 'user');
+        quillEditor.setSelection(endIdx + text.length + 2, 0, 'user');
+      }
+      lastLocalEditTime = Date.now();
+      window.performAutoSave();
+      Swal.fire({ icon:'success', title:'Berhasil Disisipkan!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
     };
 
-    // --- GEMINI API KEY MANAGEMENT ---
+    // ==========================================
+    // --- TAB 4: GEMINI API KEY MANAGEMENT ---
+    // ==========================================
     window.saveGeminiApiKey = function() {
       var input = document.getElementById('geminiApiKeyInput');
       var key = input ? input.value.trim() : '';
+      if (!key) {
+        Swal.fire('Perhatian', 'Masukkan Kunci API Gemini Anda.', 'warning');
+        return;
+      }
       localStorage.setItem('kitnaf_gemini_api_key', key);
       Swal.fire({
         icon: 'success',
-        title: 'Kunci API Tersimpan!',
-        text: 'Kunci API Gemini telah disimpan secara aman di peramban Anda.',
+        title: 'Tersimpan!',
+        text: 'Kunci API Gemini tersimpan aman di browser Anda.',
         toast: true,
         position: 'bottom-end',
         showConfirmButton: false,
-        timer: 1800
+        timer: 2000
       });
     };
 
     window.toggleGeminiKeyVisibility = function() {
       var input = document.getElementById('geminiApiKeyInput');
       var icon = document.getElementById('geminiKeyEyeIcon');
-      if (!input) return;
-      if (input.type === 'password') {
-        input.type = 'text';
-        if (icon) icon.className = 'fa-solid fa-eye-slash';
-      } else {
-        input.type = 'password';
+      if (input && icon) {
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fa-solid fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fa-solid fa-eye';
+        }
       }
     };
 
-    window.testGeminiApiKey = function() {
+    window.clearGeminiApiKey = function() {
+      localStorage.removeItem('kitnaf_gemini_api_key');
       var input = document.getElementById('geminiApiKeyInput');
-      var key = input ? input.value.trim() : (localStorage.getItem('kitnaf_gemini_api_key') || '');
-      if (!key) {
-        Swal.fire('Kunci API Kosong', 'Masukkan Kunci API Google Gemini terlebih dahulu.', 'warning');
-        return;
-      }
-
-      Swal.fire({
-        title: 'Menguji Kunci API...',
-        html: 'Sedang menghubungkan ke server Google Gemini AI...',
-        allowOutsideClick: false,
-        didOpen: function() {
-          Swal.showLoading();
-        }
-      });
-
-      fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + encodeURIComponent(key))
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-          if (data && Array.isArray(data.models)) {
-            localStorage.setItem('kitnaf_gemini_api_key', key);
-            Swal.fire('Berhasil Terhubung! ✓', 'Kunci API Gemini valid dan siap digunakan untuk mentranskripsikan audio rekaman secara instan.', 'success');
-          } else {
-            Swal.fire('Kunci API Tidak Valid', (data.error && data.error.message) ? data.error.message : 'Periksa kembali kunci API yang Anda salin dari Google AI Studio.', 'error');
-          }
-        })
-        .catch(function(err) {
-          Swal.fire('Gagal Terhubung', 'Tidak dapat menghubungi server Gemini. Pastikan internet Anda aktif.', 'error');
-        });
+      if (input) input.value = '';
+      Swal.fire('Kunci Dihapus', 'Kunci API Gemini telah dihapus dari memori lokal.', 'info');
     };
 
     // ==========================================
