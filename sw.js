@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitnaf-v2.6-pure-firebase';
+const CACHE_NAME = 'kitnaf-v2.7-firebase-restored';
 
 const PRECACHE_ASSETS = [
   './',

@@ -3561,7 +3561,8 @@ var initialMockDB = [
   };
 
   // --- VIEW ROUTING ---
-  window.showDesktop = function() {
+  function showDesktop() {
+    window.showDesktop = showDesktop;
     currentView = 'desktop';
     window.activeRootId = null;
     document.getElementById('explorerView').classList.add('d-none');
@@ -3570,7 +3571,8 @@ var initialMockDB = [
     renderDesktop();
   };
 
-  window.openExplorer = function(id) {
+  function openExplorer(id) {
+    window.openExplorer = openExplorer;
     currentView = 'explorer';
     window.activeRootId = id;
     document.getElementById('desktopView').classList.add('d-none');
@@ -4427,30 +4429,154 @@ var initialMockDB = [
     });
   };
 
-  window.openGasGuideModal = function() {
-    var modalEl = document.getElementById('gasGuideModal');
-    if (!bsGasGuideModal) {
-      bsGasGuideModal = new bootstrap.Modal(modalEl);
-      modalEl.addEventListener('hidden.bs.modal', function() {
-        var settingsEl = document.getElementById('settingsModal');
-        if (settingsEl && settingsEl.classList.contains('show')) {
-          document.body.classList.add('modal-open');
-        }
-      });
+  // --- AUTO SAVE & AUTO SYNC UNIFIED HELPER (FIREBASE CLOUD) ---
+  function triggerCloudAutoSave(immediate) {
+  window.triggerCloudAutoSave = triggerCloudAutoSave;
+    var isFbAutoSync = (localStorage.getItem(FIREBASE_AUTOSYNC_KEY) !== 'false');
+    if (isFbAutoSync && firebaseRef) {
+      updateSaveStatus('syncing_firebase');
+      clearTimeout(fbSaveDebounceTimer);
+      if (immediate) {
+        uploadAllToFirebase(true);
+      } else {
+        fbSaveDebounceTimer = setTimeout(function() {
+          uploadAllToFirebase(true);
+        }, 750);
+      }
+    } else {
+      updateSaveStatus('saved_local');
     }
-    var scriptBox = document.getElementById('gasScriptCodeBox');
-    if (scriptBox) scriptBox.value = gasAppsScriptCode;
-    bsGasGuideModal.show();
   };
 
-  window.copyGasScriptCode = function() {
-    navigator.clipboard.writeText(gasAppsScriptCode).then(function() {
-      Swal.fire({ icon:'success', title:'Kode Disalin!', text:'Kode Google Apps Script berhasil disalin ke clipboard.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
-    }).catch(function() {
-      var box = document.getElementById('gasScriptCodeBox');
-      if (box) { box.select(); document.execCommand('copy'); }
-      Swal.fire({ icon:'success', title:'Kode Disalin!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
-    });
+  function performAutoSave() {
+  window.performAutoSave = performAutoSave;
+    if (!activeNodeId) return;
+    var htmlContent = (quillEditor && quillEditor.root) ? quillEditor.root.innerHTML : '';
+    var item = dbMateri.find(function(x) { return x.id == activeNodeId; });
+    if (!item) return;
+
+    item.content = htmlContent;
+    item.updatedAt = new Date().toISOString();
+    lastLocalEditTime = Date.now();
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+    
+    triggerCloudAutoSave(false);
+  };
+
+  // --- INIT DATA (LOCAL STORAGE & STARTER BACKUP) ---
+  function loadDefaultKajianData(showToast) {
+  window.loadDefaultKajianData = loadDefaultKajianData;
+    if (Array.isArray(initialMockDB) && initialMockDB.length > 0) {
+      dbMateri = JSON.parse(JSON.stringify(initialMockDB));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+      showDesktop();
+      if (showToast) {
+        Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Seluruh kitab kajian berhasil dimuat kembali!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+      }
+      return;
+    }
+    fetch('./KitNaf-Backup-Latest.json')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (Array.isArray(data) && data.length > 0) {
+          dbMateri = data;
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+          showDesktop();
+          if (showToast) {
+            Swal.fire({ icon:'success', title:'Kitab Kajian Dimuat', text:'Seluruh kitab kajian berhasil dimuat!', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+          }
+        }
+      });
+  };
+
+  function fetchData() {
+    var savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedData) {
+      try { 
+        var parsed = JSON.parse(savedData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          dbMateri = parsed;
+          ensureAllTimestamps();
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+          showDesktop();
+        } else {
+          loadDefaultKajianData(false);
+          ensureAllTimestamps();
+          showDesktop();
+        }
+      } catch (e) { 
+        loadDefaultKajianData(false);
+        ensureAllTimestamps();
+        showDesktop();
+      }
+    } else {
+      // First visit: seed with starter study
+      loadDefaultKajianData(false);
+      ensureAllTimestamps();
+      showDesktop();
+    }
+  }
+
+  // --- BACKUP & RESTORE DATA ---
+  function backupData() {
+  window.backupData = backupData;
+    var data = localStorage.getItem(LOCAL_STORAGE_KEY) || '[]';
+    var blob = new Blob([data], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var date = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = 'KitNaf-Backup-' + date + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    Swal.fire({ icon:'success', title:'Backup Berhasil', text:'File JSON telah diunduh.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2500 });
+  };
+
+  function restoreData(event) {
+  window.restoreData = restoreData;
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var contents = e.target.result;
+        var parsed = JSON.parse(contents);
+        if (Array.isArray(parsed)) {
+          Swal.fire({
+            title: 'Restore Data?',
+            text: 'Catatan saat ini akan ditimpa dengan data dari file backup.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#F59E0B',
+            cancelButtonColor: '#6B7280',
+            confirmButtonText: 'Ya, Restore',
+            cancelButtonText: 'Batal'
+          }).then(function(result) {
+            if (result.isConfirmed) {
+              dbMateri = parsed;
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+              if (currentView === 'desktop') showDesktop();
+              else { renderTree(); if (activeNodeId) selectNode(activeNodeId); }
+              
+              var modalEl = document.getElementById('settingsModal');
+              var modal = bootstrap.Modal.getInstance(modalEl);
+              if (modal) modal.hide();
+              
+              Swal.fire('Berhasil!', 'Data catatan berhasil dikembalikan.', 'success');
+            }
+          });
+        } else {
+          Swal.fire('Gagal', 'Format file backup tidak valid!', 'error');
+        }
+      } catch(err) {
+        Swal.fire('Error', 'Gagal membaca isi file backup.', 'error');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; 
   };
 
   window.toggleGasAutoSync = function() {};
@@ -5292,7 +5418,7 @@ var initialMockDB = [
     
     initBackground(); 
     initAppearance(); 
-    initGasConfig(); 
+    // initGasConfig(); removed (pure firebase) 
     initFirebase(); 
 
     var blurSlider = document.getElementById('blurSlider');
