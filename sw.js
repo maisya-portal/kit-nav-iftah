@@ -1,10 +1,11 @@
-const CACHE_NAME = 'kitnaf-v1.7.1';
+const CACHE_NAME = 'kitnaf-v2.0-firebase';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './favicon.ico',
+  './firebase-config.js',
   './icons/favicon.png',
   './icons/app-logo.png',
   './icons/icon-192.png',
@@ -18,7 +19,9 @@ const PRECACHE_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
   'https://cdn.quilljs.com/1.3.6/quill.snow.css',
   'https://cdn.quilljs.com/1.3.6/quill.min.js',
-  'https://cdn.jsdelivr.net/npm/sweetalert2@11'
+  'https://cdn.jsdelivr.net/npm/sweetalert2@11',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js'
 ];
 
 // Install Event

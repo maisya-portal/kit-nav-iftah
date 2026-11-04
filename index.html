@@ -1860,7 +1860,7 @@
 </div>
 
 <!-- Modal Pengaturan Tampilan, PWA & Backup -->
-<div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="settingsModal" aria-hidden="true" data-bs-focus="false">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content border-0 shadow-lg rounded-4 glass-panel">
       <div class="modal-header border-0 pb-0">
@@ -1884,19 +1884,35 @@
         <!-- Slider Efek Kaca (Blur) -->
         <div class="mb-3">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label small fw-bold text-muted mb-0">Efek Buram (Blur)</label>
-            <span class="small text-primary fw-bold" id="blurValLabel">15px</span>
+            <label class="form-label small fw-bold text-muted mb-0"><i class="fa-solid fa-wand-magic-sparkles text-secondary me-1"></i> Efek Buram (Blur)</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-primary fw-bold" id="blurValLabel">15px</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetBlur()">Reset</button>
+            </div>
           </div>
-          <input type="range" class="form-range" id="blurSlider" min="0" max="40" value="15">
+          <input type="range" class="form-range" id="blurSlider" min="0" max="40" value="15" oninput="currentBlur = parseInt(this.value); localStorage.setItem('catatanku_blur', currentBlur); applyAppearance();">
+          <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+            <span>0px (Jernih)</span>
+            <span>15px (Normal)</span>
+            <span>40px (Maksimal)</span>
+          </div>
         </div>
 
         <!-- Slider Transparansi (Opacity) -->
         <div class="mb-3">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <label class="form-label small fw-bold text-muted mb-0">Transparansi Latar (Kaca)</label>
-            <span class="small text-primary fw-bold" id="opacityValLabel">85%</span>
+            <label class="form-label small fw-bold text-muted mb-0"><i class="fa-solid fa-droplet text-secondary me-1"></i> Transparansi Latar (Kaca)</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-primary fw-bold" id="opacityValLabel">85%</span>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetOpacity()">Reset</button>
+            </div>
           </div>
-          <input type="range" class="form-range" id="opacitySlider" min="20" max="100" value="85">
+          <input type="range" class="form-range" id="opacitySlider" min="20" max="100" value="85" oninput="currentOpacity = parseInt(this.value); localStorage.setItem('catatanku_opacity', currentOpacity); applyAppearance();">
+          <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+            <span>20% (Transparan)</span>
+            <span>85% (Normal)</span>
+            <span>100% (Solid)</span>
+          </div>
         </div>
 
         <hr class="my-3 text-muted opacity-25">
@@ -1913,7 +1929,7 @@
               <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetSidebarZoom()">Reset</button>
             </div>
           </div>
-          <input type="range" class="form-range" id="sidebarZoomSlider" min="60" max="180" value="100">
+          <input type="range" class="form-range" id="sidebarZoomSlider" min="60" max="180" value="100" oninput="currentSidebarZoom = parseInt(this.value); localStorage.setItem('catatanku_sidebar_zoom', currentSidebarZoom); applyAppearance();">
           <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
             <span>60%</span>
             <span>100% (Normal)</span>
@@ -1930,7 +1946,7 @@
               <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetEditorZoom()">Reset</button>
             </div>
           </div>
-          <input type="range" class="form-range" id="editorZoomSlider" min="50" max="250" value="100">
+          <input type="range" class="form-range" id="editorZoomSlider" min="50" max="250" value="100" oninput="currentEditorZoom = parseInt(this.value); localStorage.setItem('catatanku_editor_zoom', currentEditorZoom); applyAppearance();">
           <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
             <span>50%</span>
             <span>100% (Normal)</span>
@@ -1977,28 +1993,42 @@
           </div>
         </div>
 
+        <hr class="my-3 text-muted opacity-25">
+
+        <!-- Kustom Warna Tampilan -->
+        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-palette me-1 text-primary"></i> PENGATURAN WARNA TAMPILAN</h6>
+
         <!-- Custom Sidebar Color -->
         <div class="mb-3 d-flex align-items-center justify-content-between">
           <label class="form-label small fw-bold text-muted mb-0">Warna Background Sidebar:</label>
-          <input type="color" id="sidebarColorPicker" class="form-control form-control-color border-0 p-0 rounded" value="#111827" title="Pilih warna sidebar">
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetSidebarBg()">Reset</button>
+            <input type="color" id="sidebarColorPicker" class="form-control form-control-color border-0 p-0 rounded" value="#111827" title="Pilih warna sidebar" oninput="currentSidebarBg = this.value; localStorage.setItem('catatanku_sidebar_bg', currentSidebarBg); applyAppearance();">
+          </div>
         </div>
 
         <!-- Custom Sidebar Text Color -->
         <div class="mb-3 d-flex align-items-center justify-content-between">
           <label class="form-label small fw-bold text-muted mb-0">Warna Teks Sidebar:</label>
-          <input type="color" id="sidebarTextColorPicker" class="form-control form-control-color border-0 p-0 rounded" value="#E5E7EB" title="Pilih warna teks sidebar">
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetSidebarText()">Reset</button>
+            <input type="color" id="sidebarTextColorPicker" class="form-control form-control-color border-0 p-0 rounded" value="#E5E7EB" title="Pilih warna teks sidebar" oninput="currentSidebarText = this.value; localStorage.setItem('catatanku_sidebar_text', currentSidebarText); applyAppearance();">
+          </div>
         </div>
 
         <!-- Custom Editor Text Color -->
         <div class="mb-3 d-flex align-items-center justify-content-between">
           <label class="form-label small fw-bold text-muted mb-0">Warna Teks Editor:</label>
-          <input type="color" id="editorTextColorPicker" class="form-control form-control-color border-0 p-0 rounded" value="#1F2937" title="Pilih warna teks editor">
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill" style="font-size: 0.7rem;" onclick="resetEditorText()">Reset</button>
+            <input type="color" id="editorTextColorPicker" class="form-control form-control-color border-0 p-0 rounded" value="#1F2937" title="Pilih warna teks editor" oninput="currentEditorText = this.value; localStorage.setItem('catatanku_editor_text', currentEditorText); applyAppearance();">
+          </div>
         </div>
 
         <hr class="my-3 text-muted opacity-25">
 
         <!-- Input Gambar Kustom -->
-        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-image me-1"></i> GAMBAR LATAR KUSTOM</h6>
+        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-image me-1 text-primary"></i> GAMBAR LATAR KUSTOM</h6>
         
         <div class="mb-3">
           <label class="form-label small text-muted">Gunakan Link Gambar (URL):</label>
@@ -2008,32 +2038,108 @@
           </div>
         </div>
 
-        <div>
+        <div class="mb-2">
           <label class="form-label small text-muted">Atau Upload dari Komputer (Maks ~3MB):</label>
-          <label for="bgFileInput" class="btn btn-sm btn-outline-secondary w-100 fw-semibold" style="cursor: pointer;">
+          <button type="button" class="btn btn-sm btn-outline-secondary w-100 fw-semibold" onclick="document.getElementById('bgFileInput').click()">
             <i class="fa-solid fa-upload me-2"></i> Pilih File Gambar
-          </label>
-          <input type="file" id="bgFileInput" class="d-none" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="handleLocalBgUpload(event)">
+          </button>
+          <input type="file" id="bgFileInput" style="display: none;" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="handleLocalBgUpload(event)">
+        </div>
+
+        <div class="text-center">
+          <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none py-0" style="font-size: 0.75rem;" onclick="resetCustomBg()">
+            <i class="fa-solid fa-rotate-left me-1"></i> Pulihkan Gambar Latar Bawaan
+          </button>
         </div>
         
         <hr class="my-4 text-muted opacity-25">
         
         <!-- Backup & Restore Data -->
-        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-database me-1"></i> BACKUP & RESTORE DATA</h6>
+        <h6 class="small fw-bold text-muted mb-3"><i class="fa-solid fa-database me-1 text-primary"></i> BACKUP & RESTORE DATA</h6>
         <p class="small text-muted mb-2">Simpan data catatan Anda ke file atau muat kembali jika pindah perangkat.</p>
         <div class="d-flex gap-2 mb-3">
-          <button class="btn btn-outline-success btn-sm flex-fill fw-semibold" onclick="backupData()">
+          <button type="button" class="btn btn-outline-success btn-sm flex-fill fw-semibold" onclick="backupData()">
             <i class="fa-solid fa-download me-1"></i> Backup Data
           </button>
-          <label for="restoreFileInput" class="btn btn-outline-warning btn-sm flex-fill fw-semibold mb-0" style="cursor: pointer;">
+          <button type="button" class="btn btn-outline-warning btn-sm flex-fill fw-semibold mb-0" onclick="document.getElementById('restoreFileInput').click()">
             <i class="fa-solid fa-upload me-1"></i> Restore Data
-          </label>
-          <input type="file" id="restoreFileInput" class="d-none" accept=".json" onchange="restoreData(event)">
+          </button>
+          <input type="file" id="restoreFileInput" style="display: none;" accept=".json" onchange="restoreData(event)">
         </div>
 
         <button type="button" class="btn btn-outline-primary btn-sm w-100 rounded-pill fw-semibold mb-3" onclick="loadDefaultKajianData(true)">
           <i class="fa-solid fa-book-quran me-1"></i> Muat Ulang Contoh Kitab Kajian
         </button>
+
+        <hr class="my-4 text-muted opacity-25">
+
+        <!-- Firebase Cloud Realtime Database -->
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="small fw-bold text-dark mb-0"><i class="fa-solid fa-fire text-warning me-1"></i> DATABASE FIREBASE REALTIME</h6>
+          <button type="button" class="btn btn-link btn-sm p-0 text-primary text-decoration-none fw-bold" onclick="openFirebaseGuideModal()">
+            <i class="fa-solid fa-circle-question me-1"></i>Panduan Setup
+          </button>
+        </div>
+        <p class="small text-muted mb-2">Sinkronisasi data secepat kilat antar perangkat (HP & Laptop) secara otomatis dengan Firebase Realtime Database.</p>
+        
+        <!-- Status Koneksi Firebase -->
+        <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-light border mb-2">
+          <span class="small fw-semibold text-secondary">Status Koneksi:</span>
+          <span id="firebaseStatusBadge" class="badge bg-secondary-subtle text-secondary border">Belum Dikonfigurasi</span>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label small fw-semibold text-secondary mb-1">Database URL Firebase:</label>
+          <div class="input-group input-group-sm mb-2">
+            <input type="text" id="firebaseDatabaseUrlInput" class="form-control" placeholder="https://PROJECT_ID-default-rtdb.firebaseio.com" oninput="saveFirebaseConfigInputs()">
+            <button class="btn btn-outline-primary" type="button" onclick="testFirebaseConnection()" title="Uji Koneksi Firebase">
+              <i class="fa-solid fa-plug me-1"></i> Tes
+            </button>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-semibold text-secondary mb-1">API Key:</label>
+              <input type="text" id="firebaseApiKeyInput" class="form-control form-control-sm" placeholder="AIzaSy..." oninput="saveFirebaseConfigInputs()">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold text-secondary mb-1">Project ID:</label>
+              <input type="text" id="firebaseProjectIdInput" class="form-control form-control-sm" placeholder="kitnaf-app" oninput="saveFirebaseConfigInputs()">
+            </div>
+          </div>
+          <div class="accordion accordion-flush mb-2" id="accordionFbAdvanced">
+            <div class="accordion-item bg-transparent">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed px-0 py-1 small text-primary bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#fbAdvancedCollapse">
+                  <i class="fa-solid fa-code me-1"></i> Tempel Objek firebaseConfig Lengkap (JSON)
+                </button>
+              </h2>
+              <div id="fbAdvancedCollapse" class="accordion-collapse collapse" data-bs-parent="#accordionFbAdvanced">
+                <div class="accordion-body px-0 pt-2 pb-0">
+                  <textarea id="firebaseConfigJsonBox" class="form-control form-control-sm font-monospace" rows="4" placeholder='{ "apiKey": "...", "databaseURL": "...", "projectId": "..." }'></textarea>
+                  <button type="button" class="btn btn-sm btn-dark w-100 mt-2" onclick="applyFirebaseConfigFromJson()">
+                    <i class="fa-solid fa-check me-1"></i> Terapkan Objek JSON
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="firebaseAutoSyncSwitch" onchange="toggleFirebaseAutoSync(event)">
+          <label class="form-check-label small fw-semibold text-dark" for="firebaseAutoSyncSwitch" style="cursor: pointer;">
+            Otomatis simpan ke Firebase Realtime saat mengedit
+          </label>
+        </div>
+
+        <div class="d-flex gap-2 mb-3">
+          <button type="button" class="btn btn-outline-warning btn-sm flex-fill fw-semibold text-dark" onclick="uploadAllToFirebase(false)">
+            <i class="fa-solid fa-fire me-1 text-danger"></i> Unggah ke Firebase
+          </button>
+          <button type="button" class="btn btn-outline-info btn-sm flex-fill fw-semibold" onclick="fetchFromFirebase(true)">
+            <i class="fa-solid fa-cloud-arrow-down me-1"></i> Tarik dari Firebase
+          </button>
+        </div>
 
         <hr class="my-4 text-muted opacity-25">
 
@@ -2049,7 +2155,7 @@
         <div class="mb-2">
           <label class="form-label small fw-semibold text-secondary mb-1">URL Web App Google Apps Script:</label>
           <div class="input-group input-group-sm">
-            <input type="url" id="gasEndpointUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+            <input type="url" id="gasEndpointUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" oninput="localStorage.setItem('kitnaf_gas_url', this.value.trim())">
             <button class="btn btn-outline-secondary" type="button" onclick="testSpreadsheetConnection()" title="Uji Koneksi">
               <i class="fa-solid fa-plug me-1"></i> Tes
             </button>
@@ -2058,16 +2164,16 @@
 
         <div class="form-check form-switch mb-3">
           <input class="form-check-input" type="checkbox" id="gasAutoSyncSwitch" onchange="toggleGasAutoSync(event)">
-          <label class="form-check-label small fw-semibold text-dark" for="gasAutoSyncSwitch">
+          <label class="form-check-label small fw-semibold text-dark" for="gasAutoSyncSwitch" style="cursor: pointer;">
             Otomatis simpan ke Spreadsheet saat mengedit materi
           </label>
         </div>
 
         <div class="d-flex gap-2 mb-3">
-          <button class="btn btn-outline-primary btn-sm flex-fill fw-semibold" onclick="syncToSpreadsheet(false)">
+          <button type="button" class="btn btn-outline-primary btn-sm flex-fill fw-semibold" onclick="syncToSpreadsheet(false)">
             <i class="fa-solid fa-cloud-arrow-up me-1"></i> Unggah ke Sheet
           </button>
-          <button class="btn btn-outline-info btn-sm flex-fill fw-semibold" onclick="fetchFromSpreadsheet(true)">
+          <button type="button" class="btn btn-outline-info btn-sm flex-fill fw-semibold" onclick="fetchFromSpreadsheet(true)">
             <i class="fa-solid fa-cloud-arrow-down me-1"></i> Tarik dari Sheet
           </button>
         </div>
@@ -2077,7 +2183,7 @@
         <!-- Pembersihan Cache & Segarkan Versi -->
         <h6 class="small fw-bold text-muted mb-2"><i class="fa-solid fa-broom text-warning me-1"></i> PEMBARUAN & CACHE APLIKASI</h6>
         <p class="small text-muted mb-2">Jika Anda baru saja memperbarui kode dan ingin memastikan versi kode paling mutakhir aktif tanpa menghapus catatan Anda:</p>
-        <button class="btn btn-outline-warning btn-sm w-100 fw-semibold text-dark mb-1" onclick="forceClearAppCache()">
+        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-semibold text-dark mb-1" onclick="forceClearAppCache()">
           <i class="fa-solid fa-arrows-rotate me-1 text-warning"></i> Bersihkan Cache & Muat Ulang Versi Terbaru
         </button>
 
@@ -2087,7 +2193,7 @@
 </div>
 
 <!-- Modal Panduan Google Spreadsheet Database -->
-<div class="modal fade" id="gasGuideModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="gasGuideModal" aria-hidden="true" data-bs-focus="false" style="z-index: 1070;">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content border-0 shadow-lg rounded-4">
       <div class="modal-header border-bottom pb-3">
@@ -2129,6 +2235,56 @@
         <div class="alert alert-success d-flex align-items-center small py-2 mb-0">
           <i class="fa-solid fa-circle-check fa-lg me-2"></i>
           <div>Setelah terhubung, seluruh data materi Anda akan tersimpan rapi per baris di Google Spreadsheet dan dapat diakses dari mana saja!</div>
+        </div>
+      </div>
+      <div class="modal-footer border-top pt-3">
+        <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">Saya Mengerti</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Panduan Firebase Realtime Database & Hosting -->
+<div class="modal fade" id="firebaseGuideModal" aria-hidden="true" data-bs-focus="false" style="z-index: 1070;">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-bottom pb-3">
+        <h5 class="modal-title fw-bold text-dark"><i class="fa-solid fa-fire text-warning me-2"></i>Panduan Setup Firebase (Hosting & Realtime Database)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+        <p class="text-muted small">Ikuti panduan mudah 5 menit di bawah ini untuk menghubungkan Kit-Naf ke Firebase:</p>
+        
+        <ol class="small text-secondary ps-3 mb-3 d-flex flex-column gap-3">
+          <li>
+            <b>Buat Project di Firebase Console:</b>
+            <div class="mt-1">Buka <a href="https://console.firebase.google.com/" target="_blank" class="fw-bold text-primary">console.firebase.google.com</a>, login dengan akun Google, lalu klik <b>"Add project"</b> (Beri nama misal <code>kitnaf-app</code>).</div>
+          </li>
+          <li>
+            <b>Aktifkan Realtime Database:</b>
+            <div class="mt-1">Di menu sebelah kiri Firebase Console, klik <b>Build &gt; Realtime Database</b> &gt; klik <b>"Create Database"</b>.</div>
+            <div class="mt-1">Pilih lokasi database (misal: <code>Singapore (asia-southeast1)</code> atau default <code>United States</code>).</div>
+            <div class="mt-1">Pada bagian Security Rules, pilih <b>"Start in test mode"</b> (atau izinkan read & write true).</div>
+          </li>
+          <li>
+            <b>Daftarkan Web App & Ambil Konfigurasi:</b>
+            <div class="mt-1">Kembali ke <b>Project Overview</b>, klik ikon Web <code>&lt;/&gt;</code> untuk menambahkan aplikasi. Beri nama aplikasi misal <code>Kit-Naf Web</code>.</div>
+            <div class="mt-1">Salin kode objek <code>const firebaseConfig = { ... };</code> yang diberikan.</div>
+            <div class="mt-1">Tempelkan langsung ke kolom <b>"Tempel Objek firebaseConfig Lengkap (JSON)"</b> di menu Pengaturan aplikasi ini, atau isi ke file <code>firebase-config.js</code>.</div>
+          </li>
+          <li>
+            <b>Unggah Catatan Lokal ke Firebase:</b>
+            <div class="mt-1">Setelah konfigurasi tersimpan, klik tombol <b>"Unggah ke Firebase"</b> di menu Pengaturan. Seluruh materi kajian lokal Anda akan langsung tersinkron ke cloud!</div>
+          </li>
+          <li>
+            <b>Deploy ke Firebase Hosting (Online PWA):</b>
+            <div class="mt-1">Untuk menerbitkan website ini ke domain gratis <code>https://nama-project.web.app</code>, cukup klik ganda file <b><code>deploy-ke-firebase.bat</code></b> di folder proyek ini!</div>
+          </li>
+        </ol>
+
+        <div class="alert alert-warning d-flex align-items-center small py-2 mb-0">
+          <i class="fa-solid fa-bolt fa-lg me-2 text-warning"></i>
+          <div><b>Kelebihan Firebase:</b> Sinkronisasi berjalan secara *real-time* via WebSocket. Begitu Anda mengedit di laptop, HP yang sedang membuka Kit-Naf akan langsung terupdate seketika tanpa perlu me-refresh halaman!</div>
         </div>
       </div>
       <div class="modal-footer border-top pt-3">
@@ -2585,6 +2741,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<!-- Firebase SDK (v10 compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
   // --- STATE ---
@@ -3380,8 +3541,49 @@ var initialMockDB = [
     if (settingsNoteMarginLabel) settingsNoteMarginLabel.innerText = currentNoteMarginShift + 'px';
   }
 
+  window.resetBlur = function() {
+    currentBlur = 15;
+    localStorage.setItem('catatanku_blur', currentBlur);
+    applyAppearance();
+    showZoomToast('Efek Buram direset: 15px', 'fa-wand-magic-sparkles');
+  };
+
+  window.resetOpacity = function() {
+    currentOpacity = 85;
+    localStorage.setItem('catatanku_opacity', currentOpacity);
+    applyAppearance();
+    showZoomToast('Transparansi direset: 85%', 'fa-droplet');
+  };
+
+  window.resetSidebarBg = function() {
+    currentSidebarBg = '#111827';
+    localStorage.setItem('catatanku_sidebar_bg', currentSidebarBg);
+    applyAppearance();
+    showZoomToast('Warna Sidebar direset', 'fa-palette');
+  };
+
+  window.resetSidebarText = function() {
+    currentSidebarText = '#E5E7EB';
+    localStorage.setItem('catatanku_sidebar_text', currentSidebarText);
+    applyAppearance();
+    showZoomToast('Warna Teks Sidebar direset', 'fa-palette');
+  };
+
+  window.resetEditorText = function() {
+    currentEditorText = '#1F2937';
+    localStorage.setItem('catatanku_editor_text', currentEditorText);
+    applyAppearance();
+    showZoomToast('Warna Teks Editor direset', 'fa-palette');
+  };
+
+  window.resetCustomBg = function() {
+    localStorage.removeItem('catatanku_custom_bg');
+    applyBackground();
+    Swal.fire({ icon:'success', title:'Latar Default Dipulihkan', toast:true, position:'bottom-end', showConfirmButton:false, timer:2000 });
+  };
+
   window.openSettingsModal = function() {
-    new bootstrap.Modal(document.getElementById('settingsModal')).show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
   };
 
   // --- HELPERS ---
@@ -3912,6 +4114,19 @@ var initialMockDB = [
       statusEl.innerHTML = '<i class="fa-solid fa-cloud-slash text-warning"></i> <span class="d-none d-sm-inline text-secondary">Tersimpan (Offline)</span>';
       statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-warning-subtle";
       statusEl.title = "Tersimpan lokal. Akan diunggah ke Spreadsheet saat online.";
+    } else if (state === 'syncing_firebase') {
+      statusEl.innerHTML = '<i class="fa-solid fa-fire fa-bounce text-warning"></i> <span class="d-none d-sm-inline text-warning">Ke Firebase...</span>';
+      statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-warning-subtle";
+      statusEl.title = "Sedang menyinkronkan ke Firebase Cloud...";
+    } else if (state === 'saved_firebase') {
+      var fbTimeStr = extra || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      statusEl.innerHTML = '<i class="fa-solid fa-fire text-warning"></i> <span class="text-success fw-bold">✓ Firebase Sync</span>';
+      statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-success";
+      statusEl.title = "Data tersimpan di Firebase Realtime Database (" + fbTimeStr + ")";
+    } else if (state === 'firebase_offline') {
+      statusEl.innerHTML = '<i class="fa-solid fa-fire-extinguisher text-secondary"></i> <span class="d-none d-sm-inline text-secondary">Firebase Offline</span>';
+      statusEl.className = "small fw-semibold d-flex align-items-center gap-2 me-2 bg-white px-3 py-1 rounded-pill shadow-sm border border-secondary-subtle";
+      statusEl.title = "Tersimpan lokal. Akan diunggah ke Firebase saat online.";
     }
   };
 
@@ -4037,7 +4252,7 @@ var initialMockDB = [
 
   // --- ROBUST GOOGLE APPS SCRIPT API CALLER (WITH TIMEOUT & DIAGNOSTICS) ---
   function fetchGasApi(rawUrl, method, payload, timeoutMs) {
-    timeoutMs = timeoutMs || 15000;
+    timeoutMs = timeoutMs || 30000;
     var cleanUrl = (rawUrl || '').trim();
     if (!cleanUrl) {
       return Promise.reject(new Error('URL Google Apps Script belum diisi. Masukkan URL Web App di menu Pengaturan.'));
@@ -4154,6 +4369,32 @@ var initialMockDB = [
 
   // --- MANUAL SYNC CEPAT (SMART BI-DIRECTIONAL 2-ARAH OTOMATIS) ---
   window.manualSyncNow = function(btnEl) {
+    if (!firebaseRef) initFirebase();
+    var isFbActive = !!firebaseRef;
+    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
+
+    if (!isFbActive && !gasUrl) {
+      Swal.fire({
+        title: 'Database Belum Terhubung',
+        text: 'Silakan atur konfigurasi Firebase Realtime Database atau URL Google Spreadsheet di menu Pengaturan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Buka Pengaturan',
+        cancelButtonText: 'Batal'
+      }).then(function(r) {
+        if (r.isConfirmed) openSettingsModal();
+      });
+      return;
+    }
+
+    if (isFbActive && !gasUrl) {
+      uploadAllToFirebase(false);
+      return;
+    }
+
+    if (isFbActive) {
+      uploadAllToFirebase(true);
+    }
     var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
     if (!gasUrl) {
       Swal.fire({
@@ -4220,7 +4461,7 @@ var initialMockDB = [
     // KASUS KHUSUS: Jika data lokal kosong/0 item di perangkat ini, lakukan PULL AMAN (Fetch GET)
     if (!Array.isArray(dbMateri) || dbMateri.length === 0) {
       var getEndpoint = gasUrl + (gasUrl.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now();
-      fetchGasApi(getEndpoint, 'GET', null, 15000)
+      fetchGasApi(getEndpoint, 'GET', null, 30000)
         .then(function(res) {
           resetSyncButtons(true);
           if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
@@ -4275,7 +4516,7 @@ var initialMockDB = [
       timestamp: nowIso
     };
 
-    fetchGasApi(gasUrl, 'POST', payload, 15000)
+    fetchGasApi(gasUrl, 'POST', payload, 30000)
       .then(function(res) {
         localStorage.removeItem('kitnaf_deleted_ids');
 
@@ -4338,6 +4579,44 @@ var initialMockDB = [
 
   // --- AUTO SAVE & AUTO SYNC UNIFIED HELPER ---
   window.triggerCloudAutoSave = function(immediate) {
+    var isFbAutoSync = (localStorage.getItem(FIREBASE_AUTOSYNC_KEY) !== 'false');
+    var isGasAutoSync = (localStorage.getItem(GAS_AUTOSYNC_KEY) !== 'false');
+    var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
+    var hasCloud = false;
+
+    if (isFbAutoSync && firebaseRef) {
+      hasCloud = true;
+      updateSaveStatus('syncing_firebase');
+      clearTimeout(fbSaveDebounceTimer);
+      if (immediate) {
+        uploadAllToFirebase(true);
+      } else {
+        fbSaveDebounceTimer = setTimeout(function() {
+          uploadAllToFirebase(true);
+        }, 750);
+      }
+    }
+
+    if (isGasAutoSync && gasUrl) {
+      hasCloud = true;
+      if (!isFbAutoSync || !firebaseRef) updateSaveStatus('syncing_gas');
+      clearTimeout(gasSaveTimeout);
+      if (immediate) {
+        syncToSpreadsheet(true);
+      } else {
+        gasSaveTimeout = setTimeout(function() {
+          syncToSpreadsheet(true);
+        }, 900);
+      }
+    }
+
+    if (!hasCloud) {
+      updateSaveStatus('saved_local');
+    }
+    return;
+  };
+
+  var _legacy_triggerCloudAutoSave = function(immediate) {
     var isAutoSync = (localStorage.getItem(GAS_AUTOSYNC_KEY) !== 'false');
     var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
 
@@ -4372,7 +4651,7 @@ var initialMockDB = [
   };
 
   // --- INIT DATA (LOCAL STORAGE & STARTER BACKUP) ---
-  function loadDefaultKajianData(showToast) {
+  window.loadDefaultKajianData = function(showToast) {
     if (Array.isArray(initialMockDB) && initialMockDB.length > 0) {
       dbMateri = JSON.parse(JSON.stringify(initialMockDB));
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
@@ -4394,7 +4673,7 @@ var initialMockDB = [
           }
         }
       });
-  }
+  };
 
   var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzaW4BYXGh8VXDC1BIhCoaPh-Q6mkox0eShx4vd59nR1x6RNXk9GgIVngJpCSLe60Z-/exec';
 
@@ -4731,7 +5010,15 @@ function createJsonResponse(obj) {
   var bsGasGuideModal = null;
   window.openGasGuideModal = function() {
     var modalEl = document.getElementById('gasGuideModal');
-    if (!bsGasGuideModal) bsGasGuideModal = new bootstrap.Modal(modalEl);
+    if (!bsGasGuideModal) {
+      bsGasGuideModal = new bootstrap.Modal(modalEl);
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        var settingsEl = document.getElementById('settingsModal');
+        if (settingsEl && settingsEl.classList.contains('show')) {
+          document.body.classList.add('modal-open');
+        }
+      });
+    }
     var scriptBox = document.getElementById('gasScriptCodeBox');
     if (scriptBox) scriptBox.value = gasAppsScriptCode;
     bsGasGuideModal.show();
@@ -4776,7 +5063,7 @@ function createJsonResponse(obj) {
     });
 
     var testUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now();
-    fetchGasApi(testUrl, 'GET', null, 15000)
+    fetchGasApi(testUrl, 'GET', null, 30000)
       .then(function(res) {
         if (res && res.status === 'success') {
           var count = Array.isArray(res.data) ? res.data.length : 0;
@@ -4835,7 +5122,7 @@ function createJsonResponse(obj) {
       timestamp: nowIso
     };
 
-    fetchGasApi(url, 'POST', payload, 15000)
+    fetchGasApi(url, 'POST', payload, 30000)
       .then(function(res) {
         isGasSyncing = false;
         localStorage.removeItem('kitnaf_deleted_ids');
@@ -4892,7 +5179,7 @@ function createJsonResponse(obj) {
     });
 
     var getUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&t=' + Date.now();
-    fetchGasApi(getUrl, 'GET', null, 15000)
+    fetchGasApi(getUrl, 'GET', null, 30000)
       .then(function(res) {
         if (res && res.status === 'success' && Array.isArray(res.data) && res.data.length > 0) {
           dbMateri = res.data;
@@ -4914,6 +5201,366 @@ function createJsonResponse(obj) {
           text: err.message
         });
       });
+  };
+
+  // =======================================================================
+  // FIREBASE REALTIME DATABASE ENGINE (REAL-TIME CLOUD SYNC)
+  // =======================================================================
+  var FIREBASE_CFG_STORAGE_KEY = 'kitnaf_firebase_config';
+  var FIREBASE_AUTOSYNC_KEY = 'kitnaf_firebase_autosync';
+  var firebaseApp = null;
+  var firebaseDb = null;
+  var firebaseRef = null;
+  var isFirebaseConnected = false;
+  var isFirebaseSyncing = false;
+  var lastFirebaseSaveTime = 0;
+  var fbSaveDebounceTimer = null;
+
+  function getFirebaseConfig() {
+    var stored = localStorage.getItem(FIREBASE_CFG_STORAGE_KEY);
+    if (stored) {
+      try {
+        var parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') return parsed;
+      } catch(e) {}
+    }
+    if (window.FIREBASE_CONFIG && typeof window.FIREBASE_CONFIG === 'object' && window.FIREBASE_CONFIG.apiKey) {
+      return window.FIREBASE_CONFIG;
+    }
+    return null;
+  }
+
+  function initFirebase() {
+    var cfg = getFirebaseConfig();
+    updateFirebaseUIInputs(cfg);
+    var autoSyncVal = localStorage.getItem(FIREBASE_AUTOSYNC_KEY);
+    var isAutoSync = (autoSyncVal === null) ? true : (autoSyncVal === 'true');
+    var switchEl = document.getElementById('firebaseAutoSyncSwitch');
+    if (switchEl) switchEl.checked = isAutoSync;
+
+    if (!cfg || !cfg.apiKey || (!cfg.databaseURL && !cfg.projectId)) {
+      updateFirebaseStatusBadge(false, 'Belum Dikonfigurasi');
+      return;
+    }
+
+    if (!cfg.databaseURL && cfg.projectId) {
+      cfg.databaseURL = 'https://' + cfg.projectId + '-default-rtdb.firebaseio.com';
+    }
+
+    if (typeof firebase === 'undefined') {
+      console.warn('[Firebase] SDK compat library belum dimuat.');
+      updateFirebaseStatusBadge(false, 'SDK Belum Dimuat');
+      return;
+    }
+
+    try {
+      if (!firebase.apps || firebase.apps.length === 0) {
+        firebaseApp = firebase.initializeApp(cfg);
+      } else {
+        firebaseApp = firebase.apps[0];
+      }
+      firebaseDb = firebase.database();
+      firebaseRef = firebaseDb.ref('kitnaf/materi');
+
+      // Pantau status koneksi real-time
+      firebaseDb.ref('.info/connected').on('value', function(snap) {
+        isFirebaseConnected = !!snap.val();
+        if (isFirebaseConnected) {
+          updateFirebaseStatusBadge(true, '🟢 Terhubung');
+        } else {
+          updateFirebaseStatusBadge(false, '🟡 Menghubungkan...');
+        }
+      });
+
+      // Pasang listener sinkronisasi data realtime
+      listenToFirebaseChanges();
+    } catch(err) {
+      console.error('[Firebase] Gagal inisialisasi:', err);
+      updateFirebaseStatusBadge(false, 'Error: ' + err.message);
+    }
+  }
+
+  function listenToFirebaseChanges() {
+    if (!firebaseRef) return;
+    firebaseRef.on('value', function(snapshot) {
+      var val = snapshot.val();
+      if (!val) return;
+
+      var cloudList = [];
+      if (Array.isArray(val)) {
+        cloudList = val.filter(function(x) { return x && x.id; });
+      } else if (typeof val === 'object') {
+        cloudList = Object.values(val).filter(function(x) { return x && x.id; });
+      }
+
+      if (cloudList.length === 0) return;
+
+      // Cegah echo simpanan lokal dalam 2.5 detik terakhir
+      if (Date.now() - lastFirebaseSaveTime < 2500) {
+        return;
+      }
+
+      var didChange = mergeIncomingCloudData(cloudList, true);
+      if (didChange) {
+        var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        updateSaveStatus('saved_firebase', timeStr);
+        showRealtimeSyncToast();
+      }
+    }, function(error) {
+      console.warn('[Firebase] Listener error:', error);
+    });
+  }
+
+  function updateFirebaseStatusBadge(connected, text) {
+    var badge = document.getElementById('firebaseStatusBadge');
+    if (!badge) return;
+    badge.textContent = text;
+    if (connected) {
+      badge.className = 'badge bg-success-subtle text-success border border-success';
+    } else {
+      badge.className = 'badge bg-secondary-subtle text-secondary border';
+    }
+  }
+
+  function updateFirebaseUIInputs(cfg) {
+    if (!cfg) return;
+    var urlInput = document.getElementById('firebaseDatabaseUrlInput');
+    var keyInput = document.getElementById('firebaseApiKeyInput');
+    var projInput = document.getElementById('firebaseProjectIdInput');
+    var jsonBox = document.getElementById('firebaseConfigJsonBox');
+
+    if (urlInput && cfg.databaseURL) urlInput.value = cfg.databaseURL;
+    if (keyInput && cfg.apiKey) keyInput.value = cfg.apiKey;
+    if (projInput && cfg.projectId) projInput.value = cfg.projectId;
+    if (jsonBox && Object.keys(cfg).length > 0) jsonBox.value = JSON.stringify(cfg, null, 2);
+  }
+
+  window.saveFirebaseConfigInputs = function() {
+    var current = getFirebaseConfig() || {};
+    var url = (document.getElementById('firebaseDatabaseUrlInput') ? document.getElementById('firebaseDatabaseUrlInput').value : '').trim();
+    var key = (document.getElementById('firebaseApiKeyInput') ? document.getElementById('firebaseApiKeyInput').value : '').trim();
+    var proj = (document.getElementById('firebaseProjectIdInput') ? document.getElementById('firebaseProjectIdInput').value : '').trim();
+
+    if (url) current.databaseURL = url;
+    if (key) current.apiKey = key;
+    if (proj) {
+      current.projectId = proj;
+      if (!current.authDomain) current.authDomain = proj + '.firebaseapp.com';
+      if (!current.storageBucket) current.storageBucket = proj + '.appspot.com';
+    }
+    localStorage.setItem(FIREBASE_CFG_STORAGE_KEY, JSON.stringify(current));
+  };
+
+  window.applyFirebaseConfigFromJson = function() {
+    var raw = (document.getElementById('firebaseConfigJsonBox') ? document.getElementById('firebaseConfigJsonBox').value : '').trim();
+    if (!raw) {
+      Swal.fire('Perhatian', 'Silakan tempel kode objek firebaseConfig JSON terlebih dahulu.', 'warning');
+      return;
+    }
+    try {
+      var parsed = null;
+      if (raw.indexOf('{') !== -1 && raw.indexOf('}') !== -1) {
+        var jsonOnly = raw.substring(raw.indexOf('{'), raw.lastIndexOf('}') + 1);
+        try {
+          parsed = JSON.parse(jsonOnly);
+        } catch(e) {
+          var fn = new Function('return ' + jsonOnly);
+          parsed = fn();
+        }
+      }
+      if (parsed && typeof parsed === 'object') {
+        localStorage.setItem(FIREBASE_CFG_STORAGE_KEY, JSON.stringify(parsed));
+        updateFirebaseUIInputs(parsed);
+        initFirebase();
+        Swal.fire({
+          icon: 'success',
+          title: 'Konfigurasi Diterapkan!',
+          text: 'Konfigurasi Firebase berhasil disimpan dan dihubungkan.',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 2500
+        });
+      } else {
+        throw new Error('Objek tidak valid');
+      }
+    } catch(err) {
+      Swal.fire('Format Salah', 'Gagal membaca format konfigurasi: ' + err.message, 'error');
+    }
+  };
+
+  window.toggleFirebaseAutoSync = function(e) {
+    var checked = e.target.checked;
+    localStorage.setItem(FIREBASE_AUTOSYNC_KEY, checked ? 'true' : 'false');
+    if (checked) {
+      var cfg = getFirebaseConfig();
+      if (!cfg || !cfg.apiKey) {
+        Swal.fire('Info', 'Auto-Sync aktif, namun konfigurasi Firebase belum lengkap. Silakan lengkapi Project ID / API Key.', 'info');
+      } else {
+        Swal.fire({ icon:'success', title:'Auto-Sync Firebase Aktif', text:'Setiap ketikan catatan akan otomatis tersimpan ke Firebase Realtime.', toast:true, position:'bottom-end', showConfirmButton:false, timer:2500 });
+      }
+    }
+  };
+
+  window.testFirebaseConnection = function() {
+    saveFirebaseConfigInputs();
+    var cfg = getFirebaseConfig();
+    if (!cfg || !cfg.apiKey || (!cfg.databaseURL && !cfg.projectId)) {
+      Swal.fire('Perhatian', 'Lengkapi Project ID, API Key, dan Database URL terlebih dahulu.', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Menguji Koneksi...',
+      text: 'Menghubungkan ke Firebase Realtime Database...',
+      allowOutsideClick: false,
+      didOpen: function() { Swal.showLoading(); }
+    });
+
+    initFirebase();
+
+    if (!firebaseDb) {
+      Swal.fire('Gagal', 'Firebase SDK belum berhasil diinisialisasi. Periksa API Key dan Database URL Anda.', 'error');
+      return;
+    }
+
+    firebaseDb.ref('.info/connected').once('value').then(function(snap) {
+      firebaseRef.once('value').then(function(itemSnap) {
+        var count = 0;
+        var val = itemSnap.val();
+        if (Array.isArray(val)) count = val.length;
+        else if (val && typeof val === 'object') count = Object.keys(val).length;
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Koneksi Firebase Berhasil!',
+          html: '<p class="small text-muted mb-0">Terhubung dengan sukses ke Realtime Database!<br>Total catatan di cloud: <b>' + count + ' materi</b>.</p>'
+        });
+      }).catch(function(err) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Terhubung, Namun Akses Ditolak (Rules)',
+          html: '<p class="small text-muted mb-2">Pastikan Security Rules di Firebase Console sudah mengizinkan read & write:</p><code class="small text-danger">' + err.message + '</code>'
+        });
+      });
+    }).catch(function(err) {
+      Swal.fire('Koneksi Gagal', err.message, 'error');
+    });
+  };
+
+  window.uploadAllToFirebase = function(silent) {
+    if (!Array.isArray(dbMateri) || dbMateri.length === 0) {
+      if (!silent) Swal.fire('Data Kosong', 'Tidak ada data materi lokal yang bisa diunggah.', 'info');
+      return;
+    }
+
+    if (!firebaseRef) {
+      initFirebase();
+    }
+
+    if (!firebaseRef) {
+      if (!silent) Swal.fire('Perhatian', 'Firebase belum terkonfigurasi. Silakan isi konfigurasi Firebase terlebih dahulu.', 'warning');
+      return;
+    }
+
+    if (!silent) {
+      Swal.fire({
+        title: 'Mengunggah ke Firebase...',
+        text: 'Mengirim ' + dbMateri.length + ' materi ke Realtime Database...',
+        allowOutsideClick: false,
+        didOpen: function() { Swal.showLoading(); }
+      });
+    }
+
+    ensureAllTimestamps();
+    isFirebaseSyncing = true;
+    lastFirebaseSaveTime = Date.now();
+
+    firebaseRef.set(dbMateri).then(function() {
+      isFirebaseSyncing = false;
+      var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      updateSaveStatus('saved_firebase', timeStr);
+      if (!silent) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil Diunggah!',
+          text: 'Seluruh ' + dbMateri.length + ' materi berhasil disimpan di Firebase Realtime Database!',
+          toast: true,
+          position: 'bottom-end',
+          showConfirmButton: false,
+          timer: 3000
+        });
+      }
+    }).catch(function(err) {
+      isFirebaseSyncing = false;
+      if (!silent) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Mengunggah',
+          html: '<p class="small text-muted mb-1">Periksa izin database rules Anda di Firebase Console.</p><code class="small text-danger">' + err.message + '</code>'
+        });
+      }
+    });
+  };
+
+  window.fetchFromFirebase = function(showAlert) {
+    if (!firebaseRef) initFirebase();
+    if (!firebaseRef) {
+      if (showAlert) Swal.fire('Perhatian', 'Konfigurasi Firebase belum diisi.', 'warning');
+      return;
+    }
+
+    if (showAlert) {
+      Swal.fire({
+        title: 'Menarik Data...',
+        text: 'Mengambil catatan terbaru dari Firebase Realtime Database...',
+        allowOutsideClick: false,
+        didOpen: function() { Swal.showLoading(); }
+      });
+    }
+
+    firebaseRef.once('value').then(function(snap) {
+      var val = snap.val();
+      if (!val) {
+        if (showAlert) Swal.fire('Kosong', 'Belum ada data materi di Firebase.', 'info');
+        return;
+      }
+      var list = Array.isArray(val) ? val : Object.values(val);
+      list = list.filter(function(x) { return x && x.id; });
+      if (list.length > 0) {
+        dbMateri = list;
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dbMateri));
+        showDesktop();
+        if (showAlert) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Data Berhasil Dimuat!',
+            text: 'Berhasil memuat ' + list.length + ' materi dari Firebase Realtime Database!'
+          });
+        }
+      } else {
+        if (showAlert) Swal.fire('Info', 'Tidak ada data valid di Firebase.', 'info');
+      }
+    }).catch(function(err) {
+      if (showAlert) {
+        Swal.fire('Gagal Menarik Data', err.message, 'error');
+      }
+    });
+  };
+
+  var bsFirebaseGuideModal = null;
+  window.openFirebaseGuideModal = function() {
+    var modalEl = document.getElementById('firebaseGuideModal');
+    if (!bsFirebaseGuideModal) {
+      bsFirebaseGuideModal = new bootstrap.Modal(modalEl);
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        var settingsEl = document.getElementById('settingsModal');
+        if (settingsEl && settingsEl.classList.contains('show')) {
+          document.body.classList.add('modal-open');
+        }
+      });
+    }
+    bsFirebaseGuideModal.show();
   };
 
   // Node background helpers: apply URL from modal, clear, and file upload
@@ -5317,6 +5964,7 @@ function createJsonResponse(obj) {
     initBackground(); 
     initAppearance(); 
     initGasConfig(); 
+    initFirebase(); 
 
     var blurSlider = document.getElementById('blurSlider');
     if (blurSlider) {
