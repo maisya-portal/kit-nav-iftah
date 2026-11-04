@@ -5260,7 +5260,7 @@ function createJsonResponse(obj) {
         firebaseApp = firebase.apps[0];
       }
       firebaseDb = firebase.database();
-      firebaseRef = firebaseDb.ref('kitnaf/materi');
+      firebaseRef = firebaseDb.ref();
 
       // Pantau status koneksi real-time
       firebaseDb.ref('.info/connected').on('value', function(snap) {
