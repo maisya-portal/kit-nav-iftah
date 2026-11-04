@@ -5319,6 +5319,7 @@ function createJsonResponse(obj) {
       if (didChange) {
         var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         updateSaveStatus('saved_firebase', timeStr);
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
         showRealtimeSyncToast();
       }
     }, function(error) {
@@ -5444,14 +5445,19 @@ function createJsonResponse(obj) {
         var count = 0;
         var val = itemSnap.val();
         if (Array.isArray(val)) count = val.length;
+        if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
         else if (val && typeof val === 'object') count = Object.keys(val).length;
 
         Swal.fire({
           icon: 'success',
           title: 'Koneksi Firebase Berhasil!',
+          showConfirmButton: true,
+          confirmButtonText: 'Tutup',
           html: '<p class="small text-muted mb-0">Terhubung dengan sukses ke Realtime Database!<br>Total catatan di cloud: <b>' + count + ' materi</b>.</p>'
         });
       }).catch(function(err) {
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
+        if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
         Swal.fire({
           icon: 'warning',
           title: 'Terhubung, Namun Akses Ditolak (Rules)',
@@ -5459,6 +5465,7 @@ function createJsonResponse(obj) {
         });
       });
     }).catch(function(err) {
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       Swal.fire('Koneksi Gagal', err.message, 'error');
     });
   };
@@ -5495,6 +5502,7 @@ function createJsonResponse(obj) {
       isFirebaseSyncing = false;
       var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       updateSaveStatus('saved_firebase', timeStr);
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       if (!silent) {
         Swal.fire({
           icon: 'success',
@@ -5507,6 +5515,7 @@ function createJsonResponse(obj) {
         });
       }
     }).catch(function(err) {
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       isFirebaseSyncing = false;
       if (!silent) {
         Swal.fire({
@@ -5535,6 +5544,7 @@ function createJsonResponse(obj) {
     }
 
     firebaseRef.once('value').then(function(snap) {
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       var val = snap.val();
       if (!val) {
         if (showAlert) Swal.fire('Kosong', 'Belum ada data materi di Firebase.', 'info');
@@ -5557,6 +5567,7 @@ function createJsonResponse(obj) {
         if (showAlert) Swal.fire('Info', 'Tidak ada data valid di Firebase.', 'info');
       }
     }).catch(function(err) {
+      if (typeof Swal.hideLoading === 'function') Swal.hideLoading();
       if (showAlert) {
         Swal.fire('Gagal Menarik Data', err.message, 'error');
       }
