@@ -1342,7 +1342,7 @@
     </div>
     <div class="d-flex gap-2 align-items-center">
       <!-- Tombol Sinkron Manual Cepat -->
-      <button class="btn btn-light rounded-pill px-3 shadow-sm border border-white d-flex align-items-center gap-1 text-primary fw-semibold btn-manual-sync" onclick="manualSyncNow(this)" title="Sinkronkan data dengan Google Spreadsheet detik ini juga">
+      <button class="btn btn-light rounded-pill px-3 shadow-sm border border-white d-flex align-items-center gap-1 text-primary fw-semibold btn-manual-sync" onclick="manualSyncNow(this)" title="Sinkronkan data dengan Cloud Firebase detik ini juga">
         <i class="fa-solid fa-arrows-rotate me-1"></i> <span class="d-none d-sm-inline">Sinkron</span>
       </button>
       <!-- Tombol Pasang PWA (jika didukung) -->
@@ -1465,7 +1465,7 @@
             <i class="fa-solid fa-microphone me-1"></i> <span class="d-none d-md-inline">Transkrip Audio</span>
           </button>
           <!-- Tombol Sinkron Manual Cepat -->
-          <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-1 btn-manual-sync me-1" onclick="manualSyncNow(this)" title="Klik untuk langsung menyinkronkan data dengan Google Spreadsheet detik ini juga">
+          <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm d-flex align-items-center gap-1 btn-manual-sync me-1" onclick="manualSyncNow(this)" title="Klik untuk langsung menyinkronkan data dengan Cloud Firebase detik ini juga">
             <i class="fa-solid fa-arrows-rotate me-1" id="manualSyncIcon"></i>
             <span class="d-none d-sm-inline fw-semibold">Sinkron</span>
           </button>
@@ -4320,6 +4320,7 @@ var initialMockDB = [
   // --- AUTO-PULL SAAT BUKA APLIKASI ATAU SAAT TAB KEMBALI AKTIF ---
   var isAutoPulling = false;
   window.checkAutoSyncOnStart = function(forceToast) {
+    if (firebaseRef) return;
     if (isAutoPulling || isGasSyncing || isActivelyTyping) return;
     var gasUrl = (localStorage.getItem(GAS_URL_KEY) || DEFAULT_GAS_URL || '').trim();
     if (!gasUrl) return;
@@ -4387,7 +4388,12 @@ var initialMockDB = [
       return;
     }
 
-    if (isFbActive && !gasUrl) {
+    if (isFbActive) {
+      uploadAllToFirebase(false);
+      return;
+    }
+    var _skip_fb = false;
+    if (_skip_fb) {
       uploadAllToFirebase(false);
       return;
     }
@@ -4675,7 +4681,7 @@ var initialMockDB = [
       });
   };
 
-  var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzaW4BYXGh8VXDC1BIhCoaPh-Q6mkox0eShx4vd59nR1x6RNXk9GgIVngJpCSLe60Z-/exec';
+  var DEFAULT_GAS_URL = '';
 
   function fetchData() {
     var savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -4982,6 +4988,15 @@ function createJsonResponse(obj) {
 }`;
 
   function initGasConfig() {
+    var savedUrl = (localStorage.getItem(GAS_URL_KEY) || '').trim();
+    if (savedUrl && savedUrl.indexOf('AKfycbzaW4BYXGh8VXDC1BIhCoaPh-Q6mkox0eShx4vd59nR1x6RNXk9GgIVngJpCSLe60Z-') !== -1) {
+      localStorage.removeItem(GAS_URL_KEY);
+      savedUrl = '';
+    }
+    var savedAutoSyncVal = localStorage.getItem(GAS_AUTOSYNC_KEY);
+    var savedAutoSync = (savedAutoSyncVal === 'true');
+    var _legacy_initGas = false;
+    if (_legacy_initGas) {
     var savedUrl = localStorage.getItem(GAS_URL_KEY);
     if (!savedUrl) {
       savedUrl = DEFAULT_GAS_URL;
@@ -5465,8 +5480,8 @@ function createJsonResponse(obj) {
 
     if (!silent) {
       Swal.fire({
-        title: 'Mengunggah ke Firebase...',
-        text: 'Mengirim ' + dbMateri.length + ' materi ke Realtime Database...',
+        title: 'Menyinkronkan ke Firebase Cloud...',
+        text: 'Mengirim ' + dbMateri.length + ' materi ke Firebase Cloud...',
         allowOutsideClick: false,
         didOpen: function() { Swal.showLoading(); }
       });
@@ -5483,7 +5498,7 @@ function createJsonResponse(obj) {
       if (!silent) {
         Swal.fire({
           icon: 'success',
-          title: 'Berhasil Diunggah!',
+          title: 'Sinkronisasi Firebase Sukses!',
           text: 'Seluruh ' + dbMateri.length + ' materi berhasil disimpan di Firebase Realtime Database!',
           toast: true,
           position: 'bottom-end',
