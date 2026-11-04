@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitnaf-v2.8-transcription-studio';
+const CACHE_NAME = 'kitnaf-v3.0-multimedia-transcription';
 
 const PRECACHE_ASSETS = [
   './',
